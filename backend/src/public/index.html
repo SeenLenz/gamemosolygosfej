@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>window.app.socket Thing1</title>
+</head>
+
+<body>
+    Client1
+    <button onclick="sendMessage()">Send Msg</button>
+</body>
+<script>
+    // Create Webwindow.app.socket connection.
+    window.app = {}
+
+    async function setup() {
+        const response = await fetch("http://127.0.0.1:3000/lobby");
+        return await response.json();
+
+    }
+    setup().then(e => {
+        console.log(e)
+
+        window.app.socket = new WebSocket('ws://localhost:3000');
+
+        // Connection opened
+        window.app.socket.addEventListener('open', function (event) {
+            window.app.socket.send(e.lobby_key)
+
+        });
+
+        // Listen for messages
+        window.app.socket.addEventListener('message', function (event) {
+            console.log('Message from server ', event.data);
+        });
+
+        return e;
+    })
+
+
+    const sendMessage = () => {
+        window.app.socket.send("wasup");
+    }
+
+</script>
+
+</html>

@@ -73,5 +73,6 @@ export class Renderer {
             0,
             0
         );
-        this.gl.drawArrays(this.gl.TRIANGLES, 0, 3
+        this.gl.drawArrays(this.gl.TRIANGLES, 0, 3);
+    }
 }

@@ -10,24 +10,23 @@
 <body>
     Client1
     <button onclick="sendMessage()">Send Msg</button>
+    <input type="text" name="lobby" id="joinlobbybt">
+<button>Join Lobby</button>
+<button >create Lobby</button>
 </body>
 <script>
     // Create Webwindow.app.socket connection.
     window.app = {}
 
-    async function setup() {
-        const response = await fetch("http://127.0.0.1:3000/lobby");
-        return await response.json();
+    async function lobby_setup(lobby_key) {
 
-    }
-    setup().then(e => {
-        console.log(e)
-
+        if (lobby_key) {
+ 
         window.app.socket = new WebSocket('ws://localhost:3000');
 
         // Connection opened
         window.app.socket.addEventListener('open', function (event) {
-            window.app.socket.send(e.lobby_key)
+            window.app.socket.send("false" + lobby_key)
 
         });
 
@@ -35,6 +34,19 @@
         window.app.socket.addEventListener('message', function (event) {
             console.log('Message from server ', event.data);
         });
+            
+        }else{
+        const response = await fetch("http://127.0.0.1:3000/lobbycrt");
+        const config = await response.json();
+ 
+        }
+  }
+
+    async function join_lobby(){
+
+    }
+    setup().then(e => {
+        console.log(e)
 
         return e;
     })

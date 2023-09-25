@@ -29,13 +29,20 @@ wss.on("connection", function connection(ws) {
   ws.on("message", function incoming(e) {
     const data = e.toString().split(";");
 
-    lobbies.set(data[0], ws);
+    if (data[0]) {
+     lobbies.set(data[1], ws) 
+     ws.send("fin")
+    }else{
+      lobbies.get(data[1])
+
+    }
+
   });
 });
 
 app.use(express.urlencoded({ extended: true }) as RequestHandler);
 app.get("/", express.static("./src/public"), (req, res) => {});
-app.get("/lobby", (req, res) => {
+app.get("/joinlobby", (req, res) => {
   if (lobbies.has(req.body.lobby_key)) {
     let clientarr = lobbies.get(req.body.lobby_key);
     if (clientarr[0] < 3) {
@@ -47,11 +54,11 @@ app.get("/lobby", (req, res) => {
   }
 });
 
-app.get("/joinlobby", (req, res) => {
+app.get("/lobbycrt", (req, res) => {
   const lobby_key = uuid().slice(0, 8);
   lobbies.set(lobby_key, [1, {}, {}, {}]);
   return res.json({
-    lobby: { key: lobby_key, id: 1 },
+    lobby: { key: lobby_key, client_id: 1 },
   });
 });
 

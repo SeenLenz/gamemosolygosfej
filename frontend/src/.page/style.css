@@ -1,0 +1,10 @@
+#main_canvas {
+    width: 100vw;
+    height: 100vh;
+}
+
+body {
+    overflow-y: hidden;
+    padding: 0px;
+    margin: 0px;
+}

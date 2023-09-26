@@ -17,7 +17,6 @@ import {
 } from "./handlers/ws";
 import { v4 as uuid } from "uuid";
 import { WebSocket, WebSocketServer } from "ws";
-import { json } from "stream/consumers";
 
 const app: Express = express();
 const server: Server = createServer(app);

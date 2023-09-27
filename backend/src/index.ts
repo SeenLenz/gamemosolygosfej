@@ -1,22 +1,8 @@
-import express, {
-  Express,
-  Request,
-  Response,
-  Application,
-  RequestHandler,
-} from "express";
-import httl, { Server, createServer } from "http";
+import express, { Express, RequestHandler } from "express";
+import { Server, createServer } from "http";
 
-import {
-  wsh_close,
-  wsh_error,
-  wsh_message,
-  wsh_connect,
-  wsh_reconnect,
-  wsh_retry,
-} from "./handlers/ws";
 import { v4 as uuid } from "uuid";
-import { WebSocket, WebSocketServer } from "ws";
+import { WebSocketServer } from "ws";
 
 const app: Express = express();
 const server: Server = createServer(app);
@@ -42,8 +28,17 @@ wss.on("connection", function connection(ws) {
   });
 });
 
+app.use((req, res, next) => {
+  res.header("Access-Control-Allow-Origin", "*");
+  res.header("Access-Control-Allow-Methods", "DELETE, PUT");
+  res.header(
+    "Access-Control-Allow-Headers",
+    "Origin, X-Requested-With, Content-Type, Accept"
+  );
+  next();
+});
 app.use(express.urlencoded({ extended: true }) as RequestHandler);
-app.get("/", express.static("./src/public"), (req, res) => {});
+app.get("/", express.static("../frontend/dist"), (req, res) => {});
 app.get("/joinlobby/:lobby_key", (req, res) => {
   if (lobbies.has(req.params.lobby_key)) {
     let clientarr = lobbies.get(req.params.lobby_key);

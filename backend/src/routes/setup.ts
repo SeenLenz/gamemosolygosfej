@@ -1,7 +1,6 @@
-
 import { Router } from "express";
-import { lobbies } from "..";
-import {v4 as uuid} from "uuid";
+import { lobbies } from "../index";
+import { v4 as uuid } from "uuid";
 
 const router = Router();
 
@@ -29,7 +28,5 @@ router.get("/lobbycrt", (req, res) => {
     lobby: { key: lobby_key, client_id: 1 },
   });
 });
-
-
 
 export default router;

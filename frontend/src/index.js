@@ -1,5 +1,5 @@
 import { App } from "./app.js";
-import { lobby_setup } from "./handlers/setup.js";
+import { lobby_setup } from "./ws.js";
 
 window.app = new App();
 
@@ -12,6 +12,13 @@ document.addEventListener("DOMContentLoaded", () => {
   document
     .querySelector("#create_bt")
     .addEventListener("click", () => lobby_setup());
+  document.querySelector("#sendmsg_bt").addEventListener("click", (e) => {
+    window.app.socket.send(
+      window.app.ws_config.lobby.key +
+        ";" +
+        window.app.ws_config.lobby.client_id
+    );
+  });
   main();
 });
 

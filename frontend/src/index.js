@@ -1,4 +1,4 @@
-import { App } from "./components/app.js";
+import { App } from "./app.js";
 import { lobby_setup } from "./handlers/setup.js";
 
 window.app = new App();

@@ -1,9 +1,13 @@
 export function msg_event(event) {
-  console.log(event.data);
+  const msg_flags = String(event.data).split(";");
+  console.log(msg_flags);
 }
 
 export function error_event() {}
-export function close_event() {}
+export function close_event() {
+  window.app.socket.close();
+  console.log("connection closed");
+}
 export function open_event() {}
 
 export function setup() {
@@ -16,4 +20,6 @@ export function setup() {
 
   // Listen for messages
   window.app.socket.addEventListener("message", msg_event);
+
+  console.log(window.app.ws_config.lobby.key);
 }

@@ -3,13 +3,17 @@ import { lobbies } from "..";
 import { RawData } from "ws";
 
 export function open(d: RawData, ws: any) {}
-export function close() {}
+export function close(d: RawData, ws: any) {
+  console.log("close event fired");
+}
 export function message(d: RawData, ws: any) {
   const data = d.toString().split(";");
   console.log(data);
   const lobby = lobbies.get(data[0]);
   for (let i = 1; i < lobby[0] + 1; i++) {
-    lobby[i].send(data);
+    if (lobby[i] != ws) {
+      lobby[i].send(d.toString());
+    }
   }
 }
 export function error() {}

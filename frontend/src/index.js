@@ -1,5 +1,6 @@
 import { App } from "./app.js";
 import { lobby_setup } from "./ws.js";
+import { close_event } from "./handlers/ws.js";
 
 window.app = new App();
 
@@ -18,6 +19,9 @@ document.addEventListener("DOMContentLoaded", () => {
         ";" +
         window.app.ws_config.lobby.client_id
     );
+  });
+  document.querySelector("#leave_bt").addEventListener("click", (e) => {
+    close_event();
   });
   main();
 });

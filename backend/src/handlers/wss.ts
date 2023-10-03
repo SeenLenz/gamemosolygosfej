@@ -1,4 +1,4 @@
-import { message, open } from "./ws";
+import { message, open, close } from "./ws";
 import WebSocket from "ws";
 import { lobbies } from "..";
 
@@ -8,6 +8,10 @@ export function connection(ws: WebSocket, req: Request) {
   console.log("connection url: " + wss_cfg);
 
   lobbies.get(wss_cfg[1])[wss_cfg[2]] = ws;
+
+  ws.on("close", (d: any) => {
+    close(d, ws);
+  });
 
   ws.on("open", (d: any) => {
     open(d, ws);

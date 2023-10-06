@@ -9,7 +9,7 @@ export class Renderer {
             document.querySelector("#fragment_shader").textContent;
 
         this.canvas = document.querySelector("#main_canvas");
-        this.gl = this.canvas.getContext("webgl");
+        this.gl = this.canvas.getContext("webgl2");
 
         this.vertex_shader = setup.create_shader(
             this.gl,
@@ -27,12 +27,12 @@ export class Renderer {
             this.fragment_shader
         );
 
-        this.attributes;
-        this.buffers;
+        this.uniform_resolution;
+        this.uniform_transform;
     }
 
     create_buffer(type, content, attribute_location) {
-        this.attributes = this.gl.getAttribLocation(
+        let attribute = this.gl.getAttribLocation(
             this.program,
             attribute_location
         );
@@ -45,7 +45,7 @@ export class Renderer {
             this.gl.STATIC_DRAW
         );
 
-        this.buffers = buffer;
+        return {buffer: buffer, attribute: attribute}
     }
 
     setup() {
@@ -54,25 +54,14 @@ export class Renderer {
 
         this.gl.viewport(0, 0, this.gl.canvas.width, this.gl.canvas.height);
 
-        const positions = [0, -1, -1, 1, 1, 1];
-
-        this.create_buffer(this.gl.ARRAY_BUFFER, positions, "a_pos");
+        this.uniform_resolution = this.gl.getUniformLocation(this.program, "u_res");
+        this.uniform_transform = this.gl.getUniformLocation(this.program, "u_transform");
     }
 
     run() {
-        this.gl.clearColor(0, 0, 0, 0);
+        this.gl.clearColor(0, 0, 0, 1);
         this.gl.clear(this.gl.COLOR_BUFFER_BIT);
         this.gl.useProgram(this.program);
-        this.gl.enableVertexAttribArray(this.attributes);
-        this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.buffers);
-        this.gl.vertexAttribPointer(
-            this.attributes,
-            2,
-            this.gl.FLOAT,
-            false,
-            0,
-            0
-        );
-        this.gl.drawArrays(this.gl.TRIANGLES, 0, 3);
+        this.gl.uniform1f(this.uniform_resolution, this.gl.canvas.width / this.gl.canvas.height);
     }
 }

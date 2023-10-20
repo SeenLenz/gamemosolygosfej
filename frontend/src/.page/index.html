@@ -21,7 +21,7 @@
         out vec3 color;
 
         void main() {
-            gl_Position = vec4(a_pos.x / u_res, a_pos.y , 1, 1) * vec4(0.3, 0.3, 0.3, 1) + vec4(u_transform, 0);
+            gl_Position = vec4(a_pos.x , a_pos.y / u_res, 1, 1) * vec4(u_transform.z, u_transform.z, 1., 1.) + vec4(u_transform.xy, 0., 0.);
             color = a_color;
         }
 

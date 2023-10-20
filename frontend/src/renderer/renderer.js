@@ -11,6 +11,7 @@ export class Renderer {
         this.canvas = document.querySelector("#main_canvas");
         this.gl = this.canvas.getContext("webgl2");
 
+
         this.vertex_shader = setup.create_shader(
             this.gl,
             this.gl.VERTEX_SHADER,
@@ -29,6 +30,8 @@ export class Renderer {
 
         this.uniform_resolution;
         this.uniform_transform;
+
+        this.textures = [];
     }
 
     create_buffer(type, content, attribute_location) {
@@ -48,6 +51,24 @@ export class Renderer {
         return {buffer: buffer, attribute: attribute}
     }
 
+    create_texture(image_source) {
+        let texture = this.gl.createTexture();
+        this.gl.bindTexture(this.gl.TEXTURE_2D, texture);
+
+        gl.texImage2D(this.gl.TEXTURE_2D, 0, this.gl.RGBA, 1, 1, 0, this.gl.RGBA, this.gl.UNSIGNED_BYTE,
+            new Uint8Array([0, 0, 255, 255]));
+
+        let image = new Image();
+        image.src = image_source;   
+        image.addEventListener('load', () => {
+            this.gl.bindTexture(this.gl.TEXTURE_2D, texture);
+            this.gl.texImage2D(this.gl.TEXTURE_2D, 0, this.gl.RGBA, this.gl.RGBA,this.gl.UNSIGNED_BYTE, image);
+            this.gl.generateMipmap(this.gl.TEXTURE_2D);
+        });
+
+        return this.textures.push(texture);
+    }
+
     setup() {
         this.gl.canvas.width = this.gl.canvas.clientWidth;
         this.gl.canvas.height = this.gl.canvas.clientHeight;
@@ -62,6 +83,6 @@ export class Renderer {
         this.gl.clearColor(0, 0, 0, 1);
         this.gl.clear(this.gl.COLOR_BUFFER_BIT);
         this.gl.useProgram(this.program);
-        this.gl.uniform1f(this.uniform_resolution, this.gl.canvas.width / this.gl.canvas.height);
+        this.gl.uniform1f(this.uniform_resolution, this.gl.canvas.height / this.gl.canvas.width);
     }
 }

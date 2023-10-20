@@ -7,7 +7,10 @@ export class Obj {
 
         this.color_buffer = renderer.create_buffer(renderer.gl.ARRAY_BUFFER, colors, "a_color");
 
-        this.transform = [0., 0., 0.];
+        // this.texture_coord_buffer = renderer.create_buffer(renderer.gl.ARRAY_BUFFER, texture_coords, "a_textCoord");
+
+        this.transform = [0., 0., 1];
+        // this.texture_index;
     }
 
     render(renderer) {
@@ -24,7 +27,6 @@ export class Obj {
             0
         );
 
-
         renderer.gl.enableVertexAttribArray(this.color_buffer.attribute);
         renderer.gl.bindBuffer(renderer.gl.ARRAY_BUFFER, this.color_buffer.buffer);
         renderer.gl.vertexAttribPointer(
@@ -37,7 +39,23 @@ export class Obj {
         );
 
         renderer.gl.bindBuffer(renderer.gl.ELEMENT_ARRAY_BUFFER, this.index_buffer);
-
         renderer.gl.drawElements(renderer.gl.TRIANGLES, 6, renderer.gl.UNSIGNED_SHORT, 0);
     }
+
+}
+
+export function quad(size_x, size_y) {
+    const positions = [
+        -1 * size_x, 1 * size_y,  
+        -1 * size_x, -1 * size_y,
+        1 * size_x, 1 * size_y,
+        1 * size_x, -1 * size_y,
+    ];
+
+    const indicies = [
+        0, 1, 2,
+        2, 1, 3,
+    ];
+
+    return {positions: positions, indicies: indicies};
 }

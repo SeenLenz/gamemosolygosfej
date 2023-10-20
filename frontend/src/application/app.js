@@ -1,5 +1,5 @@
 import { Renderer } from "../renderer/renderer.js";
-import { Obj } from "../renderer/object.js";
+import { Obj, quad } from "../renderer/object.js";
 import { EventHandler } from "./event_handler.js";
 
 export class App {
@@ -11,14 +11,7 @@ export class App {
 
     setup() {
         this.renderer.setup();
-        
-        const positions = [
-            -1, 1,  
-            -1, -1,
-            1, 1,
-            1, -1,
-        ];
-
+    
         const colors = [
             1, 1, 1,
             0.5, 1, 1,
@@ -28,13 +21,9 @@ export class App {
             1, 0.3, 0.2
         ];
 
-        const indicies = [
-            0, 1, 2,
-            2, 1, 3,
-        ];
-
-        this.objects.push(new Obj(positions, indicies, colors, this.renderer));
-
+        const q = quad(1, 0.1);
+        this.objects.push(new Obj(q.positions, q.indicies, colors, this.renderer));
+        this.objects[0].transform = [0., -1, 1.];
     }
 
     main_loop() {

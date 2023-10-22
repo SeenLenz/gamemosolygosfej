@@ -11,7 +11,6 @@ export class Renderer {
         this.canvas = document.querySelector("#main_canvas");
         this.gl = this.canvas.getContext("webgl2");
 
-
         this.vertex_shader = setup.create_shader(
             this.gl,
             this.gl.VERTEX_SHADER,
@@ -30,6 +29,7 @@ export class Renderer {
 
         this.uniform_resolution;
         this.uniform_transform;
+        this.camera;
 
         this.textures = [];
     }
@@ -77,12 +77,14 @@ export class Renderer {
 
         this.uniform_resolution = this.gl.getUniformLocation(this.program, "u_res");
         this.uniform_transform = this.gl.getUniformLocation(this.program, "u_transform");
+        this.camera = this.gl.getUniformLocation(this.program, "camera");
     }
 
-    run() {
+    run(camera) {
         this.gl.clearColor(0, 0, 0, 1);
         this.gl.clear(this.gl.COLOR_BUFFER_BIT);
         this.gl.useProgram(this.program);
-        this.gl.uniform1f(this.uniform_resolution, this.gl.canvas.height / this.gl.canvas.width);
+        this.gl.uniform2f(this.uniform_resolution, this.gl.canvas.width, this.gl.canvas.height);
+        this.gl.uniform3fv(this.camera, camera);
     }
 }

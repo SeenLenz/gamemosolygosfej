@@ -1,14 +1,11 @@
-import { App } from "../application/app.js";
+import { main_loop, setup } from "../application/app.js";
 
 document.addEventListener("DOMContentLoaded", () => {
     main();
 });
 
 function main() {
-    const app = new App();
+    setup();
 
-    app.setup();
-
-    // change to infinte loop
-    app.main_loop();
+    main_loop();
 }

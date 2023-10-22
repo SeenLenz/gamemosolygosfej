@@ -7,24 +7,37 @@
         <link rel="stylesheet" href="style.css" />
     </head>
     <body>
-        <canvas id="main_canvas"></canvas>
+        <span id="PIIIII">0</span>
+        <canvas id="main_canvas">
+        </canvas>
     </body>
     <script src="index.js" type="module"></script>
     <script type="x-shader/x-vertex" id="vertex_shader">#version 300 es
-
         in vec2 a_pos;
         in vec3 a_color;
-        uniform float u_res;
+        uniform vec2 u_res;
 
         uniform vec3 u_transform;
+
+        uniform vec3 camera;
 
         out vec3 color;
 
         void main() {
-            gl_Position = vec4(a_pos.x , a_pos.y / u_res, 1, 1) * vec4(u_transform.z, u_transform.z, 1., 1.) + vec4(u_transform.xy, 0., 0.);
+            vec2 cameraClip = (camera.xy / u_res) * vec2(2, -2) * vec2(camera.z, camera.z);
+
+            //calculate the transformations
+            vec2 screenPos = a_pos * vec2(u_transform.z, u_transform.z) + u_transform.xy;
+
+            // convert to clip space
+            screenPos = (screenPos / u_res) * vec2(2, 2) - vec2(1, 1);
+            
+            // flip y axis to match with js
+            screenPos *= vec2(1, -1);
+
+            gl_Position = vec4(screenPos * vec2(camera.z, camera.z) - cameraClip.xy, 0., 1);
             color = a_color;
         }
-
     </script>
     <script type="x-shader/x-fragment" id="fragment_shader">#version 300 es
         precision mediump float;

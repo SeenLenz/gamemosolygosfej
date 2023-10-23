@@ -7,10 +7,24 @@ export class EventHandler {
                 x: 0,
                 y: 0,
             },
+            prev_pos: {
+                x: 0,
+                y: 0,
+            },
+
+            
             leftClick: false,
+        };
+        
+        this.keys = {
+            w: false,
+            a: false,
+            s: false,
+            d: false,
         };
 
         window.addEventListener("mousemove", (ev) => {
+            this.mouse.prev_pos = this.mouse.pos;
             this.mouse.pos = ev;
         });
 
@@ -34,7 +48,29 @@ export class EventHandler {
             }
         });
 
+        document.addEventListener('keypress', (event) => {
+            const key = event.code;
+                    
+            if (key == "KeyW") {
+                this.keys.w = true;
+            }
+        });
 
+        document.addEventListener('keydown', (event) => {
+            const key = event.key;
+                    
+            if (key === "w") {
+                this.keys.w = true;
+            }
+        });
+
+        document.addEventListener('keyup', (event) => {
+            const key = event.key;
+                    
+            if (key === "w") {
+                this.keys.w = false;
+            }
+        });
 
         window.addEventListener("resize", _ => {
             renderer.gl.canvas.width = renderer.gl.canvas.clientWidth;

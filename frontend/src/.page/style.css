@@ -17,3 +17,21 @@ body {
 .checkbox {
     position: absolute;
 }
+
+.score {
+    position: absolute;
+    color: white;
+    left: 0%;
+    top: 0%;
+    font-size: 100px;
+    opacity: 0.2;
+    transition-property: left, opacity, font-size, top;
+    transition-duration: 1s;
+}
+
+.final {
+    left: 50%;
+    font-size: 200px;
+    opacity: 1;
+    top: 50%
+}

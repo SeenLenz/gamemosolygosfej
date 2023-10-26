@@ -6,18 +6,34 @@
 - You are the chosen one who represents the city and its people, its your callign to save it.
 
 # Starting point
-- slums
+- streets
 - melee weapon
 - ranged weapon
 - proc gen map -> room -> fight room; choice room; boss room
 
 # Fight Room
 - the closer you get to the MM the more mechanically modified the enemies get
-## Enemy types
+- ## Enemy types
 - Human: baisc with meele
 - Guard: slight modification longer meele and range
 - Mechbot: half human half mechanisms, large with minigun that can overheat
 - Automatron: only brain human, everything mechanical, has flight
+
+# Choice Rooms
+
+# Evil Interaction
+
+# Good Interaction
+- Support role
+- ## Level 1
+- Remove eveil debuff ( Once per turn )
+- Ray of light, in which the player deals more damage, and based on anlignment recieve damage ( 5s )
+- ## Level 2
+- Gives you a shild which breaks after X hits and damagaes whith 
+- Circle of Prayer, in which the enemys get slowed, and based on anlingment slowes player abilities ( 5s )
+- ## Level 3
+- mini ally controlled by god that is immune to devil debuffs
+- ## Level 4
 
 # Progression
 - streets -> train -> suburbs -> Magisters Mansion

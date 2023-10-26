@@ -3,80 +3,44 @@ import { DynamicGameObj, StaticGameObj } from "./gameobject.js";
 
 let score = document.querySelector(".score");
 
-export class Player extends DynamicGameObj {
-    constructor() {
-        super(renderer, [100, 100], [0, 0], [1, 0.2, 1], 5);
-        this.reactive = true;
-        this.mass = 10;
-        this.velocity.x = 5;
-        this.force.x = 0.08;
-        this.alive = true;
-        this.object_tag = 0;
-    }
-    
-    run(delta_time) {
-        super.motion();
-        super.collision();
-        this.force.y = gravity * this.mass;
-
-        if (eventHandler.keys.w) {
-            this.force.y = -8;
-        }
-
-        if (!this.alive) {
-            this.force.y = gravity * this.mass;
-            this.force.x = 0;
-
-
-
-            if (this.velocity.x > 0) {
-                this.velocity.x *= -1;
-            }
-            else {
-                this.velocity.x *= 0.9;
-            }
-        }
-
-        if (this.alive) {
-            score.innerText = Math.floor(performance.now() / 100);
-        }
-
-        camera.focus_on(this);
-    }
-
-    on_collision(collision) {
-        super.on_collision(collision);
-
-        if (collision.obj.object_tag == 1) {
-            if (!score.classList.contains("final")){
-                score.classList.add("final");
-            }
-            this.alive = false;
-        }
-    }
-}
-
 export class Box extends StaticGameObj {
-    constructor(size, position) {
-        super(renderer, size, position, [1, 0.2, 1], 1);
-        this.object_tag = 1;
-    }
-
-    run() {
-        if (this.object.transform.pos.x + this.object.dimensions.x < camera.zero.x) {
-            this.object.transform.pos.x = camera.zero.x + camera.width; 
-            this.object.transform.pos.y = Math.random() * (500) - 500; 
-        }
+    constructor() {
+        super(renderer, [camera.width, 20], [camera.zero.x, camera.zero.y + camera.height - 100], [1., 0., 0], 1);
     }
 }
 
+export class Wall extends StaticGameObj {
+    constructor() {
+        super(renderer, [20, camera.height], [camera.zero.x, camera.zero.y], [1., 0., 0], 1);
+    }
+}
 
-export class Border extends StaticGameObj {
-    constructor(size, position) {
-        super(renderer, size, position, [1, 0.2, 0.], 5);
+export class DBox extends DynamicGameObj {
+    constructor() {
+        super(renderer, [100, 100], [500, 100], [1, 1, 0])
+        this.velocity.x = 1;
+        this.mass = 1;
+        this.force.y = gravity * this.mass;
+        this.reactive = true;
     }
 
-    run() {
-        this.object.transform.pos.x = camera.zero.x;
+    run(delta_time) {
+        super.motion(delta_time);
+        super.collision();
+    }
+}
+
+export class DBox2 extends DynamicGameObj {
+    constructor() {
+        super(renderer, [100, 100], [1000, 100], [0, 1, 0])
+        this.velocity.x = -10;
+        this.mass = 10;
+        this.force.y = gravity * this.mass;
+        this.reactive = true;
+    }
+
+    run(delta_time) {
+        super.motion(delta_time);
+        super.collision();
     }
 }

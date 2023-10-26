@@ -118,9 +118,9 @@ export class DynamicGameObj extends GameObject {
         }
     }
 
-    motion() {
-        this.velocity.y += this.force.y / this.mass;
-        this.velocity.x += this.force.x / this.mass;
+    motion(delta_time) {
+        this.velocity.y += (this.force.y / this.mass) * delta_time;
+        this.velocity.x += (this.force.x / this.mass) * delta_time;
 
         this.velocity.y = Math.abs(this.velocity.y) < gravity ? 0 : this.velocity.y;
 
@@ -149,15 +149,15 @@ export class DynamicGameObj extends GameObject {
             this.object.transform.pos.x = obj.object.transform.pos.x - this.object.dimensions.x - this.velocity.x;
         }
 
-        // if (obj.isDynamic) {
-        //     let obj_vel_x = (2 * this.mass * this.velocity.x - this.mass * obj.velocity.x + obj.mass * obj.velocity.x) / (this.mass + obj.mass);
-        //     let this_vel_x = obj.velocity.x + obj_vel_x - this.velocity.x;
-        //     obj.velocity.x = obj_vel_x;
-        //     this.velocity.x = this_vel_x;
-        // }
-        // else {
-        //     this.velocity.x = -this.velocity.x + this.force.x / this.mass;
-        // }
+        if (obj.isDynamic) {
+            let obj_vel_x = (2 * this.mass * this.velocity.x - this.mass * obj.velocity.x + obj.mass * obj.velocity.x) / (this.mass + obj.mass);
+            let this_vel_x = obj.velocity.x + obj_vel_x - this.velocity.x;
+            obj.velocity.x = obj_vel_x;
+            this.velocity.x = this_vel_x;
+        }
+        else {
+            this.velocity.x = -this.velocity.x + this.force.x / this.mass;
+        }
     }
 
     on_collision_y(obj, dir) {
@@ -170,11 +170,11 @@ export class DynamicGameObj extends GameObject {
         
         this.velocity.y = (-this.velocity.y + this.force.y / this.mass) * 0.3;
 
-        // if (obj.isDynamic) {
-        //     let obj_vel_y = (2 * this.mass * this.velocity.y - this.mass * obj.velocity.y + obj.mass * obj.velocity.y) / (this.mass + obj.mass);
-        //     let this_vel_y = obj.velocity.y + obj_vel_y - this.velocity.y;
-        //     obj.velocity.y = obj_vel_y * 0.9;
-        //     this.velocity.y = this_vel_y * 0.9;
-        // }
+        if (obj.isDynamic) {
+            let obj_vel_y = (2 * this.mass * this.velocity.y - this.mass * obj.velocity.y + obj.mass * obj.velocity.y) / (this.mass + obj.mass);
+            let this_vel_y = obj.velocity.y + obj_vel_y - this.velocity.y;
+            obj.velocity.y = obj_vel_y * 0.9;
+            this.velocity.y = this_vel_y * 0.9;
+        }
     }
 }

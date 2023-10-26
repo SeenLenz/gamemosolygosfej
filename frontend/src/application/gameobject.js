@@ -4,7 +4,7 @@ import { gravity } from "./app.js";
 export class GameObject {
     constructor(renderer, size, position, color) {
         let q = quad(size[0], size[1], color);
-        this.object = new Obj(q.positions, q.indicies, q.color, renderer, size[0] ,size[1]);
+        this.object = new Obj(q.positions, q.indicies, q.color, renderer, size[0], size[1]);
         this.object.transform.pos.x = position[0];
         this.object.transform.pos.y = position[1];
         this.mass = size[0] * size[1];
@@ -47,10 +47,10 @@ export class DynamicGameObj extends GameObject {
     }
 
     start() {
-        
+
     }
 
-    collide() {
+    collide(delta_time) {
         let collisions = [];
         for (let obj of GameObject.objects) {
             if ((this.isDynamic && !this.reactive && obj.isDynamic) || (obj.isDynamic && !obj.reactive && this.isDynamic)) {
@@ -61,12 +61,12 @@ export class DynamicGameObj extends GameObject {
                 continue;
             }
 
-            let x_collision = this.object.transform.pos.x + this.object.dimensions.x - obj.object.transform.pos.x + this.velocity.x;
-            let y_collision = this.object.transform.pos.y + this.object.dimensions.y - obj.object.transform.pos.y + this.velocity.y;
+            let x_collision = this.object.transform.pos.x + this.object.dimensions.x - obj.object.transform.pos.x + this.velocity.x * delta_time;
+            let y_collision = this.object.transform.pos.y + this.object.dimensions.y - obj.object.transform.pos.y + this.velocity.y * delta_time;
 
             if (obj.isDynamic) {
-                x_collision -= obj.velocity.x;
-                y_collision -= obj.velocity.y;
+                x_collision -= obj.velocity.x * delta_time;
+                y_collision -= obj.velocity.y * delta_time;
             }
 
             if (x_collision > 0 && x_collision < this.object.dimensions.x + obj.object.dimensions.x) {
@@ -82,20 +82,20 @@ export class DynamicGameObj extends GameObject {
 
                     if (x_diff < y_diff) {
                         if (Math.abs(obj.object.transform.pos.x - this.object.transform.pos.x) < Math.abs(obj.object.transform.pos.x + obj.object.dimensions.x - this.object.transform.pos.x)) {
-                            collisions.push({obj: obj, x: 1, y: 0});
+                            collisions.push({ obj: obj, x: 1, y: 0 });
                         }
                         else {
-                            collisions.push({obj: obj, x: -1, y: 0});
+                            collisions.push({ obj: obj, x: -1, y: 0 });
 
                         }
                     }
                     else {
                         if (Math.abs(obj.object.transform.pos.y - this.object.transform.pos.y) < Math.abs(obj.object.transform.pos.y + obj.object.dimensions.y - this.object.transform.pos.y)) {
-                            collisions.push({obj: obj, x: 0, y: 1});
+                            collisions.push({ obj: obj, x: 0, y: 1 });
 
                         }
                         else {
-                            collisions.push({obj: obj, x: 0, y: -1});
+                            collisions.push({ obj: obj, x: 0, y: -1 });
 
                         }
                     }
@@ -110,9 +110,9 @@ export class DynamicGameObj extends GameObject {
         return collisions;
     }
 
-    collision() {
-        const collisions = this.collide();
-        
+    collision(delta_time) {
+        const collisions = this.collide(delta_time);
+
         for (let collision of collisions) {
             this.on_collision(collision);
         }
@@ -124,8 +124,8 @@ export class DynamicGameObj extends GameObject {
 
         this.velocity.y = Math.abs(this.velocity.y) < gravity ? 0 : this.velocity.y;
 
-        this.object.transform.pos.y += this.velocity.y;
-        this.object.transform.pos.x += this.velocity.x;
+        this.object.transform.pos.y += this.velocity.y * delta_time;
+        this.object.transform.pos.x += this.velocity.x * delta_time;
     }
 
     run(delta_time) {
@@ -167,7 +167,7 @@ export class DynamicGameObj extends GameObject {
         else {
             this.object.transform.pos.y = obj.object.transform.pos.y - this.object.dimensions.y - this.velocity.y - 1;
         }
-        
+
         this.velocity.y = (-this.velocity.y + this.force.y / this.mass) * 0.3;
 
         if (obj.isDynamic) {

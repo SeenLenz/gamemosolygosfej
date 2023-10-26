@@ -26,13 +26,13 @@ export class DBox extends DynamicGameObj {
 
     run(delta_time) {
         super.motion(delta_time);
-        super.collision();
+        super.collision(delta_time);
     }
 }
 
 export class DBox2 extends DynamicGameObj {
     constructor() {
-        super(renderer, [100, 100], [1000, 100], [0, 1, 0])
+        super(renderer, [200, 200], [1000, 100], [1, 0, 1])
         this.velocity.x = -10;
         this.mass = 10;
         this.force.y = gravity * this.mass;
@@ -41,6 +41,6 @@ export class DBox2 extends DynamicGameObj {
 
     run(delta_time) {
         super.motion(delta_time);
-        super.collision();
+        super.collision(delta_time);
     }
 }

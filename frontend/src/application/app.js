@@ -8,7 +8,7 @@ import { Camera } from "./camera.js";
 export const renderer = new Renderer();
 export const eventHandler = new EventHandler(renderer);
 export let camera = new Camera();
-export let gravity = 0.6;
+export let gravity = 0.981;
 
 let start = 1;
 

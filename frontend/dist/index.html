@@ -7,7 +7,7 @@
         <link rel="stylesheet" href="style.css" />
     </head>
     <body>
-        <button onclick="sendMessage()">Send Msg</button>
+        <button id="msg_bt">Send Msg</button>
     <input type="text" name="lobby" id="join_label">
     <button id="join_bt">Join Lobby</button>
     <button id="create_bt">create Lobby</button>
@@ -15,7 +15,7 @@
         <canvas id="main_canvas">
         </canvas>
     </body>
-    <script src="../networkign/index.js" type="module"></script>
+    <script src="../src/networking.js" type="module"></script>
     <script src="index.js" type="module"></script>
     <script type="x-shader/x-vertex" id="vertex_shader">#version 300 es
         in vec2 a_pos;

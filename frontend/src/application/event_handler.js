@@ -1,4 +1,4 @@
-import { gravity } from "./app.js";
+import { gravity } from "../app.js";
 
 export class EventHandler {
     constructor(renderer) {

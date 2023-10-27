@@ -9,7 +9,8 @@ export function close(d: RawData, ws: any) {
 export function message(d: RawData, ws: any) {
   const data = d.toString().split(";");
   console.log(data);
-  const lobby = lobbies.get(data[0]);
+  const lobby = lobbies.get(data[1]);
+  
   for (let i = 1; i < lobby[0] + 1; i++) {
     if (lobby[i] != ws) {
       lobby[i].send(d.toString());

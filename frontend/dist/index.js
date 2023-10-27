@@ -1,4 +1,4 @@
-import { main_loop, setup } from "../application/app.js";
+import { main_loop, setup } from "../src/app.js";
 
 document.addEventListener("DOMContentLoaded", () => {
     main();

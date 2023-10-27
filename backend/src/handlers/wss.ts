@@ -4,10 +4,10 @@ import { lobbies } from "..";
 
 export function connection(ws: WebSocket, req: Request) {
   const wss_cfg = req.url.split("/");
-
   console.log("connection url: " + wss_cfg);
 
-  lobbies.get(wss_cfg[1])[wss_cfg[2]] = ws;
+  console.log(lobbies)
+  lobbies.get(wss_cfg[1])[Number(wss_cfg[2])] = ws;
 
   ws.on("close", (d: any) => {
     close(d, ws);

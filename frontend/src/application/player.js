@@ -1,11 +1,11 @@
-import { camera, eventHandler, gravity, renderer } from "./app.js";
+import { camera, eventHandler, gravity, renderer } from "../app.js";
 import { DynamicGameObj, StaticGameObj } from "./gameobject.js";
 
 let score = document.querySelector(".score");
 
 export class Box extends StaticGameObj {
     constructor() {
-        super(renderer, [camera.width, 20], [camera.zero.x, camera.zero.y + camera.height - 100], [1., 0., 0], 1);
+        super(renderer, [camera.width, 20], [camera.zero.x, 0], [1., 0., 0], 1);
     }
 }
 
@@ -17,7 +17,7 @@ export class Wall extends StaticGameObj {
 
 export class DBox extends DynamicGameObj {
     constructor() {
-        super(renderer, [100, 100], [500, 100], [1, 1, 0])
+        super(renderer, [100, 100], [500, camera.zero.y], [1, 1, 0])
         this.velocity.x = 1;
         this.mass = 1;
         this.force.y = gravity * this.mass;
@@ -32,7 +32,7 @@ export class DBox extends DynamicGameObj {
 
 export class DBox2 extends DynamicGameObj {
     constructor() {
-        super(renderer, [200, 200], [1000, 100], [1, 0, 1])
+        super(renderer, [200, 200], [1000, camera.zero.y], [1, 0, 1])
         this.velocity.x = -10;
         this.mass = 10;
         this.force.y = gravity * this.mass;

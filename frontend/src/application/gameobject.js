@@ -1,5 +1,5 @@
 import { Obj, quad } from "../renderer/object.js";
-import { gravity } from "./app.js";
+import { gravity } from "../app.js";
 
 export class GameObject {
     constructor(renderer, size, position, color) {

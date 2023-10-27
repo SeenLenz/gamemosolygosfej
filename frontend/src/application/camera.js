@@ -1,4 +1,4 @@
-import { renderer } from "./app.js";
+import { renderer } from "../app.js";
 
 export class Camera {
     constructor() {

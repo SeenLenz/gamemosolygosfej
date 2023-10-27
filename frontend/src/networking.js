@@ -7,6 +7,7 @@ document.addEventListener("DOMContentLoaded", (e) => {
 function setup() {
     document.querySelector("#join_bt").addEventListener("click", () => lobby_setup(document.querySelector("#join_label").value))
     document.querySelector("#create_bt").addEventListener("click", () => lobby_setup())
+    document.querySelector("#msg_bt").addEventListener("click", () => sendMessage())
 }
 
 async function lobby_setup(lobby_key = 0) {
@@ -31,7 +32,7 @@ async function lobby_setup(lobby_key = 0) {
 
 function ws_setup() {
     console.log(window.app.ws_config.lobby)
-    window.app.socket = new WebSocket('ws://localhost:3000/./' + window.app.ws_config.lobby.lobby_key + "/" + window.app.ws_config.lobby.client_id);
+    window.app.socket = new WebSocket('ws://localhost:3000/' + window.app.ws_config.lobby.key + "/" + window.app.ws_config.lobby.client_id);
 
     // Connection opened
     window.app.socket.addEventListener('open', function (event) {

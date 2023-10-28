@@ -2,6 +2,7 @@
 <html lang="en">
     <head>
         <meta charset="UTF-8" />
+        <meta http-equiv="Content-Security-Policy" content="default-src 'self' http://localhost:9000; script-src 'self' 'unsafe-inline';">
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title>Document</title>
         <link rel="stylesheet" href="style.css" />
@@ -15,7 +16,7 @@
         <canvas id="main_canvas">
         </canvas>
     </body>
-    <script src="../src/networking.js" type="module"></script>
+    <!-- <script src="../src/networking.js" type="module"></script> -->
     <script src="index.js" type="module"></script>
     <script type="x-shader/x-vertex" id="vertex_shader">#version 300 es
         in vec2 a_pos;
@@ -32,7 +33,7 @@
             vec2 cameraClip = (camera.xy / u_res) * vec2(2, -2) * vec2(camera.z, camera.z);
 
             //calculate the transformations
-            vec2 screenPos = a_pos * vec2(u_transform.z, u_transform.z) + u_transform.xy;
+            vec2 screenPos = a_pos + u_transform.xy;
 
             // convert to clip space
             screenPos = (screenPos / u_res) * vec2(2, 2) - vec2(1, 1);

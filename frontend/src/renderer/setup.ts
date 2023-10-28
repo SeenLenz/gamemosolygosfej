@@ -1,5 +1,5 @@
 export const setup = {
-    create_shader: function (gl, type, source) {
+    create_shader: function (gl:any, type:any, source:any) {
         var shader = gl.createShader(type);
         gl.shaderSource(shader, source);
         gl.compileShader(shader);
@@ -12,7 +12,7 @@ export const setup = {
         gl.deleteShader(shader);
     },
 
-    create_program: function (gl, vertexShader, fragmentShader) {
+    create_program: function (gl: any, vertexShader: any, fragmentShader: any) {
         var program = gl.createProgram();
         gl.attachShader(program, vertexShader);
         gl.attachShader(program, fragmentShader);

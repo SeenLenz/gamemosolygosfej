@@ -1,15 +1,31 @@
-import { setup } from "./setup.js";
+import { Vec2 } from "../lin_alg";
+import { Obj, Quad } from "./object";
+import { setup } from "./setup";
 
 export class Renderer {
+    public canvas: HTMLCanvasElement;
+    public gl: WebGL2RenderingContext;
+    public vertex_shader: WebGLShader;
+    public fragment_shader: WebGLShader;
+    public program: WebGLProgram;
+    public uniform_resolution: WebGLUniformLocation | null;
+    public uniform_transform: WebGLUniformLocation | null;
+    public camera: WebGLUniformLocation | null;
+    public textures: WebGLTexture[];
+
     constructor() {
-        const vertex_source =
-            document.querySelector("#vertex_shader").textContent;
+        const vertexElement = document.querySelector("#vertex_shader") as HTMLElement | null;
+        const fragmentElement = document.querySelector("#fragment_shader") as HTMLElement | null;
 
-        const fragment_source =
-            document.querySelector("#fragment_shader").textContent;
+        if (!vertexElement || !fragmentElement) {
+            throw new Error("Vertex or fragment shader element not found.");
+        }
 
-        this.canvas = document.querySelector("#main_canvas");
-        this.gl = this.canvas.getContext("webgl2");
+        const vertex_source = vertexElement.textContent || "";
+        const fragment_source = fragmentElement.textContent || "";
+
+        this.canvas = document.querySelector("#main_canvas") as HTMLCanvasElement;
+        this.gl = this.canvas.getContext("webgl2") as WebGL2RenderingContext;
 
         this.vertex_shader = setup.create_shader(
             this.gl,
@@ -27,14 +43,14 @@ export class Renderer {
             this.fragment_shader
         );
 
-        this.uniform_resolution;
-        this.uniform_transform;
-        this.camera;
+        this.uniform_resolution = null;
+        this.uniform_transform = null;
+        this.camera = null;
 
         this.textures = [];
     }
 
-    create_buffer(type, content, attribute_location) {
+    create_buffer(type: number, content: Float32Array, attribute_location: string) {
         let attribute = this.gl.getAttribLocation(
             this.program,
             attribute_location
@@ -48,14 +64,14 @@ export class Renderer {
             this.gl.STATIC_DRAW
         );
 
-        return {buffer: buffer, attribute: attribute}
+        return {buffer: buffer as WebGLBuffer, attribute: attribute}
     }
 
-    create_texture(image_source) {
+    create_texture(image_source: string) {
         let texture = this.gl.createTexture();
         this.gl.bindTexture(this.gl.TEXTURE_2D, texture);
 
-        gl.texImage2D(this.gl.TEXTURE_2D, 0, this.gl.RGBA, 1, 1, 0, this.gl.RGBA, this.gl.UNSIGNED_BYTE,
+        this.gl.texImage2D(this.gl.TEXTURE_2D, 0, this.gl.RGBA, 1, 1, 0, this.gl.RGBA, this.gl.UNSIGNED_BYTE,
             new Uint8Array([0, 0, 255, 255]));
 
         let image = new Image();
@@ -66,12 +82,12 @@ export class Renderer {
             this.gl.generateMipmap(this.gl.TEXTURE_2D);
         });
 
-        return this.textures.push(texture);
+        this.textures.push(texture as WebGLTexture)
     }
 
     setup() {
-        this.gl.canvas.width = this.gl.canvas.clientWidth;
-        this.gl.canvas.height = this.gl.canvas.clientHeight;
+        this.gl.canvas.width = this.canvas.clientWidth;
+        this.gl.canvas.height = this.canvas.clientHeight;
 
         this.gl.viewport(0, 0, this.gl.canvas.width, this.gl.canvas.height);
 
@@ -80,8 +96,8 @@ export class Renderer {
         this.camera = this.gl.getUniformLocation(this.program, "camera");
     }
 
-    run(camera) {
-        this.gl.clearColor(0, 0, 0, 1);
+    run(camera: Float32Array) {
+        this.gl.clearColor(0, 0, 1, 1);
         this.gl.clear(this.gl.COLOR_BUFFER_BIT);
         this.gl.useProgram(this.program);
         this.gl.uniform2f(this.uniform_resolution, this.gl.canvas.width, this.gl.canvas.height);

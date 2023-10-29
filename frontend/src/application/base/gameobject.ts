@@ -112,10 +112,10 @@ export class DynamicGameObj extends GameObject {
 
                     if (x_diff < y_diff) {
                         if (Math.abs(obj.pos.x - this.pos.x) < Math.abs(obj.pos.x + obj.scale.x - this.pos.x)) {
-                            collisions.push({ obj: obj, dir: CollisionDir.Left });
+                            collisions.push({ obj: obj, dir: CollisionDir.Right });
                         }
                         else {
-                            collisions.push({ obj: obj, dir: CollisionDir.Right });
+                            collisions.push({ obj: obj, dir: CollisionDir.Left });
 
                         }
                     }

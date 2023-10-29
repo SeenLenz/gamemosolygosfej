@@ -16,11 +16,9 @@ export class Player extends DynamicGameObj {
         super.motion(delta_time);
         super.collision(delta_time);
 
-        if (event.key_state(Keys.A, EventType.Released)) {
-            this.velocity.x = -2;
+        if (event.key_state(Keys.A, EventType.Pressed)) {
+            this.add_force(new Vec2(10, 0));
         }
-        else {
-            this.velocity.x = 0;
-        }
+
     }
 }

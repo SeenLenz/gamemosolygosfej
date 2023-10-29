@@ -22,6 +22,8 @@ function setup() {
     renderer.setup();
     new Player();
     new Terrain(camera.zero.add(new Vec2(0, camera.height - 20)), new Vec2(camera.width, 20))
+    new Terrain(camera.zero, new Vec2(20, camera.height));
+    new Terrain(camera.zero.add(new Vec2(camera.width - 20, 0)), new Vec2(20, camera.height));
 }
 
 function main_loop() {

@@ -8,7 +8,6 @@ export class Obj {
 
     constructor(quad: Quad, renderer: Renderer) {
         this.vertex_buffer = renderer.create_buffer(renderer.gl.ARRAY_BUFFER, quad.positions, "a_pos");
-        console.log(quad.positions);
         this.index_buffer = renderer.gl.createBuffer()as WebGLBuffer;
         renderer.gl.bindBuffer(renderer.gl.ELEMENT_ARRAY_BUFFER, this.index_buffer);
         renderer.gl.bufferData(renderer.gl.ELEMENT_ARRAY_BUFFER, quad.indicies, renderer.gl.STATIC_DRAW);
@@ -17,7 +16,8 @@ export class Obj {
     }
 
     render(renderer: Renderer, pos: Vec2, scale: Vec2) {
-        renderer.gl.uniform3f(renderer.uniform_transform, pos.x, pos.y, 1);
+        renderer.gl.uniform2fv(renderer.uniform_position, pos.as_raw());
+        renderer.gl.uniform2fv(renderer.uniform_scale, scale.as_raw());
 
         renderer.gl.enableVertexAttribArray(this.vertex_buffer.attribute);
         renderer.gl.bindBuffer(renderer.gl.ARRAY_BUFFER, this.vertex_buffer.buffer);
@@ -48,10 +48,10 @@ export class Obj {
 
 export class Quad {
     positions: Float32Array;
-    indicies: Int32Array;
+    indicies: Int16Array;
     colors: Float32Array;
 
-    constructor(color: Array<number>) {
+    constructor(color: number[]) {
         this.positions = new Float32Array(
             [0, 1,  
             0, 0,
@@ -59,7 +59,7 @@ export class Quad {
             1, 0,]
         );
     
-        let colors: Array<number> = [];
+        let colors: number[] = [];
     
         for (let i = 0; i < 6; i++) {
             colors = colors.concat(color);
@@ -67,9 +67,9 @@ export class Quad {
 
         this.colors = new Float32Array(colors);
     
-        this.indicies = new Int32Array(
+        this.indicies = new Int16Array(
             [0, 1, 2,
-            2, 1, 3,]
+            1, 2, 3]
         );
     }
 } 

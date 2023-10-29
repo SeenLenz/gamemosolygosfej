@@ -8,10 +8,12 @@ export class Renderer {
     public vertex_shader: WebGLShader;
     public fragment_shader: WebGLShader;
     public program: WebGLProgram;
-    public uniform_resolution: WebGLUniformLocation | null;
-    public uniform_transform: WebGLUniformLocation | null;
-    public camera: WebGLUniformLocation | null;
+    public uniform_resolution: WebGLUniformLocation;
+    public uniform_position: WebGLUniformLocation;
+    public uniform_scale: WebGLUniformLocation;
+    public camera: WebGLUniformLocation;
     public textures: WebGLTexture[];
+    public base_quad_obj: Obj | undefined;
 
     constructor() {
         const vertexElement = document.querySelector("#vertex_shader") as HTMLElement | null;
@@ -43,9 +45,10 @@ export class Renderer {
             this.fragment_shader
         );
 
-        this.uniform_resolution = null;
-        this.uniform_transform = null;
-        this.camera = null;
+        this.uniform_resolution = this.gl.getUniformLocation(this.program, "u_res") as WebGLUniformLocation;
+        this.uniform_position = this.gl.getUniformLocation(this.program, "u_screen_position") as WebGLUniformLocation;
+        this.uniform_scale = this.gl.getUniformLocation(this.program, "u_scale") as WebGLUniformLocation;
+        this.camera = this.gl.getUniformLocation(this.program, "camera") as WebGLUniformLocation;
 
         this.textures = [];
     }
@@ -60,11 +63,14 @@ export class Renderer {
         this.gl.bindBuffer(type, buffer);
         this.gl.bufferData(
             this.gl.ARRAY_BUFFER,
-            new Float32Array(content),
+            content,
             this.gl.STATIC_DRAW
         );
-
-        return {buffer: buffer as WebGLBuffer, attribute: attribute}
+        
+        if (!buffer) {
+            throw new Error("Failed to create buffer");
+        }
+        return {buffer: buffer, attribute: attribute}
     }
 
     create_texture(image_source: string) {
@@ -86,18 +92,15 @@ export class Renderer {
     }
 
     setup() {
+        const quad = new Quad([1, 1, 1]);
+        this.base_quad_obj = new Obj(quad, this);
         this.gl.canvas.width = this.canvas.clientWidth;
         this.gl.canvas.height = this.canvas.clientHeight;
-
         this.gl.viewport(0, 0, this.gl.canvas.width, this.gl.canvas.height);
-
-        this.uniform_resolution = this.gl.getUniformLocation(this.program, "u_res");
-        this.uniform_transform = this.gl.getUniformLocation(this.program, "u_transform");
-        this.camera = this.gl.getUniformLocation(this.program, "camera");
     }
 
     run(camera: Float32Array) {
-        this.gl.clearColor(0, 0, 1, 1);
+        this.gl.clearColor(0, 0, 0.2, 1);
         this.gl.clear(this.gl.COLOR_BUFFER_BIT);
         this.gl.useProgram(this.program);
         this.gl.uniform2f(this.uniform_resolution, this.gl.canvas.width, this.gl.canvas.height);

@@ -23,8 +23,7 @@ export class GameObject {
     collidable: boolean;
     isDynamic: boolean;
     constructor(scale: Vec2, position: Vec2) {
-        let quad = new Quad([1, 1, 1]);
-        this.object = new Obj(quad, renderer);
+        this.object = renderer.base_quad_obj as Obj;
         this.mass = scale.x * scale.y;
         this.object_tag = ObjectTag.None;
         this.isDynamic = false;
@@ -36,7 +35,6 @@ export class GameObject {
     }
 
     run(delta_time: number) {
-        this.render();
     }
 
     render() {
@@ -151,13 +149,14 @@ export class DynamicGameObj extends GameObject {
     }
 
     motion(delta_time: number) {
-        this.velocity.y += (this.force.y / this.mass) * delta_time;
-        this.velocity.x += (this.force.x / this.mass) * delta_time;
-
+        this.velocity.y += this.acceleration.y * delta_time;
+        this.velocity.x += this.acceleration.x * delta_time;
+        
         this.velocity.y = Math.abs(this.velocity.y) < delta_time * gravity ? 0 : this.velocity.y;
-
+        
         this.pos.y += this.velocity.y * delta_time;
         this.pos.x += this.velocity.x * delta_time;
+        this.force.set(0, 0);
     }
 
     run(delta_time: number) {

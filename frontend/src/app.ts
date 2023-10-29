@@ -4,6 +4,7 @@ import { GameObject } from "./application/base/gameobject";
 import { Camera } from "./application/base/camera";
 import { Player } from "./application/gamelogic/player";
 import { Vec2 } from "./lin_alg";
+import { Terrain } from "./application/gamelogic/terrain";
 
 document.addEventListener("DOMContentLoaded", () => {
     main();
@@ -12,7 +13,7 @@ document.addEventListener("DOMContentLoaded", () => {
 export const renderer = new Renderer();
 export const eventHandler = new EventHandler(renderer);
 export let camera = new Camera();
-export let gravity = 0.2;
+export let gravity = 0.5;
 export let air_density = 1.204;
 
 let start = 1;
@@ -20,6 +21,7 @@ let start = 1;
 function setup() {
     renderer.setup();
     new Player();
+    new Terrain(camera.zero.add(new Vec2(0, camera.height - 20)), new Vec2(camera.width, 20))
 }
 
 function main_loop() {
@@ -27,8 +29,9 @@ function main_loop() {
     start = performance.now();
     renderer.run(camera.convert());
     
-    GameObject.objects.forEach(obj => {
-        obj.run(delta_time);
+    GameObject.objects.forEach(go => {
+        go.run(delta_time);
+        go.render();
     });
 
     eventHandler.refresh();

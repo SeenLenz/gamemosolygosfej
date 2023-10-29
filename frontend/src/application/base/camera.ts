@@ -8,7 +8,7 @@ export class Camera {
     constructor() {
         this.pos = new Vec2(0, 0);
 
-        this.scale = 1;
+        this.scale = 0.5;
     }
 
     convert() {

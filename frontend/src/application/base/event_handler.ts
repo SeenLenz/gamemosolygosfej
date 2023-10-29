@@ -23,6 +23,18 @@ export class EventHandler {
         })
     }
 
+    key_state(key: Keys, state: EventType): boolean {
+        const current_state = this.keyboard_event.keys[key];
+        if (state == EventType.Up) {
+            return current_state == EventType.Up ||current_state == EventType.Released ||current_state == undefined;
+        }
+        if (state == EventType.Down) {
+            return current_state == EventType.Down ||current_state == EventType.Pressed;
+        }
+
+        return current_state == state;
+    }
+
     refresh() {
         this.keyboard_event.refresh();
     }
@@ -61,50 +73,48 @@ export enum Keys {
 class KeyboardEvent {
     keys: Array<EventType>;
     active_keys: Array<Keys>;
+    current_event: EventType;
 
     constructor() {
         this.keys = new Array(255);
         this.active_keys = [];
+        this.current_event = EventType.Pressed;
 
-        window.addEventListener("keypress", (ev) => {
+        console.log(this.keys[0]);
+
+        window.addEventListener("keydown", (ev) => {
+            this.current_event = EventType.Pressed;
             switch (ev.code) {
                 case "KeyW":
-                    this.keys[Keys.W] = EventType.Pressed;
-                    this.active_keys.push(Keys.W);
+                    this.setKBEvent(Keys.W);
                     break;
-            }
-            if (ev.code == "w") {
-            }
-            if (ev.code == "a") {
-                this.keys[Keys.A] = EventType.Pressed;
-                this.active_keys.push(Keys.A);
-            }
-            if (ev.code == "s") {
-                this.keys[Keys.S] = EventType.Pressed;
-                this.active_keys.push(Keys.S);
-            }
-            if (ev.code == "d") {
-                this.keys[Keys.D] = EventType.Pressed;
-                this.active_keys.push(Keys.D);
+                case "KeyA":
+                    this.setKBEvent(Keys.A);
+                    break;
+                case "KeyS":
+                    this.setKBEvent(Keys.S);
+                    break;
+                case "KeyD":
+                    this.setKBEvent(Keys.D);
+                    break;
             }
         });
 
         window.addEventListener("keyup", (ev) => {
-            if (ev.code == "w") {
-                this.keys[Keys.W] = EventType.Released;
-                this.active_keys.push(Keys.W);
-            }
-            if (ev.code == "a") {
-                this.keys[Keys.A] = EventType.Released;
-                this.active_keys.push(Keys.A);
-            }
-            if (ev.code == "s") {
-                this.keys[Keys.S] = EventType.Released;
-                this.active_keys.push(Keys.S);
-            }
-            if (ev.code == "d") {
-                this.keys[Keys.D] = EventType.Released;
-                this.active_keys.push(Keys.D);
+            this.current_event = EventType.Released;
+            switch (ev.code) {
+                case "KeyW":
+                    this.setKBEvent(Keys.W);
+                    break;
+                case "KeyA":
+                    this.setKBEvent(Keys.A);
+                    break;
+                case "KeyS":
+                    this.setKBEvent(Keys.S);
+                    break;
+                case "KeyD":
+                    this.setKBEvent(Keys.D);
+                    break;
             }
         });
     }
@@ -123,5 +133,15 @@ class KeyboardEvent {
 
         this.active_keys = [];
     }
-}
 
+    setKBEvent(key: Keys) {
+        if ((this.current_event == EventType.Pressed &&
+            this.keys[key] != EventType.Down) || 
+            (this.current_event == EventType.Released &&
+            this.keys[key] != EventType.Up)) {
+
+            this.keys[key] = this.current_event;
+            this.active_keys.push(key);
+        }
+    }
+}

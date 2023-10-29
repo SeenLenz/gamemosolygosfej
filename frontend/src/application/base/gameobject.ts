@@ -5,6 +5,7 @@ import { Vec2 } from "../../lin_alg";
 export enum ObjectTag {
     None,
     Player,
+    Terrain
 }
 
 export enum CollisionDir {
@@ -58,6 +59,7 @@ export class DynamicGameObj extends GameObject {
     reactive: boolean;
     velocity: Vec2;
     force: Vec2;
+    collisions: boolean[];
     constructor(scale: Vec2, position: Vec2) {
         super(scale, position);
 
@@ -66,6 +68,7 @@ export class DynamicGameObj extends GameObject {
 
         this.velocity = new Vec2(0, 0);
         this.force = new Vec2(0, 0);
+        this.collisions = new Array(4);
     }
 
     start() {
@@ -116,17 +119,14 @@ export class DynamicGameObj extends GameObject {
                         }
                         else {
                             collisions.push({ obj: obj, dir: CollisionDir.Left });
-
                         }
                     }
                     else {
                         if (Math.abs(obj.pos.y - this.pos.y) < Math.abs(obj.pos.y + obj.scale.y - this.pos.y)) {
-                            collisions.push({ obj: obj, x: 0, dir: CollisionDir.Top });
-
+                            collisions.push({ obj: obj, x: 0, dir: CollisionDir.Bottom });
                         }
                         else {
-                            collisions.push({ obj: obj, x: 0, dir: CollisionDir.Bottom });
-
+                            collisions.push({ obj: obj, x: 0, dir: CollisionDir.Top });
                         }
                     }
 
@@ -142,10 +142,17 @@ export class DynamicGameObj extends GameObject {
 
     collision(delta_time: number) {
         const collisions = this.collide(delta_time);
-
+        for (let i = 0; i < 4; i++) {
+            this.collisions[i] = false;
+        }
         for (let collision of collisions) {
             this.on_collision(collision);
         }
+
+    }
+
+    collision_dir(dir: CollisionDir): boolean {
+        return this.collisions[dir];
     }
 
     motion(delta_time: number) {
@@ -175,20 +182,24 @@ export class DynamicGameObj extends GameObject {
     on_collision_x(obj: GameObject, dir: CollisionDir) {
         if (dir == CollisionDir.Left) {
             this.pos.x = obj.pos.x + obj.scale.x;
+            this.collisions[CollisionDir.Left] = true;
         }
         else {
             this.pos.x = obj.pos.x - this.scale.x;
+            this.collisions[CollisionDir.Right] = true;
         }
     }
 
     on_collision_y(obj: GameObject, dir: CollisionDir) {
-        if (dir == CollisionDir.Bottom) {
+        if (dir == CollisionDir.Top) {
             this.pos.y = obj.pos.y + obj.scale.y;
+            this.collisions[CollisionDir.Top] = true;
         }
         else {
             this.pos.y = obj.pos.y - this.scale.y;
+            this.collisions[CollisionDir.Bottom] = true;
         }
 
-        this.velocity.y = (-this.velocity.y + this.force.y / this.mass) * 0.3;
+        this.velocity.y = 0;
     }
 }

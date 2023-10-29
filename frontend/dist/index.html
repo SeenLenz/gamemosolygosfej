@@ -41,7 +41,7 @@
             // flip y axis to match with js
             screenPos *= vec2(1, -1);
 
-            gl_Position = vec4(screenPos * vec2(camera.z, camera.z) - camera.xy, 0, 1);
+            gl_Position = vec4(screenPos * vec2(camera.z, camera.z) - cameraClip.xy, 0, 1);
             color = a_color;
         }
     </script>

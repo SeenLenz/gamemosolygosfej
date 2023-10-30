@@ -22,10 +22,14 @@ let start = 1;
 function setup() {
     renderer.setup();
     players = [
-        new Player(),
-        new Player(),
+        new Player([100, 100]),
+        new Player([200, 200]),
+        new Player([300, 300]),
+        new Player([400, 400]),
     ];
 
+
+    camera.focus_multip = 0.03;
     
     players[0].focused = true;
     
@@ -45,10 +49,17 @@ function main_loop() {
     camera.move(delta_time);
 
     if (event.key_state(Keys.Space, EventType.Pressed)) {
-        players[0].focused = !players[0].focused;
-        players[1].focused = !players[1].focused;   
-        focus_ind = Math.abs(focus_ind - 1);
+        focus_ind = focus_ind + 1;
+        if (focus_ind > players.length - 1) {
+            focus_ind = 0;
+        }
         camera.focus_on(players[focus_ind]);
+        for (let i = 0; i < players.length; i++) {
+            players[i].focused = false;
+        }
+        players[focus_ind].focused = true;
+
+        console.log(camera.scale);
     }
     
     GameObject.objects.forEach(go => {

@@ -188,6 +188,8 @@ export class DynamicGameObj extends GameObject {
             this.pos.x = obj.pos.x - this.scale.x;
             this.collisions[CollisionDir.Right] = true;
         }
+
+        this.velocity.x = 0;
     }
 
     on_collision_y(obj: GameObject, dir: CollisionDir) {

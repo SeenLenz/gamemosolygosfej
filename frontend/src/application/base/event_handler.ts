@@ -68,6 +68,7 @@ export enum Keys {
     A,
     S,
     D,
+    F,
     Space,
 }
 
@@ -101,6 +102,9 @@ class KeyboardEvent {
                 case "Space":
                     this.setKBEvent(Keys.Space);
                     break;
+                case "KeyF":
+                    this.setKBEvent(Keys.F);
+                    break;
             }
         });
 
@@ -121,6 +125,9 @@ class KeyboardEvent {
                     break;
                 case "Space":
                     this.setKBEvent(Keys.Space);
+                    break;
+                case "KeyF":
+                    this.setKBEvent(Keys.F);
                     break;
             }
         });

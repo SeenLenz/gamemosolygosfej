@@ -17,8 +17,11 @@ export class Camera {
     }
 
     move(delta_time: number) {
-        this.pos.x += (this.focus_obj.pos.x - renderer.canvas.width / 2 - this.pos.x) * this.focus_multip * delta_time;
-        this.pos.y += (this.focus_obj.pos.y - renderer.canvas.height / 2 - this.pos.y) * this.focus_multip * delta_time;
+        this.pos.x += (this.focus_obj.pos.x + this.focus_obj.scale.x / 2 - renderer.canvas.width / 2 - this.pos.x) * this.focus_multip * delta_time;
+        this.pos.y += (this.focus_obj.pos.y + this.focus_obj.scale.y / 2 - renderer.canvas.height / 2 - this.pos.y) * this.focus_multip * delta_time;
+        this.scale += (200 / this.focus_obj.scale.y * 0.5 - this.scale) * this.focus_multip * delta_time;
+
+        // 200 / height
     }
     
     get zero() {

@@ -12,6 +12,11 @@ export class Vec2 {
         this.y = y;
     }
 
+    set_vec(vec2: Vec2) {
+        this.x = vec2.x;
+        this.y = vec2.y;
+    }
+
     add(vec2: Vec2) {
         let result = new Vec2(0, 0);
         result.x = this.x + vec2.x;

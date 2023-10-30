@@ -23,11 +23,10 @@ function setup() {
     renderer.setup();
     players = [
         new Player([100, 100]),
-        new Player([200, 200]),
-        new Player([300, 300]),
-        new Player([400, 400]),
+        new Player([100, 100]),
+        // new Player([300, 300]),
+        // new Player([400, 400]),
     ];
-
 
     camera.focus_multip = 0.03;
     
@@ -35,6 +34,7 @@ function setup() {
     
     camera.focus_on(players[focus_ind]);
     new Terrain(camera.zero.add(new Vec2(camera.width / 4 - 20, camera.height - 20)), new Vec2(camera.width / 2, 20));
+    new Terrain(camera.zero.add(new Vec2(camera.width / 4 - 20, 0)), new Vec2(camera.width / 2, 20));
     new Terrain(camera.zero.add(new Vec2(camera.width / 2 - camera.width / 6 / 2, camera.height / 10 * 8 - 20)), new Vec2(camera.width / 10, 20));
     new Terrain(camera.zero.add(new Vec2(camera.width / 2 - camera.width / 6 * 2 / 2, camera.height / 10 * 7 - 20)), new Vec2(camera.width / 10, 20));
     new Terrain(camera.zero.add(new Vec2(camera.width / 2 - camera.width / 6 * 3 / 2, camera.height / 10 * 6 - 20)), new Vec2(camera.width / 10, 20));

@@ -24,7 +24,6 @@
         uniform vec3 camera;
 
         out vec3 color;
-
         void main() {
             vec2 cameraClip = (camera.xy / u_res) * vec2(2, -2) * vec2(camera.z, camera.z);
 

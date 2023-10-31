@@ -1,49 +1,40 @@
-import { camera, event, gravity, renderer } from "../../app";
-import { Vec2 } from "../../lin_alg";
+import { camera, event, gravity } from "../../app";
+import { Vec2, Vec3 } from "../../lin_alg";
 import { EventType, Keys } from "../base/event_handler";
-import { CollisionDir, DynamicGameObj, ObjectTag } from "../base/gameobject";
+import { CollisionDir, DynamicGameObj } from "../base/gameobject";
 
 export class Player extends DynamicGameObj {
-    public focused: boolean = false;
-    constructor() {
-        super(new Vec2(100, 100), new Vec2(camera.zero.x + camera.width / 2, camera.zero.y + camera.height/2));
-        this.object_tag = ObjectTag.Player;
-        this.mass = 1;
-        this.reactive = true;
+  doublejump: boolean;
+  constructor() {
+    super(
+      new Vec2(100, 100),
+      new Vec2(camera.width, camera.height).add(camera.zero).div(new Vec2(2, 2))
+    );
+    this.doublejump = true;
+    this.color = new Vec3(0, 255, 0);
+    this.mass = 1;
+    this.reactive = true;
+  }
+
+  run(delta_time: number) {
+    super.run(delta_time);
+    super.collision(delta_time);
+
+    super.motion(delta_time);
+    this.moveplayer();
+
+    this.add_force(new Vec2(0, gravity * this.mass));
+  }
+
+  moveplayer() {
+    if (event.key_state(Keys.A, EventType.Down)) {
+      this.velocity.x = -5;
     }
-
-    run(delta_time: number): void {
-        super.collision(delta_time);
-        super.run(delta_time);
-        this.add_force(new Vec2(0, gravity * this.mass));
-        
-        this.keyboard_movement();
-
-        super.motion(delta_time);
+    if (event.key_state(Keys.D, EventType.Down)) {
+      this.velocity.x = 5;
     }
-
-    keyboard_movement() {
-        if (!this.focused) {
-            this.velocity.x = 0;
-            return;
-        };
-
-        if (event.key_state(Keys.A, EventType.Down)) {
-            this.velocity.x = -5;
-        }
-        else if (event.key_state(Keys.D, EventType.Down)) {
-            this.velocity.x = 5;
-        }
-        else {
-            this.velocity.x = 0;
-        }
-
-        if (!this.collision_dir(CollisionDir.Bottom)) {
-            return;
-        }
-
-        if (event.key_state(Keys.W, EventType.Down)) {
-            this.velocity.y = -20;
-        }
+    if (event.key_state(Keys.W, EventType.Down)) {
+      this.velocity.y = -20;
     }
+  }
 }

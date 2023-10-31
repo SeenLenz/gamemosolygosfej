@@ -1,27 +1,28 @@
 <!DOCTYPE html>
 <html lang="en">
-    <head>
-        <meta charset="UTF-8" />
-        <meta http-equiv="Content-Security-Policy" content="default-src 'self' http://localhost:9000; script-src 'self' 'unsafe-inline';">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <title>Document</title>
-        <link rel="stylesheet" href="style.css" />
-    </head>
-    <body>
-        <!-- <button id="msg_bt">Send Msg</button>
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <link rel="stylesheet" href="style.css" />
+</head>
+
+<body>
+    <button id="msg_bt">Send Msg</button>
     <input type="text" name="lobby" id="join_label">
     <button id="join_bt">Join Lobby</button>
-    <button id="create_bt">create Lobby</button> -->
-        <canvas id="main_canvas">
-        </canvas>
-    </body>
-    <!-- <script src="../src/networking.js" type="module"></script> -->
-    <script src="index.js" type="module"></script>
-    <script type="x-shader/x-vertex" id="vertex_shader">#version 300 es
+    <button id="create_bt">create Lobby</button>
+    <canvas id="main_canvas">
+    </canvas>
+</body>
+<script src="./networking.js" type="module"></script>
+<script src="index.js" type="module"></script>
+<script type="x-shader/x-vertex" id="vertex_shader">#version 300 es
         in vec2 a_pos;
-        in vec3 a_color;
         uniform vec2 u_res;
 
+        uniform vec3 u_color;
         uniform vec2 u_screen_position;
         uniform vec2 u_scale;
 
@@ -42,10 +43,10 @@
             screenPos *= vec2(1, -1);
 
             gl_Position = vec4(screenPos * vec2(camera.z, camera.z) - cameraClip.xy, 0, 1);
-            color = a_color;
+            color = u_color;
         }
     </script>
-    <script type="x-shader/x-fragment" id="fragment_shader">#version 300 es
+<script type="x-shader/x-fragment" id="fragment_shader">#version 300 es
         precision mediump float;
 
         in vec3 color;
@@ -55,4 +56,5 @@
             fragColor = vec4(color, 1);
         }
     </script>
+
 </html>

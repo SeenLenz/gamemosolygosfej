@@ -1,155 +1,160 @@
 export class Vec2 {
-    x: number;
-    y: number;
+  x: number;
+  y: number;
 
-    constructor(x: number, y: number) {
-        this.x = x;
-        this.y = y;
-    }
+  constructor(x: number, y: number) {
+    this.x = x;
+    this.y = y;
+  }
 
-    set(x: number, y: number) {
-        this.x = x;
-        this.y = y;
-    }
+  set(x: number, y: number) {
+    this.x = x;
+    this.y = y;
+  }
 
-    add(vec2: Vec2) {
-        let result = new Vec2(0, 0);
-        result.x = this.x + vec2.x;
-        result.y = this.y + vec2.y;
-        return result;
-    }
+  add(vec2: Vec2) {
+    let result = new Vec2(0, 0);
+    result.x = this.x + vec2.x;
+    result.y = this.y + vec2.y;
+    return result;
+  }
 
-    add_self(vec2: Vec2) {
-        this.x += vec2.x;
-        this.y += vec2.y;
-    }
+  add_self(vec2: Vec2) {
+    this.x += vec2.x;
+    this.y += vec2.y;
+  }
 
-    sub(vec2: Vec2) {
-        let result = new Vec2(0, 0);
-        result.x = this.x - vec2.x;
-        result.y = this.y - vec2.y;
-        return result;
-    }
+  sub(vec2: Vec2) {
+    let result = new Vec2(0, 0);
+    result.x = this.x - vec2.x;
+    result.y = this.y - vec2.y;
+    return result;
+  }
 
-    sub_self(vec2: Vec2) {
-        this.x -= vec2.x;
-        this.y -= vec2.y;
-    }
+  sub_self(vec2: Vec2) {
+    this.x -= vec2.x;
+    this.y -= vec2.y;
+  }
 
+  mul(vec2: Vec2) {
+    let result = new Vec2(0, 0);
+    result.x = this.x * vec2.x;
+    result.y = this.y * vec2.y;
+    return result;
+  }
 
-    mul(vec2: Vec2) {
-        let result = new Vec2(0, 0);
-        result.x = this.x * vec2.x;
-        result.y = this.y * vec2.y;
-        return result;
-    }
+  mul_self(vec2: Vec2) {
+    this.x *= vec2.x;
+    this.y *= vec2.y;
+  }
 
-    mul_self(vec2: Vec2) {
-        this.x *= vec2.x;
-        this.y *= vec2.y;
-    }
+  div(vec2: Vec2) {
+    let result = new Vec2(0, 0);
+    result.x = this.x / vec2.x;
+    result.y = this.y / vec2.y;
+    return result;
+  }
 
-    div(vec2: Vec2) {
-        let result = new Vec2(0, 0);
-        result.x = this.x / vec2.x;
-        result.y = this.y / vec2.y;
-        return result;
-    }
+  div_self(vec2: Vec2) {
+    this.x /= vec2.x;
+    this.y /= vec2.y;
+  }
 
-    div_self(vec2: Vec2) {
-        this.x /= vec2.x;
-        this.y /= vec2.y;
-    }
+  len() {
+    return Math.sqrt(Math.pow(this.x, 2) + Math.pow(this.y, 2));
+  }
 
-    normalize() {
-        let result = new Vec2(0, 0);
-        let a = (this.x / this.y);
-        result.y = Math.sqrt(1 / (a * a + 1));
-        result.x = result.y * a;
-        return result;
-    }
+  direction() {
+    return new Vec2(this.x / this.len(), this.y / this.len());
+  }
 
-    as_raw() {
-        return new Float32Array([this.x, this.y]);
-    }
+  normalize() {
+    let result = new Vec2(0, 0);
+    let a = this.x / this.y;
+    result.y = Math.sqrt(1 / (a * a + 1));
+    result.x = result.y * a;
+    return result;
+  }
+
+  as_raw() {
+    return new Float32Array([this.x, this.y]);
+  }
 }
 
 export class Vec3 {
-    x: number;
-    y: number;
-    z: number;
+  x: number;
+  y: number;
+  z: number;
 
-    constructor(x: number, y: number, z: number) {
-        this.x = x;
-        this.y = y;
-        this.z = z;
-    }
+  constructor(x: number, y: number, z: number) {
+    this.x = x;
+    this.y = y;
+    this.z = z;
+  }
 
-    set(x: number, y: number, z: number) {
-        this.x = x;
-        this.y = y;
-        this.z = z;
-    }
+  set(x: number, y: number, z: number) {
+    this.x = x;
+    this.y = y;
+    this.z = z;
+  }
 
-    add(vec3: Vec3) {
-        let result = new Vec3(0, 0, 0);
-        result.x = this.x + vec3.x;
-        result.y = this.y + vec3.y;
-        result.z = this.z + vec3.z;
-        return result;
-    }
+  add(vec3: Vec3) {
+    let result = new Vec3(0, 0, 0);
+    result.x = this.x + vec3.x;
+    result.y = this.y + vec3.y;
+    result.z = this.z + vec3.z;
+    return result;
+  }
 
-    add_self(vec3: Vec3) {
-        this.x += vec3.x;
-        this.y += vec3.y;
-        this.z += vec3.z;
-    }
+  add_self(vec3: Vec3) {
+    this.x += vec3.x;
+    this.y += vec3.y;
+    this.z += vec3.z;
+  }
 
-    sub(vec3: Vec3) {
-        let result = new Vec3(0, 0, 0);
-        result.x = this.x - vec3.x;
-        result.y = this.y - vec3.y;
-        result.z = this.z - vec3.z;
-        return result;
-    }
+  sub(vec3: Vec3) {
+    let result = new Vec3(0, 0, 0);
+    result.x = this.x - vec3.x;
+    result.y = this.y - vec3.y;
+    result.z = this.z - vec3.z;
+    return result;
+  }
 
-    sub_self(vec3: Vec3) {
-        this.x -= vec3.x;
-        this.y -= vec3.y;
-        this.z -= vec3.z;
-    }
+  sub_self(vec3: Vec3) {
+    this.x -= vec3.x;
+    this.y -= vec3.y;
+    this.z -= vec3.z;
+  }
 
+  mul(vec3: Vec3) {
+    let result = new Vec3(0, 0, 0);
+    result.x = this.x * vec3.x;
+    result.y = this.y * vec3.y;
+    result.z = this.z * vec3.z;
+    return result;
+  }
 
-    mul(vec3: Vec3) {
-        let result = new Vec3(0, 0, 0);
-        result.x = this.x * vec3.x;
-        result.y = this.y * vec3.y;
-        result.z = this.z * vec3.z;
-        return result;
-    }
+  mul_self(vec3: Vec3) {
+    this.x *= vec3.x;
+    this.y *= vec3.y;
+    this.z *= vec3.z;
+  }
 
-    mul_self(vec3: Vec3) {
-        this.x *= vec3.x;
-        this.y *= vec3.y;
-        this.z *= vec3.z;
-    }
+  div(vec3: Vec3) {
+    let result = new Vec3(0, 0, 0);
+    result.x = this.x / vec3.x;
+    result.y = this.y / vec3.y;
+    result.z = this.z / vec3.z;
+    return result;
+  }
 
-    div(vec3: Vec3) {
-        let result = new Vec3(0, 0, 0);
-        result.x = this.x / vec3.x;
-        result.y = this.y / vec3.y;
-        result.z = this.z / vec3.z;
-        return result;
-    }
+  div_self(vec3: Vec3) {
+    this.x /= vec3.x;
+    this.y /= vec3.y;
+    this.z /= vec3.z;
+  }
 
-    div_self(vec3: Vec3) {
-        this.x /= vec3.x;
-        this.y /= vec3.y;
-        this.z /= vec3.z;
-    }
-
-    as_raw() {
-        return new Float32Array([this.x, this.y, this.z]);
-
-    }
+  as_raw() {
+    return new Float32Array([this.x, this.y, this.z]);
+  }
 }

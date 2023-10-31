@@ -20,25 +20,33 @@
 
         uniform vec2 u_screen_position;
         uniform vec2 u_scale;
+        uniform vec2 u_rotation;
 
         uniform vec3 camera;
+        uniform vec2 camera_rot;
 
         out vec3 color;
-
         void main() {
-            vec2 cameraClip = (camera.xy / u_res) * vec2(2, -2) * vec2(camera.z, camera.z);
+            vec2 new_pos = a_pos - vec2(0.5, 0.5);
+            new_pos = vec2(new_pos.x * u_rotation.y + new_pos.y * u_rotation.x, new_pos.y * u_rotation.y - new_pos.x * u_rotation.x);
+            new_pos += vec2(0.5, 0.5);
+
+            vec2 camera_pos = vec2(camera.x * camera_rot.y + camera.y * camera_rot.x, camera.y * camera_rot.y - camera.x * camera_rot.x);
 
             //calculate the transformations
-            vec2 screenPos = a_pos * u_scale + u_screen_position;
-
+            vec2 screen_pos = new_pos * u_scale + u_screen_position;
+            screen_pos -= camera.xy + vec2(1, 1) / 2. * u_res;
+            screen_pos = vec2(screen_pos.x * camera_rot.y + screen_pos.y * camera_rot.x, screen_pos.y * camera_rot.y - screen_pos.x * camera_rot.x);
+            screen_pos += vec2(1, 1) / 2. * u_res;
+            
             // convert to clip space
-            screenPos = (screenPos / u_res) * vec2(2, 2) - vec2(1, 1);
+            screen_pos = (screen_pos / u_res * 2. - vec2(1, 1)) * vec2(camera.z, camera.z);
             
             // flip y axis to match with js
-            screenPos *= vec2(1, -1);
-
-            gl_Position = vec4(screenPos * vec2(camera.z, camera.z) - cameraClip.xy, 0, 1);
-            color = a_color;
+            screen_pos *= vec2(1, -1);
+            
+            gl_Position = vec4(screen_pos, 0, 1);
+            color = vec3(abs(normalize(screen_pos)), 1);
         }
     </script>
     <script type="x-shader/x-fragment" id="fragment_shader">#version 300 es

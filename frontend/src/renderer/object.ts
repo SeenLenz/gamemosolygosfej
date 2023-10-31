@@ -15,9 +15,10 @@ export class Obj {
         this.color_buffer = renderer.create_buffer(renderer.gl.ARRAY_BUFFER, quad.colors, "a_color");
     }
 
-    render(renderer: Renderer, pos: Vec2, scale: Vec2) {
+    render(renderer: Renderer, pos: Vec2, scale: Vec2, rotation: number) {
         renderer.gl.uniform2fv(renderer.uniform_position, pos.as_raw());
         renderer.gl.uniform2fv(renderer.uniform_scale, scale.as_raw());
+        renderer.gl.uniform2f(renderer.uniform_rotation, Math.sin(rotation), Math.cos(rotation));
 
         renderer.gl.enableVertexAttribArray(this.vertex_buffer.attribute);
         renderer.gl.bindBuffer(renderer.gl.ARRAY_BUFFER, this.vertex_buffer.buffer);

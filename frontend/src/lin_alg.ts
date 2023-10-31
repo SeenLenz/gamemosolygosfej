@@ -12,6 +12,11 @@ export class Vec2 {
         this.y = y;
     }
 
+    set_vec(vec2: Vec2) {
+        this.x = vec2.x;
+        this.y = vec2.y;
+    }
+
     add(vec2: Vec2) {
         let result = new Vec2(0, 0);
         result.x = this.x + vec2.x;
@@ -66,6 +71,14 @@ export class Vec2 {
         let a = (this.x / this.y);
         result.y = Math.sqrt(1 / (a * a + 1));
         result.x = result.y * a;
+        return result;
+    }
+
+    rotate(angle: number) {
+        let result = new Vec2(0, 0);
+        let rotation_vec = [Math.sin(angle), Math.cos(angle)];
+        result.y = this.y * rotation_vec[1] - this.x * rotation_vec[0];
+        result.x = this.x * rotation_vec[1] + this.y * rotation_vec[0];
         return result;
     }
 

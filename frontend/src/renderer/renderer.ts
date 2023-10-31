@@ -1,3 +1,4 @@
+import { Camera } from "../application/base/camera";
 import { Vec2 } from "../lin_alg";
 import { Obj, Quad } from "./object";
 import { setup } from "./setup";
@@ -11,7 +12,9 @@ export class Renderer {
     public uniform_resolution: WebGLUniformLocation;
     public uniform_position: WebGLUniformLocation;
     public uniform_scale: WebGLUniformLocation;
+    public uniform_rotation: WebGLUniformLocation;
     public camera: WebGLUniformLocation;
+    public camera_rot: WebGLUniformLocation;
     public textures: WebGLTexture[];
     public base_quad_obj: Obj | undefined;
 
@@ -48,7 +51,9 @@ export class Renderer {
         this.uniform_resolution = this.gl.getUniformLocation(this.program, "u_res") as WebGLUniformLocation;
         this.uniform_position = this.gl.getUniformLocation(this.program, "u_screen_position") as WebGLUniformLocation;
         this.uniform_scale = this.gl.getUniformLocation(this.program, "u_scale") as WebGLUniformLocation;
+        this.uniform_rotation = this.gl.getUniformLocation(this.program, "u_rotation") as WebGLUniformLocation;
         this.camera = this.gl.getUniformLocation(this.program, "camera") as WebGLUniformLocation;
+        this.camera_rot = this.gl.getUniformLocation(this.program, "camera_rot") as WebGLUniformLocation;
 
         this.textures = [];
     }
@@ -99,11 +104,12 @@ export class Renderer {
         this.gl.viewport(0, 0, this.gl.canvas.width, this.gl.canvas.height);
     }
 
-    run(camera: Float32Array) {
+    run(camera: Camera) {
         this.gl.clearColor(0, 0, 0.2, 1);
         this.gl.clear(this.gl.COLOR_BUFFER_BIT);
         this.gl.useProgram(this.program);
         this.gl.uniform2f(this.uniform_resolution, this.gl.canvas.width, this.gl.canvas.height);
-        this.gl.uniform3fv(this.camera, camera);
+        this.gl.uniform3fv(this.camera, camera.convert());
+        this.gl.uniform2f(this.camera_rot, Math.sin(camera.rotation), Math.cos(camera.rotation));
     }
 }

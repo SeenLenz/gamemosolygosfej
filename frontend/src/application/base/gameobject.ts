@@ -3,7 +3,7 @@ import { gravity, renderer } from "../../app";
 import { Vec2 } from "../../lin_alg";
 
 export enum ObjectTag {
-    None,
+    Empty,
     Player,
     Terrain
 }
@@ -34,29 +34,39 @@ export class GameObject {
     size: Vec2;
     collidable: boolean;
     isDynamic: boolean;
+    rotation: number;
     constructor(size: Vec2, position: Vec2) {
         this.object = renderer.base_quad_obj as Obj;
         this.mass = size.x * size.y;
-        this.object_tag = ObjectTag.None;
+        this.object_tag = ObjectTag.Empty;
         this.isDynamic = false;
         this.collidable = true;
         this.pos = position;
         this.size = size;
         this.hitbox = new Hitbox(this.size, this.pos);
         this.hb_pos_diff = this.pos.sub(this.hitbox.pos);
-        
+        this.rotation = 0;
         GameObject.objects.push(this);
     }
 
     run(delta_time: number) {
-
+        // this.rotation = (this.rotation + 0.01) % (3.141 * 2);
     }
 
     render() {
-        this.object.render(renderer, this.pos, this.size);
+        this.object.render(renderer, this.pos, this.size, this.rotation);
     }
 
     static objects: GameObject[] = [];
+}
+
+export class Empty extends GameObject {
+    constructor(position: Vec2) {
+        super(new Vec2(0, 0), position);
+        this.collidable = false;
+        this.mass = 0;
+        this.object_tag = ObjectTag.Empty;
+    }
 }
 
 export class StaticGameObj extends GameObject {
@@ -170,10 +180,8 @@ export class DynamicGameObj extends GameObject {
     }
 
     motion(delta_time: number) {
-        this.velocity.y += this.acceleration.y * delta_time;
-        this.velocity.x += this.acceleration.x * delta_time;
-        
-        this.velocity.y = Math.abs(this.velocity.y) < delta_time * gravity ? 0 : this.velocity.y;
+        this.velocity.y += this.force.y * delta_time;
+        this.velocity.x -= this.force.x * delta_time;
         
         this.pos.y += this.velocity.y * delta_time;
         this.pos.x += this.velocity.x * delta_time;
@@ -206,7 +214,7 @@ export class DynamicGameObj extends GameObject {
             this.collisions[CollisionDir.Right] = true;
         }
 
-        this.velocity.x = 0;
+        this.velocity.x = -this.velocity.x * 0.4;
     }
 
     on_collision_y(obj: GameObject, dir: CollisionDir) {
@@ -219,6 +227,6 @@ export class DynamicGameObj extends GameObject {
             this.collisions[CollisionDir.Bottom] = true;
         }
 
-        this.velocity.y = 0;
+        this.velocity.y = -this.velocity.y * 0.4;
     }
 }

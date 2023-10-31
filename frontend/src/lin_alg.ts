@@ -74,6 +74,14 @@ export class Vec2 {
         return result;
     }
 
+    rotate(angle: number) {
+        let result = new Vec2(0, 0);
+        let rotation_vec = [Math.sin(angle), Math.cos(angle)];
+        result.y = this.y * rotation_vec[1] - this.x * rotation_vec[0];
+        result.x = this.x * rotation_vec[1] + this.y * rotation_vec[0];
+        return result;
+    }
+
     as_raw() {
         return new Float32Array([this.x, this.y]);
     }

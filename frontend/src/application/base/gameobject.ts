@@ -25,20 +25,31 @@ export class Hitbox {
 }
 
 export class GameObject {
+    // render attribs
     object: Obj;
-    mass: number;
-    object_tag: ObjectTag;
+    rotation: number;
     pos: Vec2;
-    hitbox: Hitbox;
-    hb_pos_diff: Vec2;
     size: Vec2;
+    
+    
+    // object props
+    mass: number;
     collidable: boolean;
     isDynamic: boolean;
-    rotation: number;
-    texture_index: number = 0;
+    object_tag: ObjectTag;
+    // --> hitbox
+    hitbox: Hitbox;
+    hb_pos_diff: Vec2;
+    
+    
+    // textures
     texture_buffer: {buffer: WebGLBuffer, attribute: number};
     texture_coords: Float32Array;
+    texture_index: number = 0;
     texture_flip: number = 1;
+    //--> animations
+    current_frame = 0;
+    animation_timer = 0;
     constructor(size: Vec2, position: Vec2) {
         this.object = renderer.base_quad_obj as Obj;
         this.mass = size.x * size.y;
@@ -52,12 +63,11 @@ export class GameObject {
         this.rotation = 0;
         this.texture_coords = new Float32Array(8);
         this.texture_buffer = renderer.create_buffer(renderer.gl.STATIC_DRAW, this.texture_coords, "texture_coord");
-
         GameObject.objects.push(this);
     }
 
     run(delta_time: number) {
-        // this.rotation = (this.rotation + 0.01) % (3.141 * 2);
+
     }
 
     render() {
@@ -66,6 +76,10 @@ export class GameObject {
 
     get index() {
         return GameObject.objects.findIndex((obj) => obj == this);
+    }
+
+    get texture() {
+        return renderer.textures[this.texture_index];
     }
 
     remove() {
@@ -83,6 +97,17 @@ export class GameObject {
         
         renderer.gl.bindBuffer(renderer.gl.ARRAY_BUFFER, this.texture_buffer.buffer);
         renderer.gl.bufferSubData(renderer.gl.ARRAY_BUFFER, 0, this.texture_coords);
+    }
+
+    animate(frame_diff: number) {
+        if (performance.now() - this.animation_timer > frame_diff) {
+            this.animation_timer = performance.now();
+            this.current_frame += 1;
+            if (this.current_frame > this.texture.sprite_count - 1) {
+                this.current_frame = 0;
+            }
+            this.set_texture_coords(new Vec2(1 / this.texture.sprite_count, 1), new Vec2(this.current_frame * 1 / this.texture.sprite_count, 0));
+        }
     }
 
     static objects: GameObject[] = [];
@@ -103,6 +128,7 @@ export class StaticGameObj extends GameObject {
     }
 
     run(delta_time: number) {
+        super.run(delta_time);
 
     }
 }

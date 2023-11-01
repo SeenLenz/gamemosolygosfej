@@ -5,8 +5,6 @@ import { CollisionDir, DynamicGameObj, GameObject, Hitbox, ObjectTag } from "../
 
 export class Player extends DynamicGameObj {
     public focused: boolean = false;
-    frame: number = 0;
-    start_time: number = 0;
     constructor(size: number[], pos: number[]) {
         super(new Vec2(size[0], size[1]), new Vec2(pos[0], pos[1]));
         this.object_tag = ObjectTag.Player;
@@ -15,29 +13,23 @@ export class Player extends DynamicGameObj {
         this.mass = 1;
         this.reactive = true;
         this.focused = true;
-        this.texture_index = 0;
     }
     
     run(delta_time: number): void {
-        this.set_texture_coords(new Vec2(0.25, 1), new Vec2(0.25 * this.frame, 0));
         super.collision(delta_time);
         super.motion(delta_time);
         super.run(delta_time);
 
         let gravity_vec = new Vec2(0, gravity * this.mass);
         this.add_force(gravity_vec);
-
-        if (performance.now() - this.start_time > 300) {
-            this.start_time = performance.now();
-            this.frame += 1;
-            if (this.frame > 3) {
-                this.frame = 0;
-            }
-        }        
+        
+        this.animate(200);
+        if (event.key_state(Keys.Space, EventType.Pressed)) {
+            this.texture_index = Math.abs(this.texture_index - 1);
+        }
 
         this.keyboard_movement();
     }
-
 
     keyboard_movement() {
         if (!this.focused) {
@@ -56,6 +48,7 @@ export class Player extends DynamicGameObj {
         else {
             this.velocity.x = 0;
         }
+
 
         if (!this.collision_dir(CollisionDir.Bottom)) {
             return;

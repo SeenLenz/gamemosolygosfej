@@ -3,6 +3,11 @@ import { Vec2 } from "../lin_alg";
 import { Obj, Quad } from "./object";
 import { setup } from "./setup";
 
+export type Texture = {
+    sprite_count: number;
+    texture: WebGLTexture;
+};
+
 export class Renderer {
     public canvas: HTMLCanvasElement;
     public gl: WebGL2RenderingContext;
@@ -17,7 +22,7 @@ export class Renderer {
     public camera: WebGLUniformLocation;
     public camera_rot: WebGLUniformLocation;
     public sampler: WebGLUniformLocation;
-    public textures: WebGLTexture[] = [];
+    public textures: Texture[] = [];
     public base_quad_obj: Obj | undefined;
 
     constructor() {
@@ -63,8 +68,6 @@ export class Renderer {
         this.camera = this.gl.getUniformLocation(this.program, "camera") as WebGLUniformLocation;
         this.camera_rot = this.gl.getUniformLocation(this.program, "camera_rot") as WebGLUniformLocation;
         this.sampler = this.gl.getUniformLocation(this.program, "u_sampler") as WebGLUniformLocation;
-        this.create_texture("./textures/test.png");
-        this.create_texture("./textures/ground.png");
     }
 
     create_buffer(usage: number, content: Float32Array, attribute_location: string) {
@@ -87,7 +90,7 @@ export class Renderer {
         return {buffer: buffer, attribute: attribute}
     }
 
-    create_texture(image_source: string) {
+    create_texture(image_source: string, sprite_count: number) {
         let texture = this.gl.createTexture();
         this.gl.bindTexture(this.gl.TEXTURE_2D, texture);
 
@@ -104,7 +107,7 @@ export class Renderer {
         });
 
         if (texture) {
-            this.textures.push(texture)
+            this.textures.push({texture: texture, sprite_count: sprite_count})
         }
     }
 

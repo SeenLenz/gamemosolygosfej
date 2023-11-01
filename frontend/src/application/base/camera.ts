@@ -25,10 +25,6 @@ export class Camera {
         if (this.focus_obj.object_tag != ObjectTag.Empty){
             this.scale += (375 / this.focus_obj.size.y * 0.5 - this.scale) * this.focus_multip * delta_time;
         }
-
-        if (event.key_state(Keys.Space, EventType.Down)) {
-            this.rotation = (this.rotation + 0.03 * delta_time)  % (3.141 * 2);
-        }
         // 200 / height
     }
     

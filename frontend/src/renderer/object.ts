@@ -1,5 +1,5 @@
+import { renderer } from "../app";
 import { GameObject } from "../application/base/gameobject";
-import { Vec2, Vec3 } from "../lin_alg";
 import { Renderer } from "./renderer";
 
 export class Obj {
@@ -41,13 +41,15 @@ export class Obj {
             0
         );
 
-        renderer.gl.bindTexture(renderer.gl.TEXTURE_2D, renderer.textures[obj.texture_index]);
+        renderer.gl.bindTexture(renderer.gl.TEXTURE_2D, renderer.textures[obj.texture_index].texture);
         renderer.gl.uniform1i(renderer.sampler, 0);
 
         renderer.gl.bindBuffer(renderer.gl.ELEMENT_ARRAY_BUFFER, this.index_buffer);
         renderer.gl.drawElements(renderer.gl.TRIANGLES, 6, renderer.gl.UNSIGNED_SHORT, 0);
     }
 }
+
+
 
 export class Quad {
     positions: Float32Array;

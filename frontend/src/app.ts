@@ -18,6 +18,9 @@ let start = 1;
 
 function setup() {
     renderer.setup();
+    renderer.create_texture("./textures/test.png", 4);
+    renderer.create_texture("./textures/ground.png", 1);
+
     camera.focus_multip = 0.03;
     camera.focus_on(new Player([128, 128], [camera.center.x, camera.center.y]));
     let player = new Player([64, 64], [camera.center.x + 200, camera.center.y]);

@@ -3,7 +3,6 @@ window.app = {};
 document.addEventListener("DOMContentLoaded", (e) => {
   setup();
 });
-console.log("asdf");
 function setup() {
   document
     .querySelector("#join_bt")
@@ -27,7 +26,7 @@ async function lobby_setup(lobby_key = 0) {
     if (window.app.ws_config.Error) {
       console.error(window.app.ws_config.Error);
     } else {
-      ws_setup();
+      ws_setup(); 
     }
   } else {
     const response = await fetch(
@@ -67,6 +66,6 @@ function ws_setup() {
 const sendMessage = () => {
   console.log(window.app);
   window.app.socket.send(
-    "false;" + window.app.ws_config.lobby.key + ";Wabulabu dabdaa"
+    "false;" + window.app.ws_config.lobby.key + ";" + window.app.ws_config.lobby.client_id + ";" + document.getElementById("join_label").value
   );
 };

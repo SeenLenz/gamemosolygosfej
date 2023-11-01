@@ -178,6 +178,10 @@ export class DynamicGameObj extends GameObject {
     collision_dir(dir: CollisionDir): boolean {
         return this.collisions[dir];
     }
+    
+    private set_hb_position() {
+        this.hitbox.pos.set_vec(this.pos.add(this.hb_pos_diff));
+    }
 
     motion(delta_time: number) {
         this.velocity.y += this.force.y * delta_time;
@@ -186,7 +190,7 @@ export class DynamicGameObj extends GameObject {
         this.pos.y += this.velocity.y * delta_time;
         this.pos.x += this.velocity.x * delta_time;
 
-        this.hitbox.pos.set_vec(this.pos.add(this.hb_pos_diff));
+        this.set_hb_position();
         this.force.set(0, 0);
     }
 
@@ -201,6 +205,7 @@ export class DynamicGameObj extends GameObject {
         else {
             this.on_collision_y(collision.obj, collision.dir);
         }
+        this.set_hb_position();
     }
 
     on_collision_x(obj: GameObject, dir: CollisionDir) {

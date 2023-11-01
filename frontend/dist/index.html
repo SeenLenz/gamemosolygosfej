@@ -2,7 +2,6 @@
 <html lang="en">
     <head>
         <meta charset="UTF-8" />
-        <meta http-equiv="Content-Security-Policy" content="default-src 'self' http://localhost:9000; script-src 'self' 'unsafe-inline';">
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title>Document</title>
         <link rel="stylesheet" href="style.css" />
@@ -50,7 +49,7 @@
             screen_pos *= vec2(1, -1);
             
             gl_Position = vec4(screen_pos, 0, 1);
-            color = vec3(abs(normalize(screen_pos)), 1);
+            color = vec3(abs(screen_pos), 0);
         }
     </script>
     <script type="x-shader/x-fragment" id="fragment_shader">#version 300 es

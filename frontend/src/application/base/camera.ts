@@ -11,7 +11,7 @@ export class Camera {
     rotation: number;
     constructor() {
         this.pos = new Vec2(0, 0);
-        this.scale = 0.5;
+        this.scale = 1;
         this.rotation = 0;
     }
 
@@ -23,7 +23,7 @@ export class Camera {
         this.pos.x += (this.focus_obj.pos.x + this.focus_obj.size.x / 2 - renderer.canvas.width / 2 - this.pos.x) * this.focus_multip * delta_time;
         this.pos.y += (this.focus_obj.pos.y + this.focus_obj.size.y / 2 - renderer.canvas.height / 2 - this.pos.y) * this.focus_multip * delta_time;
         if (this.focus_obj.object_tag != ObjectTag.Empty){
-            this.scale += (100 / this.focus_obj.size.y * 0.5 - this.scale) * this.focus_multip * delta_time;
+            this.scale += (375 / this.focus_obj.size.y * 0.5 - this.scale) * this.focus_multip * delta_time;
         }
 
         if (event.key_state(Keys.Space, EventType.Down)) {

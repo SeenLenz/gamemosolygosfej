@@ -13,14 +13,18 @@ export class Renderer {
     public uniform_position: WebGLUniformLocation;
     public uniform_scale: WebGLUniformLocation;
     public uniform_rotation: WebGLUniformLocation;
+    public uniform_flip: WebGLUniformLocation;
     public camera: WebGLUniformLocation;
     public camera_rot: WebGLUniformLocation;
-    public textures: WebGLTexture[];
+    public sampler: WebGLUniformLocation;
+    public textures: WebGLTexture[] = [];
     public base_quad_obj: Obj | undefined;
 
     constructor() {
         const vertexElement = document.querySelector("#vertex_shader") as HTMLElement | null;
         const fragmentElement = document.querySelector("#fragment_shader") as HTMLElement | null;
+
+        console.log(vertexElement?.textContent?.length);
 
         if (!vertexElement || !fragmentElement) {
             throw new Error("Vertex or fragment shader element not found.");
@@ -48,28 +52,33 @@ export class Renderer {
             this.fragment_shader
         );
 
+        this.gl.enable(this.gl.BLEND);
+        this.gl.blendFunc(this.gl.SRC_ALPHA, this.gl.ONE_MINUS_SRC_ALPHA);
+
         this.uniform_resolution = this.gl.getUniformLocation(this.program, "u_res") as WebGLUniformLocation;
         this.uniform_position = this.gl.getUniformLocation(this.program, "u_screen_position") as WebGLUniformLocation;
         this.uniform_scale = this.gl.getUniformLocation(this.program, "u_scale") as WebGLUniformLocation;
         this.uniform_rotation = this.gl.getUniformLocation(this.program, "u_rotation") as WebGLUniformLocation;
+        this.uniform_flip = this.gl.getUniformLocation(this.program, "u_flip") as WebGLUniformLocation;
         this.camera = this.gl.getUniformLocation(this.program, "camera") as WebGLUniformLocation;
         this.camera_rot = this.gl.getUniformLocation(this.program, "camera_rot") as WebGLUniformLocation;
-
-        this.textures = [];
+        this.sampler = this.gl.getUniformLocation(this.program, "u_sampler") as WebGLUniformLocation;
+        this.create_texture("./textures/test.png");
+        this.create_texture("./textures/ground.png");
     }
 
-    create_buffer(type: number, content: Float32Array, attribute_location: string) {
+    create_buffer(usage: number, content: Float32Array, attribute_location: string) {
         let attribute = this.gl.getAttribLocation(
             this.program,
             attribute_location
         );
 
         let buffer = this.gl.createBuffer();
-        this.gl.bindBuffer(type, buffer);
+        this.gl.bindBuffer(this.gl.ARRAY_BUFFER, buffer);
         this.gl.bufferData(
             this.gl.ARRAY_BUFFER,
             content,
-            this.gl.STATIC_DRAW
+            usage,
         );
         
         if (!buffer) {
@@ -83,21 +92,24 @@ export class Renderer {
         this.gl.bindTexture(this.gl.TEXTURE_2D, texture);
 
         this.gl.texImage2D(this.gl.TEXTURE_2D, 0, this.gl.RGBA, 1, 1, 0, this.gl.RGBA, this.gl.UNSIGNED_BYTE,
-            new Uint8Array([0, 0, 255, 255]));
+            new Uint8Array([0, 0, 255, 0]));
 
         let image = new Image();
         image.src = image_source;   
         image.addEventListener('load', () => {
             this.gl.bindTexture(this.gl.TEXTURE_2D, texture);
-            this.gl.texImage2D(this.gl.TEXTURE_2D, 0, this.gl.RGBA, this.gl.RGBA,this.gl.UNSIGNED_BYTE, image);
-            this.gl.generateMipmap(this.gl.TEXTURE_2D);
+            this.gl.texImage2D(this.gl.TEXTURE_2D, 0, this.gl.RGBA, this.gl.RGBA, this.gl.UNSIGNED_BYTE, image);
+            this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_MIN_FILTER, this.gl.NEAREST);
+            this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_MAG_FILTER, this.gl.NEAREST);
         });
 
-        this.textures.push(texture as WebGLTexture)
+        if (texture) {
+            this.textures.push(texture)
+        }
     }
 
     setup() {
-        const quad = new Quad([1, 1, 1]);
+        const quad = new Quad();
         this.base_quad_obj = new Obj(quad, this);
         this.gl.canvas.width = this.canvas.clientWidth;
         this.gl.canvas.height = this.canvas.clientHeight;

@@ -19,16 +19,18 @@
     <script type="x-shader/x-vertex" id="vertex_shader">#version 300 es
         in vec2 a_pos;
         //in vec3 a_color;
+        in vec2 texture_coord;
         uniform vec2 u_res;
 
         uniform vec2 u_screen_position;
         uniform vec2 u_scale;
         uniform vec2 u_rotation;
+        uniform int u_flip;
 
         uniform vec3 camera;
         uniform vec2 camera_rot;
 
-        out vec3 color;
+        out vec2 v_texture_coords;
         void main() {
             vec2 new_pos = a_pos - vec2(0.5, 0.5);
             new_pos = vec2(new_pos.x * u_rotation.y + new_pos.y * u_rotation.x, new_pos.y * u_rotation.y - new_pos.x * u_rotation.x);
@@ -49,17 +51,20 @@
             screen_pos *= vec2(1, -1);
             
             gl_Position = vec4(screen_pos, 0, 1);
-            color = vec3(abs(screen_pos), 0);
+            vec2 text_coord = vec2(float(u_flip) * texture_coord.x, texture_coord.y);
+            v_texture_coords = text_coord;
         }
     </script>
     <script type="x-shader/x-fragment" id="fragment_shader">#version 300 es
         precision mediump float;
 
-        in vec3 color;
+        in vec2 v_texture_coords;
         out vec4 fragColor;
 
+        uniform sampler2D u_sampler;
+
         void main() {
-            fragColor = vec4(color, 1);
+            fragColor = texture(u_sampler, v_texture_coords);
         }
     </script>
 </html>

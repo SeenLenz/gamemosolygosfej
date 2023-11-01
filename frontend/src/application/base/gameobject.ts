@@ -1,5 +1,5 @@
-import { Obj, Quad} from "../../renderer/object";
-import { gravity, renderer } from "../../app";
+import { Obj } from "../../renderer/object";
+import { renderer } from "../../app";
 import { Vec2 } from "../../lin_alg";
 
 export enum ObjectTag {
@@ -35,6 +35,10 @@ export class GameObject {
     collidable: boolean;
     isDynamic: boolean;
     rotation: number;
+    texture_index: number = 0;
+    texture_buffer: {buffer: WebGLBuffer, attribute: number};
+    texture_coords: Float32Array;
+    texture_flip: number = 1;
     constructor(size: Vec2, position: Vec2) {
         this.object = renderer.base_quad_obj as Obj;
         this.mass = size.x * size.y;
@@ -46,6 +50,9 @@ export class GameObject {
         this.hitbox = new Hitbox(this.size, this.pos);
         this.hb_pos_diff = this.pos.sub(this.hitbox.pos);
         this.rotation = 0;
+        this.texture_coords = new Float32Array(8);
+        this.texture_buffer = renderer.create_buffer(renderer.gl.STATIC_DRAW, this.texture_coords, "texture_coord");
+
         GameObject.objects.push(this);
     }
 
@@ -54,7 +61,28 @@ export class GameObject {
     }
 
     render() {
-        this.object.render(renderer, this.pos, this.size, this.rotation);
+        this.object.render(renderer, this);
+    }
+
+    get index() {
+        return GameObject.objects.findIndex((obj) => obj == this);
+    }
+
+    remove() {
+        GameObject.objects.splice(this.index, 1);
+    }
+
+    set_texture_coords(size: Vec2, offset: Vec2) {
+        // Optimization needed
+        this.texture_coords = new Float32Array(
+            [offset.x, offset.y + size.y,  
+            offset.x, offset.y,
+            offset.x + size.x, offset.y + size.y,
+            offset.x + size.x, offset.y,]
+        );
+        
+        renderer.gl.bindBuffer(renderer.gl.ARRAY_BUFFER, this.texture_buffer.buffer);
+        renderer.gl.bufferSubData(renderer.gl.ARRAY_BUFFER, 0, this.texture_coords);
     }
 
     static objects: GameObject[] = [];
@@ -219,7 +247,7 @@ export class DynamicGameObj extends GameObject {
             this.collisions[CollisionDir.Right] = true;
         }
 
-        this.velocity.x = -this.velocity.x * 0.4;
+        this.velocity.x = 0;
     }
 
     on_collision_y(obj: GameObject, dir: CollisionDir) {
@@ -232,6 +260,6 @@ export class DynamicGameObj extends GameObject {
             this.collisions[CollisionDir.Bottom] = true;
         }
 
-        this.velocity.y = -this.velocity.y * 0.4;
+        this.velocity.y = 0;
     }
 }

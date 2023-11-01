@@ -1,3 +1,4 @@
+import { GameObject } from "../application/base/gameobject";
 import { Vec2, Vec3 } from "../lin_alg";
 import { Renderer } from "./renderer";
 
@@ -6,16 +7,17 @@ export class Obj {
     public index_buffer: WebGLBuffer;
 
     constructor(quad: Quad, renderer: Renderer) {
-        this.vertex_buffer = renderer.create_buffer(renderer.gl.ARRAY_BUFFER, quad.positions, "a_pos");
+        this.vertex_buffer = renderer.create_buffer(renderer.gl.STATIC_DRAW, quad.positions, "a_pos");
         this.index_buffer = renderer.gl.createBuffer()as WebGLBuffer;
         renderer.gl.bindBuffer(renderer.gl.ELEMENT_ARRAY_BUFFER, this.index_buffer);
         renderer.gl.bufferData(renderer.gl.ELEMENT_ARRAY_BUFFER, quad.indicies, renderer.gl.STATIC_DRAW);
     }
 
-    render(renderer: Renderer, pos: Vec2, scale: Vec2, rotation: number) {
-        renderer.gl.uniform2fv(renderer.uniform_position, pos.as_raw());
-        renderer.gl.uniform2fv(renderer.uniform_scale, scale.as_raw());
-        renderer.gl.uniform2f(renderer.uniform_rotation, Math.sin(rotation), Math.cos(rotation));
+    render(renderer: Renderer, obj: GameObject) {
+        renderer.gl.uniform2fv(renderer.uniform_position, obj.pos.as_raw());
+        renderer.gl.uniform2fv(renderer.uniform_scale, obj.size.as_raw());
+        renderer.gl.uniform2f(renderer.uniform_rotation, Math.sin(obj.rotation), Math.cos(obj.rotation));
+        renderer.gl.uniform1i(renderer.uniform_flip, obj.texture_flip);
 
         renderer.gl.enableVertexAttribArray(this.vertex_buffer.attribute);
         renderer.gl.bindBuffer(renderer.gl.ARRAY_BUFFER, this.vertex_buffer.buffer);
@@ -28,6 +30,20 @@ export class Obj {
             0
         );
 
+        renderer.gl.enableVertexAttribArray(obj.texture_buffer.attribute);
+        renderer.gl.bindBuffer(renderer.gl.ARRAY_BUFFER, obj.texture_buffer.buffer);
+        renderer.gl.vertexAttribPointer(
+            obj.texture_buffer.attribute,
+            2,
+            renderer.gl.FLOAT,
+            true,
+            0,
+            0
+        );
+
+        renderer.gl.bindTexture(renderer.gl.TEXTURE_2D, renderer.textures[obj.texture_index]);
+        renderer.gl.uniform1i(renderer.sampler, 0);
+
         renderer.gl.bindBuffer(renderer.gl.ELEMENT_ARRAY_BUFFER, this.index_buffer);
         renderer.gl.drawElements(renderer.gl.TRIANGLES, 6, renderer.gl.UNSIGNED_SHORT, 0);
     }
@@ -36,23 +52,14 @@ export class Obj {
 export class Quad {
     positions: Float32Array;
     indicies: Int16Array;
-    colors: Float32Array;
-
-    constructor(color: number[]) {
+    
+    constructor() {
         this.positions = new Float32Array(
             [0, 1,  
             0, 0,
             1, 1,
             1, 0,]
         );
-    
-        let colors: number[] = [];
-    
-        for (let i = 0; i < 6; i++) {
-            colors = colors.concat(color);
-        }
-
-        this.colors = new Float32Array(colors);
     
         this.indicies = new Int16Array(
             [0, 1, 2,

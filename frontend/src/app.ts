@@ -1,6 +1,6 @@
 import { Renderer } from "./renderer/renderer";
-import { EventHandler, EventType, Keys } from "./application/base/event_handler";
-import { Empty, GameObject } from "./application/base/gameobject";
+import { EventHandler } from "./application/base/event_handler";
+import { GameObject } from "./application/base/gameobject";
 import { Camera } from "./application/base/camera";
 import { Player } from "./application/gamelogic/player";
 import { Vec2 } from "./lin_alg";
@@ -14,16 +14,16 @@ export const renderer = new Renderer();
 export const event = new EventHandler(renderer);
 export let camera = new Camera();
 export let gravity = 0.8;
-
 let start = 1;
 
 function setup() {
     renderer.setup();
     camera.focus_multip = 0.03;
-
-    camera.focus_on(new Empty(camera.center));
-
-    camera.scale = 0.3;
+    camera.focus_on(new Player([128, 128], [camera.center.x, camera.center.y]));
+    let player = new Player([64, 64], [camera.center.x + 200, camera.center.y]);
+    player.focused = false;
+    new Terrain(camera.zero.add(new Vec2(0, camera.height - 60)), new Vec2(camera.width, 30));
+    new Terrain(camera.zero.add(new Vec2(500, camera.height - 60 - 150)), new Vec2(300, 150));
 }
 
 function main_loop() {

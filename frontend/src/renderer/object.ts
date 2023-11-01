@@ -4,15 +4,12 @@ import { Renderer } from "./renderer";
 export class Obj {
     public vertex_buffer: {buffer: WebGLBuffer, attribute: number};
     public index_buffer: WebGLBuffer;
-    public color_buffer: {buffer: WebGLBuffer, attribute: number};
 
     constructor(quad: Quad, renderer: Renderer) {
         this.vertex_buffer = renderer.create_buffer(renderer.gl.ARRAY_BUFFER, quad.positions, "a_pos");
         this.index_buffer = renderer.gl.createBuffer()as WebGLBuffer;
         renderer.gl.bindBuffer(renderer.gl.ELEMENT_ARRAY_BUFFER, this.index_buffer);
         renderer.gl.bufferData(renderer.gl.ELEMENT_ARRAY_BUFFER, quad.indicies, renderer.gl.STATIC_DRAW);
-
-        this.color_buffer = renderer.create_buffer(renderer.gl.ARRAY_BUFFER, quad.colors, "a_color");
     }
 
     render(renderer: Renderer, pos: Vec2, scale: Vec2, rotation: number) {
@@ -25,17 +22,6 @@ export class Obj {
         renderer.gl.vertexAttribPointer(
             this.vertex_buffer.attribute,
             2,
-            renderer.gl.FLOAT,
-            false,
-            0,
-            0
-        );
-
-        renderer.gl.enableVertexAttribArray(this.color_buffer.attribute);
-        renderer.gl.bindBuffer(renderer.gl.ARRAY_BUFFER, this.color_buffer.buffer);
-        renderer.gl.vertexAttribPointer(
-            this.color_buffer.attribute,
-            3,
             renderer.gl.FLOAT,
             false,
             0,

@@ -77,7 +77,7 @@ export class Player extends DynamicGameObj {
     movement(delta_time: number) {
         if (this.running) {
             this.velocity.x +=
-                (6 * this.x_direction - this.velocity.x) * 0.08 * delta_time;
+                (6 * this.x_direction - this.velocity.x) * 0.05 * delta_time;
         } else {
             this.velocity.x += (0 - this.velocity.x) * 0.08 * delta_time;
         }

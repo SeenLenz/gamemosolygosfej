@@ -5,6 +5,7 @@ import { Camera } from "./application/base/camera";
 import { Player } from "./application/gamelogic/player";
 import { Vec2 } from "./lin_alg";
 import { Terrain } from "./application/gamelogic/terrain";
+import { Effect } from "./application/base/effects";
 
 document.addEventListener("DOMContentLoaded", () => {
     main();
@@ -19,6 +20,7 @@ let start = 1;
 export enum SpriteSheets {
     Player,
     Map,
+    GroundedEffect,
 }
 
 function setup() {
@@ -39,6 +41,11 @@ function setup() {
         "./textures/map/map.png",
         [[Vec2.zeros(), 1]],
         new Vec2(1, 1)
+    );
+    renderer.create_texture(
+        "./textures/effects/grounded.png",
+        [[Vec2.zeros(), 6]],
+        new Vec2(6, 1)
     );
 
     camera.focus_multip = 0.03;
@@ -70,6 +77,10 @@ function main_loop() {
     GameObject.objects.forEach((go) => {
         go.run(delta_time);
         go.render();
+    });
+
+    Effect.effects.forEach((e) => {
+        e.animate();
     });
 
     event.refresh();

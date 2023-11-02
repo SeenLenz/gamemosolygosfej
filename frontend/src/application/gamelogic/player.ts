@@ -1,5 +1,6 @@
-import { event, gravity } from "../../app";
+import { SpriteSheets, event, gravity } from "../../app";
 import { Vec2 } from "../../lin_alg";
+import { Effect } from "../base/effects";
 import { EventType, Keys } from "../base/event_handler";
 import {
     CollisionDir,
@@ -19,14 +20,16 @@ export class Player extends DynamicGameObj {
     jump = false;
     jump_dir = 0;
     x_collision = false;
+
+    start_effect = false;
     constructor(size: number[], pos: number[]) {
         super(new Vec2(size[0], size[1]), new Vec2(pos[0], pos[1]));
         this.object_tag = ObjectTag.Player;
         this.hitbox = new Hitbox(
-            this.size.div(new Vec2(2, 4 / 3)),
-            this.pos.sub(new Vec2(this.size.x / 4, this.size.y / 4))
+            this.size.div(new Vec2(4, 4 / 3)),
+            this.pos.sub(new Vec2((this.size.x / 4) * 1.5, this.size.y / 4))
         );
-        this.hb_pos_diff = new Vec2(this.size.x / 4, this.size.x / 4);
+        this.hb_pos_diff = new Vec2((this.size.x / 4) * 1.5, this.size.x / 4);
         this.mass = 1;
         this.reactive = true;
         this.focused = true;
@@ -47,7 +50,6 @@ export class Player extends DynamicGameObj {
 
         super.motion(delta_time);
         super.run(delta_time);
-        this.add_force(new Vec2(0, gravity * this.mass));
     }
 
     clear() {
@@ -81,6 +83,7 @@ export class Player extends DynamicGameObj {
     }
 
     movement(delta_time: number) {
+        this.add_force(new Vec2(0, gravity * this.mass));
         if (this.dash) {
             this.velocity.x = 20 * this.x_direction;
         }
@@ -97,12 +100,36 @@ export class Player extends DynamicGameObj {
         }
 
         if (this.wall_slide) {
+            this.hitbox.size = this.size.div(new Vec2(2, 4 / 3));
+            this.hb_pos_diff = new Vec2(this.size.x / 4, this.size.x / 4);
             this.velocity.y += (0 - this.velocity.y) * 0.08 * delta_time;
             this.force.y = 0;
+        } else {
+            this.hitbox.size = this.size.div(new Vec2(4, 4 / 3));
+            this.hb_pos_diff = new Vec2(
+                (this.size.x / 4) * 1.5,
+                this.size.x / 4
+            );
         }
     }
 
     set_animations(delta_time: number) {
+        if (this.grounded && !this.start_effect) {
+            new Effect(
+                this.size,
+                this.pos,
+                SpriteSheets.GroundedEffect,
+                0,
+                100,
+                0
+            );
+            this.start_effect = true;
+        }
+
+        if (!this.grounded) {
+            this.start_effect = false;
+        }
+
         this.frame_time = 0;
         this.sprite_index = 1;
         if (this.wall_slide) {

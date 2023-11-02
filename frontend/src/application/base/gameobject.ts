@@ -46,7 +46,6 @@ export class GameObject {
     texture_index: number = SpriteSheets.Player;
     sprite_index: number = 0;
     x_direction: number = 1;
-    render_texture_ind = 0;
     //--> animations
     current_frame = 0;
     animation_timer = 0;

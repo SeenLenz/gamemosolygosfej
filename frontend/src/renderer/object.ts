@@ -1,5 +1,15 @@
 import { GameObject } from "../application/base/gameobject";
+import { Vec2 } from "../lin_alg";
 import { Renderer } from "./renderer";
+
+interface Renderable {
+    pos: Vec2;
+    size: Vec2;
+    rotation: number;
+    x_direction: number;
+    texture_buffer: { buffer: WebGLBuffer; attribute: number };
+    texture_index: number;
+}
 
 export class Obj {
     public vertex_buffer: { buffer: WebGLBuffer; attribute: number };
@@ -23,7 +33,7 @@ export class Obj {
         );
     }
 
-    render(renderer: Renderer, obj: GameObject) {
+    render(renderer: Renderer, obj: Renderable) {
         renderer.gl.uniform2fv(renderer.uniform_position, obj.pos.as_raw());
         renderer.gl.uniform2fv(renderer.uniform_scale, obj.size.as_raw());
         renderer.gl.uniform2f(

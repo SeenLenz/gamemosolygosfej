@@ -13,11 +13,12 @@ export class Player extends DynamicGameObj {
     public focused: boolean = false;
     frame_time = 0;
     has_jump = false;
-    slide = false;
+    dash = false;
     wall_slide = false;
     running = false;
     jump = false;
     jump_dir = 0;
+    x_collision = false;
     constructor(size: number[], pos: number[]) {
         super(new Vec2(size[0], size[1]), new Vec2(pos[0], pos[1]));
         this.object_tag = ObjectTag.Player;
@@ -51,10 +52,10 @@ export class Player extends DynamicGameObj {
 
     clear() {
         this.jump_dir = 0;
-        this.running = false;
         this.jump = false;
+        this.x_collision = false;
         this.has_jump = false;
-        this.slide = false;
+        this.dash = false;
         this.wall_slide = false;
     }
 
@@ -65,30 +66,34 @@ export class Player extends DynamicGameObj {
         } else if (event.key_state(Keys.D, EventType.Down)) {
             this.running = true;
             this.x_direction = 1;
+        } else if (
+            event.key_state(Keys.A, EventType.Up) ||
+            event.key_state(Keys.A, EventType.Up)
+        ) {
+            this.running = false;
         }
         if (event.key_state(Keys.W, EventType.Pressed)) {
             this.jump = true;
         }
-        if (event.key_state(Keys.Shift, EventType.Down)) {
-            this.slide = true;
+        if (event.key_state(Keys.Shift, EventType.Pressed)) {
+            this.dash = true;
         }
     }
 
     movement(delta_time: number) {
+        if (this.dash) {
+            this.velocity.x = 20 * this.x_direction;
+        }
         if (this.running) {
             this.velocity.x +=
                 (6 * this.x_direction - this.velocity.x) * 0.07 * delta_time;
         } else {
             this.velocity.x += (0 - this.velocity.x) * 0.08 * delta_time;
         }
+
         if ((this.grounded || this.has_jump) && this.jump) {
             this.velocity.y = -12;
-            this.velocity.x = this.jump_dir * 15;
-        }
-        if (this.slide) {
-            if (this.velocity.x * this.x_direction > 0) {
-                this.velocity.x -= 0.1 * this.x_direction * delta_time;
-            }
+            this.velocity.x += this.jump_dir * 15;
         }
 
         if (this.wall_slide) {
@@ -104,13 +109,16 @@ export class Player extends DynamicGameObj {
             this.sprite_index = 4;
             this.x_direction *= -1;
             return;
+        } else if (!this.x_collision && Math.abs(this.velocity.x) > 7) {
+            this.sprite_index = 3;
+            return;
         } else if (!this.grounded) {
             this.sprite_index = 2;
             return;
         }
-        if (Math.abs(this.velocity.x) < 0.7 * delta_time) {
+        if (Math.abs(this.velocity.x) < 0.5) {
             this.sprite_index = 1;
-        } else if (Math.abs(this.velocity.x) < 3 * delta_time) {
+        } else if (Math.abs(this.velocity.x) < 3) {
             this.sprite_index = 5;
         } else {
             this.frame_time = (1 / Math.abs(this.velocity.x)) * 350;
@@ -126,5 +134,6 @@ export class Player extends DynamicGameObj {
             this.jump_dir = this.x_direction;
         }
         this.running = false;
+        this.x_collision = true;
     }
 }

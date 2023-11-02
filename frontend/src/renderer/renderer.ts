@@ -65,7 +65,7 @@ export class Renderer {
         this.uniform_position = this.gl.getUniformLocation(this.program, "u_screen_position") as WebGLUniformLocation;
         this.uniform_scale = this.gl.getUniformLocation(this.program, "u_scale") as WebGLUniformLocation;
         this.uniform_rotation = this.gl.getUniformLocation(this.program, "u_rotation") as WebGLUniformLocation;
-        this.uniform_flip = this.gl.getUniformLocation(this.program, "u_flip") as WebGLUniformLocation;
+        this.uniform_flip = this.gl.getUniformLocation(this.program, "u_z_coord") as WebGLUniformLocation;
         this.camera = this.gl.getUniformLocation(this.program, "camera") as WebGLUniformLocation;
         this.camera_rot = this.gl.getUniformLocation(this.program, "camera_rot") as WebGLUniformLocation;
         this.sampler = this.gl.getUniformLocation(this.program, "u_sampler") as WebGLUniformLocation;

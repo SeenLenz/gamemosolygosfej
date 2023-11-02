@@ -9,6 +9,7 @@ interface Renderable {
     x_direction: number;
     texture_buffer: { buffer: WebGLBuffer; attribute: number };
     texture_index: number;
+    z_coord: number,
 }
 
 export class Obj {
@@ -41,8 +42,8 @@ export class Obj {
             Math.sin(obj.rotation),
             Math.cos(obj.rotation)
         );
-        renderer.gl.uniform1i(renderer.uniform_flip, obj.x_direction);
-
+        
+        renderer.gl.uniform1f(renderer.uniform_flip, obj.z_coord);
         renderer.gl.enableVertexAttribArray(this.vertex_buffer.attribute);
         renderer.gl.bindBuffer(
             renderer.gl.ARRAY_BUFFER,

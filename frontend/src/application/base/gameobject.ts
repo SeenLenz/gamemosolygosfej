@@ -30,6 +30,7 @@ export class GameObject {
     rotation: number;
     pos: Vec2;
     size: Vec2;
+    z_coord: number = 1;
 
     // object props
     mass: number;

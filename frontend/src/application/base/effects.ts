@@ -16,6 +16,7 @@ export class Effect {
     repeat: number;
     current_cycle = 0;
     rotation = 0;
+    z_coord = 1;
 
     constructor(
         size: Vec2,

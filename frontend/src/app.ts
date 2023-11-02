@@ -21,6 +21,7 @@ export enum SpriteSheets {
     Player,
     Map,
     GroundedEffect,
+    DashEffect,
 }
 
 function setup() {
@@ -46,6 +47,11 @@ function setup() {
         "./textures/effects/grounded.png",
         [[Vec2.zeros(), 6]],
         new Vec2(6, 1)
+    );
+    renderer.create_texture(
+        "./textures/effects/dash.png",
+        [[Vec2.zeros(), 12]],
+        new Vec2(12, 1)
     );
 
     camera.focus_multip = 0.03;

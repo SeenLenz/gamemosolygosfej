@@ -20,11 +20,13 @@ export class Effect {
     constructor(
         size: Vec2,
         pos: Vec2,
+        x_dir: number,
         texure_index: SpriteSheets,
         effect: number,
         speed: number,
         repeat: number
     ) {
+        this.x_direction = x_dir;
         this.texture_index = texure_index;
         this.sprite_index = effect;
         this.texture_coords = new Float32Array(8);
@@ -35,8 +37,8 @@ export class Effect {
         );
         this.speed = speed;
         this.repeat = repeat;
-        this.size.set_vec(size);
-        this.pos.set_vec(pos);
+        this.size = size;
+        this.pos = pos;
 
         Effect.effects.push(this);
     }
@@ -86,16 +88,29 @@ export class Effect {
 
     set_texture_coords(size: Vec2, offset: Vec2) {
         // Optimization needed
-        this.texture_coords = new Float32Array([
-            offset.x * size.x,
-            offset.y * size.y + size.y,
-            offset.x * size.x,
-            offset.y * size.y,
-            offset.x * size.x + size.x,
-            offset.y * size.y + size.y,
-            offset.x * size.x + size.x,
-            offset.y * size.y,
-        ]);
+        if (this.x_direction == 1) {
+            this.texture_coords = new Float32Array([
+                offset.x * size.x,
+                offset.y * size.y + size.y,
+                offset.x * size.x,
+                offset.y * size.y,
+                offset.x * size.x + size.x,
+                offset.y * size.y + size.y,
+                offset.x * size.x + size.x,
+                offset.y * size.y,
+            ]);
+        } else {
+            this.texture_coords = new Float32Array([
+                offset.x * size.x + size.x,
+                offset.y * size.y + size.y,
+                offset.x * size.x + size.x,
+                offset.y * size.y,
+                offset.x * size.x,
+                offset.y * size.y + size.y,
+                offset.x * size.x,
+                offset.y * size.y,
+            ]);
+        }
 
         renderer.gl.bindBuffer(
             renderer.gl.ARRAY_BUFFER,

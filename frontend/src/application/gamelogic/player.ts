@@ -21,7 +21,7 @@ export class Player extends DynamicGameObj {
     jump_dir = 0;
     x_collision = false;
 
-    start_effect = false;
+    grounded_effect = false;
     constructor(size: number[], pos: number[]) {
         super(new Vec2(size[0], size[1]), new Vec2(pos[0], pos[1]));
         this.object_tag = ObjectTag.Player;
@@ -84,7 +84,10 @@ export class Player extends DynamicGameObj {
 
     movement(delta_time: number) {
         this.add_force(new Vec2(0, gravity * this.mass));
-        if (this.dash) {
+        if (
+            this.dash &&
+            !(!this.x_collision && Math.abs(this.velocity.x) > 7)
+        ) {
             this.velocity.x = 20 * this.x_direction;
         }
         if (this.running) {
@@ -114,20 +117,33 @@ export class Player extends DynamicGameObj {
     }
 
     set_animations(delta_time: number) {
-        if (this.grounded && !this.start_effect) {
+        if (this.grounded && !this.grounded_effect) {
             new Effect(
-                this.size,
-                this.pos,
+                Vec2.from(this.size),
+                Vec2.from(this.pos),
+                this.x_direction,
                 SpriteSheets.GroundedEffect,
                 0,
                 100,
                 0
             );
-            this.start_effect = true;
+            this.grounded_effect = true;
         }
 
         if (!this.grounded) {
-            this.start_effect = false;
+            this.grounded_effect = false;
+        }
+
+        if (this.dash) {
+            new Effect(
+                Vec2.from(this.size),
+                this.pos,
+                this.x_direction,
+                SpriteSheets.DashEffect,
+                0,
+                50,
+                0
+            );
         }
 
         this.frame_time = 0;

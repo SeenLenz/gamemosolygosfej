@@ -11,6 +11,10 @@ export class Vec2 {
         return new Vec2(0, 0);
     }
 
+    static from(vec2: Vec2) {
+        return new Vec2(vec2.x, vec2.y);
+    }
+
     set(x: number, y: number) {
         this.x = x;
         this.y = y;
@@ -45,7 +49,6 @@ export class Vec2 {
         this.y -= vec2.y;
     }
 
-
     mul(vec2: Vec2) {
         let result = new Vec2(0, 0);
         result.x = this.x * vec2.x;
@@ -72,7 +75,7 @@ export class Vec2 {
 
     normalize() {
         let result = new Vec2(0, 0);
-        let a = (this.x / this.y);
+        let a = this.x / this.y;
         result.y = Math.sqrt(1 / (a * a + 1));
         result.x = result.y * a;
         return result;
@@ -135,7 +138,6 @@ export class Vec3 {
         this.y -= vec3.y;
         this.z -= vec3.z;
     }
-
 
     mul(vec3: Vec3) {
         let result = new Vec3(0, 0, 0);

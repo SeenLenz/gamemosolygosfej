@@ -77,14 +77,13 @@ export class Player extends DynamicGameObj {
     movement(delta_time: number) {
         if (this.running) {
             this.velocity.x +=
-                (6 * this.x_direction - this.velocity.x) * 0.05 * delta_time;
+                (6 * this.x_direction - this.velocity.x) * 0.07 * delta_time;
         } else {
             this.velocity.x += (0 - this.velocity.x) * 0.08 * delta_time;
         }
         if ((this.grounded || this.has_jump) && this.jump) {
             this.velocity.y = -12;
-            this.velocity.x = this.jump_dir * 10;
-            // console.log(this.jump_dir);
+            this.velocity.x = this.jump_dir * 15;
         }
         if (this.slide) {
             if (this.velocity.x * this.x_direction > 0) {
@@ -100,6 +99,7 @@ export class Player extends DynamicGameObj {
 
     set_animations(delta_time: number) {
         this.frame_time = 0;
+        this.sprite_index = 1;
         if (this.wall_slide) {
             this.sprite_index = 4;
             this.x_direction *= -1;
@@ -108,12 +108,9 @@ export class Player extends DynamicGameObj {
             this.sprite_index = 2;
             return;
         }
-        if (!this.running && Math.abs(this.velocity.x) < 0.2 * delta_time) {
+        if (Math.abs(this.velocity.x) < 0.7 * delta_time) {
             this.sprite_index = 1;
-        } else if (
-            !this.running &&
-            Math.abs(this.velocity.x) < 3 * delta_time
-        ) {
+        } else if (Math.abs(this.velocity.x) < 3 * delta_time) {
             this.sprite_index = 5;
         } else {
             this.frame_time = (1 / Math.abs(this.velocity.x)) * 350;

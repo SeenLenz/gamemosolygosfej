@@ -10,6 +10,6 @@ export class Terrain extends StaticGameObj {
 
     run(delta_time: number): void {
         super.run(delta_time);
-        this.set_texture_coords(new Vec2(this.size.x / this.size.y / 2, 1), new Vec2(0, 0));
+        this.set_texture_coords(new Vec2(this.size.x / 48 / 2, this.size.y / 48), new Vec2(0, 0));
     }
 }

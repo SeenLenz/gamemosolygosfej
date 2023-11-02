@@ -13,35 +13,67 @@ document.addEventListener("DOMContentLoaded", () => {
 export const renderer = new Renderer();
 export const event = new EventHandler(renderer);
 export let camera = new Camera();
-export let gravity = 0.8;
+export let gravity = 0.5;
 let start = 1;
+
+export enum SpriteSheets {
+    Player,
+    Map,
+}
 
 function setup() {
     renderer.setup();
-    renderer.create_texture("./textures/test.png", 4);
-    renderer.create_texture("./textures/ground.png", 1);
+    renderer.create_texture(
+        "./textures/character/character_sprite_sheet.png",
+        [
+            [Vec2.zeros(), 8],
+            [new Vec2(0, 1), 1],
+            [new Vec2(1, 1), 1],
+            [new Vec2(2, 1), 1],
+            [new Vec2(3, 1), 1],
+            [new Vec2(4, 1), 1],
+        ],
+        new Vec2(8, 2)
+    );
+    renderer.create_texture(
+        "./textures/map/map.png",
+        [[Vec2.zeros(), 1]],
+        new Vec2(1, 1)
+    );
 
     camera.focus_multip = 0.03;
-    camera.focus_on(new Player([128, 128], [camera.center.x, camera.center.y]));
-    let player = new Player([64, 64], [camera.center.x + 200, camera.center.y]);
-    player.focused = false;
-    new Terrain(camera.zero.add(new Vec2(0, camera.height - 60)), new Vec2(camera.width, 30));
-    new Terrain(camera.zero.add(new Vec2(500, camera.height - 60 - 150)), new Vec2(300, 150));
+    camera.focus_on(new Player([96, 96], [camera.center.x, camera.center.y]));
+    new Terrain(
+        camera.zero.add(new Vec2(0, camera.height - 60)),
+        new Vec2(Math.floor(camera.width / 48) * 48, 48)
+    );
+    new Terrain(
+        camera.zero.add(new Vec2(0, camera.height - 60 - 8 * 48)),
+        new Vec2(2 * 48, 8 * 48)
+    );
+    new Terrain(
+        camera.zero.add(new Vec2(4 * 48, camera.height - 60 - 48)),
+        new Vec2(2 * 48, 48)
+    );
+    new Terrain(
+        camera.zero.add(new Vec2(6 * 48, camera.height - 60 - 5 * 48)),
+        new Vec2(2 * 48, 48)
+    );
 }
 
 function main_loop() {
-    const delta_time = (performance.now() - start) / 10.;
+    const delta_time = (performance.now() - start) / 10;
     start = performance.now();
     renderer.run(camera);
     camera.move(delta_time);
-    
-    GameObject.objects.forEach(go => {
+
+    GameObject.objects.forEach((go) => {
         go.run(delta_time);
         go.render();
     });
 
     event.refresh();
-    requestAnimationFrame(main_loop)
+    requestAnimationFrame(main_loop);
 }
 
 function main() {

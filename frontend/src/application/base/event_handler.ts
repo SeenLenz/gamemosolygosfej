@@ -6,7 +6,7 @@ export enum EventType {
     Pressed,
     Released,
     Up,
-    Down,   
+    Down,
 }
 
 export class EventHandler {
@@ -15,21 +15,33 @@ export class EventHandler {
     constructor(renderer: Renderer) {
         this.keyboard_event = new KeyboardEvent();
         this.mouse_event = new MouseEvent();
-        window.addEventListener("resize", _ => {
+        window.addEventListener("resize", (_) => {
             renderer.gl.canvas.width = renderer.canvas.clientWidth;
             renderer.gl.canvas.height = renderer.canvas.clientHeight;
-    
-            renderer.gl.viewport(0, 0, renderer.gl.canvas.width, renderer.gl.canvas.height);
-        })
+
+            renderer.gl.viewport(
+                0,
+                0,
+                renderer.gl.canvas.width,
+                renderer.gl.canvas.height
+            );
+        });
     }
 
     key_state(key: Keys, state: EventType): boolean {
         const current_state = this.keyboard_event.keys[key];
         if (state == EventType.Up) {
-            return current_state == EventType.Up ||current_state == EventType.Released ||current_state == undefined;
+            return (
+                current_state == EventType.Up ||
+                current_state == EventType.Released ||
+                current_state == undefined
+            );
         }
         if (state == EventType.Down) {
-            return current_state == EventType.Down ||current_state == EventType.Pressed;
+            return (
+                current_state == EventType.Down ||
+                current_state == EventType.Pressed
+            );
         }
 
         return current_state == state;
@@ -70,6 +82,7 @@ export enum Keys {
     D,
     F,
     Space,
+    Shift,
 }
 
 class KeyboardEvent {
@@ -102,6 +115,9 @@ class KeyboardEvent {
                 case "Space":
                     this.setKBEvent(Keys.Space);
                     break;
+                case "ShiftLeft":
+                    this.setKBEvent(Keys.Shift);
+                    break;
                 case "KeyF":
                     this.setKBEvent(Keys.F);
                     break;
@@ -129,6 +145,9 @@ class KeyboardEvent {
                 case "KeyF":
                     this.setKBEvent(Keys.F);
                     break;
+                case "ShiftLeft":
+                    this.setKBEvent(Keys.Shift);
+                    break;
             }
         });
     }
@@ -149,11 +168,12 @@ class KeyboardEvent {
     }
 
     setKBEvent(key: Keys) {
-        if ((this.current_event == EventType.Pressed &&
-            this.keys[key] != EventType.Down) || 
+        if (
+            (this.current_event == EventType.Pressed &&
+                this.keys[key] != EventType.Down) ||
             (this.current_event == EventType.Released &&
-            this.keys[key] != EventType.Up)) {
-
+                this.keys[key] != EventType.Up)
+        ) {
             this.keys[key] = this.current_event;
             this.active_keys.push(key);
         }

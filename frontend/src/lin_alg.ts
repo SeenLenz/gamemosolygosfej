@@ -7,6 +7,10 @@ export class Vec2 {
         this.y = y;
     }
 
+    static zeros() {
+        return new Vec2(0, 0);
+    }
+
     set(x: number, y: number) {
         this.x = x;
         this.y = y;
@@ -163,6 +167,5 @@ export class Vec3 {
 
     as_raw() {
         return new Float32Array([this.x, this.y, this.z]);
-
     }
 }

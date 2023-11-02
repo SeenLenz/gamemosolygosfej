@@ -4,7 +4,8 @@ import { Obj, Quad } from "./object";
 import { setup } from "./setup";
 
 export type Texture = {
-    sprite_count: number;
+    sprites: [Vec2, number][];
+    max_sprites: Vec2;
     texture: WebGLTexture;
 };
 
@@ -90,7 +91,7 @@ export class Renderer {
         return {buffer: buffer, attribute: attribute}
     }
 
-    create_texture(image_source: string, sprite_count: number) {
+    create_texture(image_source: string, sprite_desc: [Vec2, number][], max_sprites: Vec2) {
         let texture = this.gl.createTexture();
         this.gl.bindTexture(this.gl.TEXTURE_2D, texture);
 
@@ -107,7 +108,7 @@ export class Renderer {
         });
 
         if (texture) {
-            this.textures.push({texture: texture, sprite_count: sprite_count})
+            this.textures.push({texture: texture, sprites: sprite_desc, max_sprites: max_sprites})
         }
     }
 

@@ -163,8 +163,8 @@ export class Empty extends GameObject {
 }
 
 export class StaticGameObj extends GameObject {
-    constructor(size: Vec2, position: Vec2) {
-        super(size, position);
+    constructor(scale: Vec2, position: Vec2) {
+        super(scale, position);
     }
 
     run(delta_time: number) {
@@ -177,8 +177,8 @@ export class DynamicGameObj extends GameObject {
     velocity: Vec2;
     force: Vec2;
     collisions: boolean[];
-    constructor(size: Vec2, position: Vec2) {
-        super(size, position);
+    constructor(scale: Vec2, position: Vec2) {
+        super(scale, position);
 
         this.isDynamic = true;
         this.reactive = false;
@@ -230,31 +230,41 @@ export class DynamicGameObj extends GameObject {
                 y_collision -= (obj as DynamicGameObj).velocity.y * delta_time;
             }
 
-            if (x_collision > 0 && x_collision < this.size.x + obj.size.x) {
-                if (y_collision > 0 && y_collision < this.size.y + obj.size.y) {
-                    let x_min = Math.min(this.pos.x, obj.pos.x);
+            if (
+                x_collision > 0 &&
+                x_collision < this.hitbox.size.x + obj.hitbox.size.x
+            ) {
+                if (
+                    y_collision > 0 &&
+                    y_collision < this.hitbox.size.y + obj.hitbox.size.y
+                ) {
+                    let x_min = Math.min(this.hitbox.pos.x, obj.hitbox.pos.x);
                     let x_max = Math.max(
-                        this.pos.x + this.size.x,
-                        obj.pos.x + obj.size.x
+                        this.hitbox.pos.x + this.hitbox.size.x,
+                        obj.hitbox.pos.x + obj.hitbox.size.x
                     );
 
-                    let y_min = Math.min(this.pos.y, obj.pos.y);
+                    let y_min = Math.min(this.hitbox.pos.y, obj.hitbox.pos.y);
                     let y_max = Math.max(
-                        this.pos.y + this.size.y,
-                        obj.pos.y + obj.size.y
+                        this.hitbox.pos.y + this.hitbox.size.y,
+                        obj.hitbox.pos.y + obj.hitbox.size.y
                     );
 
                     let x_diff = Math.abs(
-                        obj.size.x - (x_max - x_min - this.size.x)
+                        obj.hitbox.size.x - (x_max - x_min - this.hitbox.size.x)
                     );
                     let y_diff = Math.abs(
-                        obj.size.y - (y_max - y_min - this.size.y)
+                        obj.hitbox.size.y - (y_max - y_min - this.hitbox.size.y)
                     );
 
                     if (x_diff < y_diff) {
                         if (
-                            Math.abs(obj.pos.x - this.pos.x) <
-                            Math.abs(obj.pos.x + obj.size.x - this.pos.x)
+                            Math.abs(obj.hitbox.pos.x - this.hitbox.pos.x) <
+                            Math.abs(
+                                obj.hitbox.pos.x +
+                                    obj.hitbox.size.x -
+                                    this.hitbox.pos.x
+                            )
                         ) {
                             collisions.push({
                                 obj: obj,
@@ -268,8 +278,12 @@ export class DynamicGameObj extends GameObject {
                         }
                     } else {
                         if (
-                            Math.abs(obj.pos.y - this.pos.y) <
-                            Math.abs(obj.pos.y + obj.size.y - this.pos.y)
+                            Math.abs(obj.hitbox.pos.y - this.hitbox.pos.y) <
+                            Math.abs(
+                                obj.hitbox.pos.y +
+                                    obj.hitbox.size.y -
+                                    this.hitbox.pos.y
+                            )
                         ) {
                             collisions.push({
                                 obj: obj,
@@ -309,17 +323,18 @@ export class DynamicGameObj extends GameObject {
         return this.collisions[dir];
     }
 
-    motion(delta_time: number) {
-        this.velocity.y += this.acceleration.y * delta_time;
-        this.velocity.x += this.acceleration.x * delta_time;
+    private set_hb_position() {
+        this.hitbox.pos.set_vec(this.pos.add(this.hb_pos_diff));
+    }
 
-        this.velocity.y =
-            Math.abs(this.velocity.y) < delta_time * gravity
-                ? 0
-                : this.velocity.y;
+    motion(delta_time: number) {
+        this.velocity.y += this.force.y * delta_time;
+        this.velocity.x -= this.force.x * delta_time;
 
         this.pos.y += this.velocity.y * delta_time;
         this.pos.x += this.velocity.x * delta_time;
+
+        this.set_hb_position();
         this.force.set(0, 0);
     }
 
@@ -333,16 +348,22 @@ export class DynamicGameObj extends GameObject {
         } else {
             this.on_collision_y(collision.obj, collision.dir);
         }
+        this.set_hb_position();
     }
 
     on_collision_x(obj: GameObject, dir: CollisionDir) {
         if (dir == CollisionDir.Left) {
-            this.pos.x = obj.pos.x + obj.size.x;
+            this.pos.x =
+                obj.hitbox.pos.x + obj.hitbox.size.x - this.hb_pos_diff.x;
+
             this.collisions[CollisionDir.Left] = true;
         } else {
-            this.pos.x = obj.pos.x - this.size.x;
+            this.pos.x =
+                obj.hitbox.pos.x - this.hitbox.size.x - this.hb_pos_diff.x;
             this.collisions[CollisionDir.Right] = true;
         }
+
+        this.velocity.x = 0;
     }
 
     on_collision_y(obj: GameObject, dir: CollisionDir) {

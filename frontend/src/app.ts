@@ -2,10 +2,10 @@ import { Renderer } from "./renderer/renderer";
 import { EventHandler } from "./application/base/event_handler";
 import { GameObject } from "./application/base/gameobject";
 import { Camera } from "./application/base/camera";
-import { Vec2 } from "./lin_alg";
-import { Terrain } from "./application/gamelogic/terrain";
-import { Effect } from "./application/base/effects";
 import { Player } from "./application/gamelogic/player";
+import { Vec2 } from "./lin_alg";
+import { Background, Terrain } from "./application/gamelogic/terrain";
+import { Effect } from "./application/base/effects";
 
 document.addEventListener("DOMContentLoaded", () => {
     main();
@@ -14,10 +14,8 @@ document.addEventListener("DOMContentLoaded", () => {
 export const renderer = new Renderer();
 export const event = new EventHandler(renderer);
 export let camera = new Camera();
-export let gravity = 0.1;
-
+export let gravity = 0.5;
 let start = 1;
-const Pali = new Worker("./webworker/worker.ts");
 
 export enum SpriteSheets {
     Player,
@@ -26,7 +24,7 @@ export enum SpriteSheets {
     GroundedEffect,
     DashEffect,
     Background,
-    OtherBackground,
+    OtherBackground
 }
 
 function setup() {

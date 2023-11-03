@@ -1,11 +1,11 @@
-import { Obj, Quad } from "../../renderer/object";
-import { gravity, renderer } from "../../app";
-import { Vec2, Vec3 } from "../../lin_alg";
+import { Obj } from "../../renderer/object";
+import { SpriteSheets, gravity, renderer } from "../../app";
+import { Vec2 } from "../../lin_alg";
 
 export enum ObjectTag {
-  None,
-  Player,
-  Terrain,
+    Empty,
+    Player,
+    Terrain,
 }
 
 export enum CollisionDir {
@@ -15,36 +15,151 @@ export enum CollisionDir {
   Left,
 }
 
+export class Hitbox {
+    size: Vec2 = new Vec2(0, 0);
+    pos: Vec2 = new Vec2(0, 0);
+    constructor(size: Vec2, pos: Vec2) {
+        this.size.set_vec(size);
+        this.pos.set_vec(pos);
+    }
+}
+
 export class GameObject {
-  object: Obj;
-  mass: number;
-  object_tag: ObjectTag;
-  pos: Vec2;
-  scale: Vec2;
-  collidable: boolean;
-  isDynamic: boolean;
-  color: Vec3;
+    // render attribs
+    object: Obj;
+    rotation: number;
+    pos: Vec2;
+    size: Vec2;
+    z_coord: number = 1;
+    x_direction: number = 1;
 
-  constructor(scale: Vec2, position: Vec2) {
-    this.object = renderer.base_quad_obj as Obj;
-    this.mass = scale.x * scale.y;
-    this.object_tag = ObjectTag.None;
-    this.isDynamic = false;
-    this.collidable = true;
-    this.pos = position;
-    this.scale = scale;
-    this.color = new Vec3(1, 1, 1);
+    // object props
+    mass: number;
+    collidable: boolean;
+    isDynamic: boolean;
+    object_tag: ObjectTag;
+    // --> hitbox
+    hitbox: Hitbox;
+    hb_pos_diff: Vec2;
 
-    GameObject.objects.push(this);
-  }
+    // textures
+    texture_buffer: { buffer: WebGLBuffer; attribute: number };
+    texture_coords: Float32Array;
+    texture_index: number = SpriteSheets.Player;
+    sprite_index: number = 0;
+    //--> animations
+    current_frame = 0;
+    animation_timer = 0;
+    constructor(size: Vec2, position: Vec2) {
+        this.object = renderer.base_quad_obj as Obj;
+        this.mass = size.x * size.y;
+        this.object_tag = ObjectTag.Empty;
+        this.isDynamic = false;
+        this.collidable = true;
+        this.pos = position;
+        this.size = size;
+        this.hitbox = new Hitbox(this.size, this.pos);
+        this.hb_pos_diff = this.pos.sub(this.hitbox.pos);
+        this.rotation = 0;
+        this.texture_coords = new Float32Array(8);
+        this.texture_buffer = renderer.create_buffer(
+            renderer.gl.STATIC_DRAW,
+            this.texture_coords,
+            "texture_coord"
+        );
+        GameObject.objects.push(this);
+    }
 
-  run(delta_time: number) {}
+    run(delta_time: number) {}
 
-  render() {
-    this.object.render(renderer, this.pos, this.scale, this.color);
-  }
+    render() {
+        this.object.render(renderer, this);
+    }
+
+    get index() {
+        return GameObject.objects.findIndex((obj) => obj == this);
+    }
+
+    get texture() {
+        return renderer.textures[this.texture_index];
+    }
+
+    remove() {
+        GameObject.objects.splice(this.index, 1);
+    }
+
+    get sprite() {
+        return this.texture.sprites[this.sprite_index];
+    }
+
+    get sprite_size() {
+        return new Vec2(1, 1).div(this.texture.max_sprites);
+    }
+
+    set_texture_coords(size: Vec2, offset: Vec2) {
+        // Optimization needed
+        if (this.x_direction == 1) {
+            this.texture_coords = new Float32Array([
+                offset.x * size.x,
+                offset.y * size.y + size.y,
+                offset.x * size.x,
+                offset.y * size.y,
+                offset.x * size.x + size.x,
+                offset.y * size.y + size.y,
+                offset.x * size.x + size.x,
+                offset.y * size.y,
+            ]);
+        } else {
+            this.texture_coords = new Float32Array([
+                offset.x * size.x + size.x,
+                offset.y * size.y + size.y,
+                offset.x * size.x + size.x,
+                offset.y * size.y,
+                offset.x * size.x,
+                offset.y * size.y + size.y,
+                offset.x * size.x,
+                offset.y * size.y,
+            ]);
+        }
+
+        renderer.gl.bindBuffer(
+            renderer.gl.ARRAY_BUFFER,
+            this.texture_buffer.buffer
+        );
+        renderer.gl.bufferSubData(
+            renderer.gl.ARRAY_BUFFER,
+            0,
+            this.texture_coords
+        );
+    }
+
+    animate(frame_diff: number) {
+        if (performance.now() - this.animation_timer > frame_diff) {
+            this.animation_timer = performance.now();
+            this.current_frame += 1;
+            if (this.current_frame > this.sprite[1] - 1) {
+                this.current_frame = 0;
+            }
+            this.set_texture_coords(
+                new Vec2(this.sprite_size.x, this.sprite_size.y),
+                new Vec2(
+                    this.sprite[0].x + this.current_frame,
+                    this.sprite[0].y
+                )
+            );
+        }
+    }
 
   static objects: GameObject[] = [];
+}
+
+export class Empty extends GameObject {
+    constructor(position: Vec2) {
+        super(new Vec2(0, 0), position);
+        this.collidable = false;
+        this.mass = 0;
+        this.object_tag = ObjectTag.Empty;
+    }
 }
 
 export class StaticGameObj extends GameObject {
@@ -52,7 +167,9 @@ export class StaticGameObj extends GameObject {
     super(scale, position);
   }
 
-  run(delta_time: number) {}
+    run(delta_time: number) {
+        super.run(delta_time);
+    }
 }
 
 export class DynamicGameObj extends GameObject {
@@ -71,7 +188,7 @@ export class DynamicGameObj extends GameObject {
     this.collisions = new Array(4);
   }
 
-  start() {}
+    start() {}
 
   get acceleration() {
     return new Vec2(this.force.x / this.mass, this.force.y / this.mass);
@@ -81,66 +198,65 @@ export class DynamicGameObj extends GameObject {
     this.force.add_self(force);
   }
 
-  collide(delta_time: number) {
-    let collisions = [];
-    for (let obj of GameObject.objects) {
-      if (
-        (this.isDynamic && !this.reactive && obj.isDynamic) ||
-        (obj.isDynamic && !(obj as DynamicGameObj).reactive && this.isDynamic)
-      ) {
-        continue;
-      }
+    collide(delta_time: number) {
+        let collisions = [];
+        for (let obj of GameObject.objects) {
+            if (
+                (this.isDynamic && !this.reactive && obj.isDynamic) ||
+                (obj.isDynamic &&
+                    !(obj as DynamicGameObj).reactive &&
+                    this.isDynamic)
+            ) {
+                continue;
+            }
 
       if (!(this.collidable && obj.collidable && obj != this)) {
         continue;
       }
 
-      let x_collision =
-        this.pos.x + this.scale.x - obj.pos.x + this.velocity.x * delta_time;
-      let y_collision =
-        this.pos.y + this.scale.y - obj.pos.y + this.velocity.y * delta_time;
+            let x_collision =
+                this.hitbox.pos.x +
+                this.hitbox.size.x -
+                obj.hitbox.pos.x +
+                this.velocity.x * delta_time;
+            let y_collision =
+                this.hitbox.pos.y +
+                this.hitbox.size.y -
+                obj.hitbox.pos.y +
+                this.velocity.y * delta_time;
 
       if (obj.isDynamic) {
         x_collision -= (obj as DynamicGameObj).velocity.x * delta_time;
         y_collision -= (obj as DynamicGameObj).velocity.y * delta_time;
       }
 
-      if (x_collision > 0 && x_collision < this.scale.x + obj.scale.x) {
-        if (y_collision > 0 && y_collision < this.scale.y + obj.scale.y) {
-          let x_min = Math.min(this.pos.x, obj.pos.x);
-          let x_max = Math.max(
-            this.pos.x + this.scale.x,
-            obj.pos.x + obj.scale.x
-          );
+            if (x_collision > 0 && x_collision < this.scale.x + obj.scale.x) {
+                if (y_collision > 0 && y_collision < this.scale.y + obj.scale.y) {
+                    let x_min = Math.min(this.pos.x, obj.pos.x);
+                    let x_max = Math.max(this.pos.x + this.scale.x, obj.pos.x + obj.scale.x);
 
-          let y_min = Math.min(this.pos.y, obj.pos.y);
-          let y_max = Math.max(
-            this.pos.y + this.scale.y,
-            obj.pos.y + obj.scale.y
-          );
+                    let y_min = Math.min(this.pos.y, obj.pos.y);
+                    let y_max = Math.max(this.pos.y + this.scale.y, obj.pos.y + obj.scale.y);
 
-          let x_diff = Math.abs(obj.scale.x - (x_max - x_min - this.scale.x));
-          let y_diff = Math.abs(obj.scale.y - (y_max - y_min - this.scale.y));
+                    let x_diff = Math.abs(obj.scale.x - (x_max - x_min - this.scale.x));
+                    let y_diff = Math.abs(obj.scale.y - (y_max - y_min - this.scale.y));
 
-          if (x_diff < y_diff) {
-            if (
-              Math.abs(obj.pos.x - this.pos.x) <
-              Math.abs(obj.pos.x + obj.scale.x - this.pos.x)
-            ) {
-              collisions.push({ obj: obj, dir: CollisionDir.Right });
-            } else {
-              collisions.push({ obj: obj, dir: CollisionDir.Left });
-            }
-          } else {
-            if (
-              Math.abs(obj.pos.y - this.pos.y) <
-              Math.abs(obj.pos.y + obj.scale.y - this.pos.y)
-            ) {
-              collisions.push({ obj: obj, x: 0, dir: CollisionDir.Bottom });
-            } else {
-              collisions.push({ obj: obj, x: 0, dir: CollisionDir.Top });
-            }
-          }
+                    if (x_diff < y_diff) {
+                        if (Math.abs(obj.pos.x - this.pos.x) < Math.abs(obj.pos.x + obj.scale.x - this.pos.x)) {
+                            collisions.push({ obj: obj, dir: CollisionDir.Right });
+                        }
+                        else {
+                            collisions.push({ obj: obj, dir: CollisionDir.Left });
+                        }
+                    }
+                    else {
+                        if (Math.abs(obj.pos.y - this.pos.y) < Math.abs(obj.pos.y + obj.scale.y - this.pos.y)) {
+                            collisions.push({ obj: obj, x: 0, dir: CollisionDir.Bottom });
+                        }
+                        else {
+                            collisions.push({ obj: obj, x: 0, dir: CollisionDir.Top });
+                        }
+                    }
 
           if (collisions.length == 4) {
             return collisions;
@@ -152,62 +268,66 @@ export class DynamicGameObj extends GameObject {
     return collisions;
   }
 
-  collision(delta_time: number) {
-    const collisions = this.collide(delta_time);
-    for (let i = 0; i < 4; i++) {
-      this.collisions[i] = false;
+    collision(delta_time: number) {
+        const collisions = this.collide(delta_time);
+        for (let i = 0; i < 4; i++) {
+            this.collisions[i] = false;
+        }
+        for (let collision of collisions) {
+            this.on_collision(collision);
+        }
+
     }
-    for (let collision of collisions) {
-      this.on_collision(collision);
+
+    collision_dir(dir: CollisionDir): boolean {
+        return this.collisions[dir];
     }
-  }
 
-  collision_dir(dir: CollisionDir): boolean {
-    return this.collisions[dir];
-  }
-
-  motion(delta_time: number) {
-    this.velocity.y += this.acceleration.y * delta_time;
-    this.velocity.x += this.acceleration.x * delta_time;
-
-    this.velocity.y =
-      Math.abs(this.velocity.y) < delta_time * gravity ? 0 : this.velocity.y;
-
-    this.pos.y += this.velocity.y * delta_time;
-    this.pos.x += this.velocity.x * delta_time;
-    this.force.set(0, 0);
-  }
+    motion(delta_time: number) {
+        this.velocity.y += this.acceleration.y * delta_time;
+        this.velocity.x += this.acceleration.x * delta_time;
+        
+        this.velocity.y = Math.abs(this.velocity.y) < delta_time * gravity ? 0 : this.velocity.y;
+        
+        this.pos.y += this.velocity.y * delta_time;
+        this.pos.x += this.velocity.x * delta_time;
+        this.force.set(0, 0);
+    }
 
   run(delta_time: number) {
     super.run(delta_time);
   }
 
-  on_collision(collision: { obj: GameObject; dir: CollisionDir }) {
-    if (collision.dir > 1) {
-      this.on_collision_x(collision.obj, collision.dir);
-    } else {
-      this.on_collision_y(collision.obj, collision.dir);
+    on_collision(collision: {obj: GameObject, dir: CollisionDir}) {
+        if (collision.dir > 1) {
+            this.on_collision_x(collision.obj, collision.dir);
+        }
+        else {
+            this.on_collision_y(collision.obj, collision.dir);
+        }
     }
-  }
 
-  on_collision_x(obj: GameObject, dir: CollisionDir) {
-    if (dir == CollisionDir.Left) {
-      this.pos.x = obj.pos.x + obj.scale.x;
-      this.collisions[CollisionDir.Left] = true;
-    } else {
-      this.pos.x = obj.pos.x - this.scale.x;
-      this.collisions[CollisionDir.Right] = true;
+    on_collision_x(obj: GameObject, dir: CollisionDir) {
+        if (dir == CollisionDir.Left) {
+            this.pos.x = obj.pos.x + obj.scale.x;
+            this.collisions[CollisionDir.Left] = true;
+        }
+        else {
+            this.pos.x = obj.pos.x - this.scale.x;
+            this.collisions[CollisionDir.Right] = true;
+        }
     }
-  }
 
-  on_collision_y(obj: GameObject, dir: CollisionDir) {
-    if (dir == CollisionDir.Top) {
-      this.pos.y = obj.pos.y + obj.scale.y;
-      this.collisions[CollisionDir.Top] = true;
-    } else {
-      this.pos.y = obj.pos.y - this.scale.y;
-      this.collisions[CollisionDir.Bottom] = true;
-    }
+    on_collision_y(obj: GameObject, dir: CollisionDir) {
+        if (dir == CollisionDir.Top) {
+            this.pos.y =
+                obj.hitbox.pos.y + obj.hitbox.size.y - this.hb_pos_diff.y;
+            this.collisions[CollisionDir.Top] = true;
+        } else {
+            this.pos.y =
+                obj.hitbox.pos.y - this.hitbox.size.y - this.hb_pos_diff.y;
+            this.collisions[CollisionDir.Bottom] = true;
+        }
 
     this.velocity.y = 0;
   }

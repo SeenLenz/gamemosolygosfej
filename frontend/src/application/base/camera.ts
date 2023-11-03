@@ -1,15 +1,19 @@
-import { renderer } from "../../app";
+import { event, renderer } from "../../app";
 import { Vec2 } from "../../lin_alg";
-import { GameObject } from "./gameobject";
+import { EventType, Keys } from "./event_handler";
+import { GameObject, ObjectTag } from "./gameobject";
 
 export class Camera {
     pos: Vec2;
     scale: number;
     focus_multip: number = 0.03
     focus_obj!: GameObject;
+    rotation: number;
+    target_zoom = 275;
     constructor() {
         this.pos = new Vec2(0, 0);
-        this.scale = 0.5;
+        this.scale = 1;
+        this.rotation = 0;
     }
 
     convert() {
@@ -17,14 +21,25 @@ export class Camera {
     }
 
     move(delta_time: number) {
-        this.pos.x += (this.focus_obj.pos.x - renderer.canvas.width / 2 - this.pos.x) * this.focus_multip * delta_time;
-        this.pos.y += (this.focus_obj.pos.y - renderer.canvas.height / 2 - this.pos.y) * this.focus_multip * delta_time;
+        this.pos.x += (this.focus_obj.pos.x + this.focus_obj.size.x / 2 - renderer.canvas.width / 2 - this.pos.x) * this.focus_multip * delta_time;
+        this.pos.y += (this.focus_obj.pos.y + this.focus_obj.size.y / 2 - renderer.canvas.height / 2 - this.pos.y - this.target_zoom / this.scale) * this.focus_multip * delta_time;
+        if (this.focus_obj.object_tag != ObjectTag.Empty){
+            this.scale += (this.target_zoom / this.focus_obj.size.y * 0.5 - this.scale) * this.focus_multip * delta_time;
+        }
+        // 200 / height
     }
     
     get zero() {
         return new Vec2(
             this.pos.x - renderer.canvas.width * this.scale, 
             this.pos.y - renderer.canvas.height * this.scale
+            );
+    }
+
+    get center() {
+        return new Vec2(
+            this.pos.x - renderer.canvas.width * this.scale + this.width / 2, 
+            this.pos.y - renderer.canvas.height * this.scale+ this.height / 2
             );
     }
 

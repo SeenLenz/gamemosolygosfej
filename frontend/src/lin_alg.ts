@@ -7,10 +7,23 @@ export class Vec2 {
     this.y = y;
   }
 
+    static zeros() {
+        return new Vec2(0, 0);
+    }
+
+    static from(vec2: Vec2) {
+        return new Vec2(vec2.x, vec2.y);
+    }
+
   set(x: number, y: number) {
     this.x = x;
     this.y = y;
   }
+
+    set_vec(vec2: Vec2) {
+        this.x = vec2.x;
+        this.y = vec2.y;
+    }
 
   add(vec2: Vec2) {
     let result = new Vec2(0, 0);
@@ -31,10 +44,10 @@ export class Vec2 {
     return result;
   }
 
-  sub_self(vec2: Vec2) {
-    this.x -= vec2.x;
-    this.y -= vec2.y;
-  }
+    sub_self(vec2: Vec2) {
+        this.x -= vec2.x;
+        this.y -= vec2.y;
+    }
 
   mul(vec2: Vec2) {
     let result = new Vec2(0, 0);
@@ -68,13 +81,13 @@ export class Vec2 {
     return new Vec2(this.x / this.len(), this.y / this.len());
   }
 
-  normalize() {
-    let result = new Vec2(0, 0);
-    let a = this.x / this.y;
-    result.y = Math.sqrt(1 / (a * a + 1));
-    result.x = result.y * a;
-    return result;
-  }
+    normalize() {
+        let result = new Vec2(0, 0);
+        let a = (this.x / this.y);
+        result.y = Math.sqrt(1 / (a * a + 1));
+        result.x = result.y * a;
+        return result;
+    }
 
   as_raw() {
     return new Float32Array([this.x, this.y]);
@@ -120,11 +133,11 @@ export class Vec3 {
     return result;
   }
 
-  sub_self(vec3: Vec3) {
-    this.x -= vec3.x;
-    this.y -= vec3.y;
-    this.z -= vec3.z;
-  }
+    sub_self(vec3: Vec3) {
+        this.x -= vec3.x;
+        this.y -= vec3.y;
+        this.z -= vec3.z;
+    }
 
   mul(vec3: Vec3) {
     let result = new Vec3(0, 0, 0);
@@ -154,7 +167,8 @@ export class Vec3 {
     this.z /= vec3.z;
   }
 
-  as_raw() {
-    return new Float32Array([this.x, this.y, this.z]);
-  }
+    as_raw() {
+        return new Float32Array([this.x, this.y, this.z]);
+    }
 }
+

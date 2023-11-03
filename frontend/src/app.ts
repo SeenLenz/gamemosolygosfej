@@ -5,15 +5,16 @@ import { Camera } from "./application/base/camera";
 import { Vec2 } from "./lin_alg";
 import { Terrain } from "./application/gamelogic/terrain";
 import { Effect } from "./application/base/effects";
+import { Player } from "./application/gamelogic/player";
 
 document.addEventListener("DOMContentLoaded", () => {
-  main();
+    main();
 });
 
 export const renderer = new Renderer();
 export const event = new EventHandler(renderer);
 export let camera = new Camera();
-export let gravity = 0.8;
+export let gravity = 0.1;
 
 let start = 1;
 const Pali = new Worker("./webworker/worker.ts");
@@ -25,7 +26,7 @@ export enum SpriteSheets {
     GroundedEffect,
     DashEffect,
     Background,
-    OtherBackground
+    OtherBackground,
 }
 
 function setup() {
@@ -103,12 +104,12 @@ function main_loop() {
         e.animate();
     });
 
-  event.refresh();
-  requestAnimationFrame(main_loop);
+    event.refresh();
+    requestAnimationFrame(main_loop);
 }
 
 function main() {
-  setup();
+    setup();
 
-  main_loop();
+    main_loop();
 }

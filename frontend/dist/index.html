@@ -40,6 +40,10 @@
 
             //calculate the transformations
             vec2 screen_pos = new_pos * u_scale + u_screen_position;
+            shade_multip = 1.;
+            if (screen_pos.y > 1.) {
+                shade_multip = 1. / screen_pos.y * 30.;
+            }
             screen_pos -= camera.xy * u_z_coord + vec2(1, 1) / 2. * u_res;
             screen_pos = vec2(screen_pos.x * camera_rot.y + screen_pos.y * camera_rot.x, screen_pos.y * camera_rot.y - screen_pos.x * camera_rot.x);
             screen_pos += vec2(1, 1) / 2. * u_res;
@@ -65,7 +69,8 @@
         uniform sampler2D u_sampler;
 
         void main() {
-            fragColor = texture(u_sampler, v_texture_coords);
+            fragColor = texture(u_sampler, v_texture_coords);\
+            fragColor.xyz *= shade_multip;
         }
     </script>
 </html>

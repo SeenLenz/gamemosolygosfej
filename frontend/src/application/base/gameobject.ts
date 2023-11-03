@@ -31,6 +31,7 @@ export class GameObject {
     pos: Vec2;
     size: Vec2;
     z_coord: number = 1;
+    x_direction: number = 1;
 
     // object props
     mass: number;
@@ -46,7 +47,6 @@ export class GameObject {
     texture_coords: Float32Array;
     texture_index: number = SpriteSheets.Player;
     sprite_index: number = 0;
-    x_direction: number = 1;
     //--> animations
     current_frame = 0;
     animation_timer = 0;

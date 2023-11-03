@@ -73,42 +73,6 @@ function setup() {
     );
 
     camera.focus_multip = 0.03;
-    new Background(
-        camera.zero.add(new Vec2(800, 500)),
-        new Vec2(64 / (48 / 8) * 60, 128 / (48 / 8) * 60),
-        SpriteSheets.Background,
-        0.4
-    );
-    new Background(
-        camera.zero.add(new Vec2(1800, 500)),
-        new Vec2(64 / (48 / 8) * 60, 128 / (48 / 8) * 60),
-        SpriteSheets.OtherBackground,
-        0.5
-        );
-    new Background(
-        camera.zero.add(new Vec2(1500, 500)),
-        new Vec2(64 / (48 / 8) * 60, 128 / (48 / 8) * 60),
-        SpriteSheets.Background,
-        0.6
-    );
-    new Background(
-        camera.zero.add(new Vec2(300, 500)),
-        new Vec2(64 / (48 / 8) * 60, 128 / (48 / 8) * 60),
-        SpriteSheets.OtherBackground,
-        0.7
-    );
-    new Background(
-        camera.zero.add(new Vec2(500, 500)),
-        new Vec2(64 / (48 / 8) * 60, 128 / (48 / 8) * 60),
-        SpriteSheets.Background,
-        0.8
-    );
-    new Background(
-        camera.zero.add(new Vec2(1900, 500)),
-        new Vec2(64 / (48 / 8) * 60, 128 / (48 / 8) * 60),
-        SpriteSheets.OtherBackground,
-        0.9
-    );
 
     new Terrain(
         camera.zero.add(new Vec2(0, camera.height)),
@@ -117,11 +81,10 @@ function setup() {
     );
     new Terrain(
         camera.zero.add(new Vec2(0, camera.height + 48)),
-        new Vec2(Math.floor(camera.width / 48) * 48 * 4, 48 * 10 - 1),
+        new Vec2(Math.floor(camera.width / 48) * 48 * 4, 48 * 10),
         SpriteSheets.Ground
     );
     camera.focus_on(new Player([96, 96], [camera.center.x, camera.center.y]));
-    
 }
 
 function main_loop() {

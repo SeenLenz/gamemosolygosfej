@@ -6,10 +6,14 @@ import { Player } from "./application/gamelogic/player";
 import { Vec2 } from "./lin_alg";
 import { Background, Terrain } from "./application/gamelogic/terrain";
 import { Effect } from "./application/base/effects";
+import { Map } from "./application/gamelogic/map/map";
+import { create_textures } from "./application/base/textures";
 
 document.addEventListener("DOMContentLoaded", () => {
     main();
 });
+
+
 
 export const renderer = new Renderer();
 export const event = new EventHandler(renderer);
@@ -17,74 +21,16 @@ export let camera = new Camera();
 export let gravity = 0.5;
 let start = 1;
 
-export enum SpriteSheets {
-    Player,
-    Map,
-    Ground,
-    GroundedEffect,
-    DashEffect,
-    Background,
-    OtherBackground
-}
+export let map: Map;
 
 function setup() {
     renderer.setup();
-    renderer.create_texture(
-        "./textures/character/character_sprite_sheet.png",
-        [
-            [Vec2.zeros(), 8],
-            [new Vec2(0, 1), 1],
-            [new Vec2(1, 1), 1],
-            [new Vec2(2, 1), 1],
-            [new Vec2(3, 1), 1],
-            [new Vec2(4, 1), 1],
-        ],
-        new Vec2(8, 2)
-    );
-    renderer.create_texture(
-        "./textures/map/map.png",
-        [[Vec2.zeros(), 1]],
-        new Vec2(1, 1)
-    );
-    renderer.create_texture(
-        "./textures/map/underground.png",
-        [[Vec2.zeros(), 1]],
-        new Vec2(1, 1)
-    );
-    renderer.create_texture(
-        "./textures/effects/grounded.png",
-        [[Vec2.zeros(), 6]],
-        new Vec2(6, 1)
-    );
-    renderer.create_texture(
-        "./textures/effects/dash.png",
-        [[Vec2.zeros(), 12]],
-        new Vec2(12, 1)
-    );
-    renderer.create_texture(
-        "./textures/map/background.png",
-        [[Vec2.zeros(), 1]],
-        new Vec2(1, 1)
-    );
-    renderer.create_texture(
-        "./textures/map/background-1.png",
-        [[Vec2.zeros(), 1]],
-        new Vec2(1, 1)
-    );
+    create_textures();
 
+    map = new Map();
     camera.focus_multip = 0.03;
-
-    new Terrain(
-        camera.zero.add(new Vec2(0, camera.height)),
-        new Vec2(Math.floor(camera.width / 48) * 48 * 4, 48),
-        SpriteSheets.Map
-    );
-    new Terrain(
-        camera.zero.add(new Vec2(0, camera.height + 48)),
-        new Vec2(Math.floor(camera.width / 48) * 48 * 4, 48 * 10),
-        SpriteSheets.Ground
-    );
-    camera.focus_on(new Player([96, 96], [camera.center.x, camera.center.y]));
+    camera.focus_on(new Player([96, 96], [100, -500]));
+    
 }
 
 function main_loop() {
@@ -92,6 +38,7 @@ function main_loop() {
     start = performance.now();
     renderer.run(camera);
     camera.move(delta_time);
+    map.render(delta_time);
 
     GameObject.objects.forEach((go) => {
         go.run(delta_time);
@@ -100,6 +47,11 @@ function main_loop() {
 
     Effect.effects.forEach((e) => {
         e.animate();
+    });
+
+    map.foreground.forEach((obj) => {
+        obj.run(delta_time);
+        obj.render();
     });
 
     event.refresh();

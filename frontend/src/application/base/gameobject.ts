@@ -1,11 +1,14 @@
 import { Obj } from "../../renderer/object";
-import { SpriteSheets, gravity, renderer } from "../../app";
+import { renderer } from "../../app";
 import { Vec2 } from "../../lin_alg";
 
 export enum ObjectTag {
     Empty,
     Player,
     Terrain,
+    StreetLamp,
+    Bench,
+    House,
 }
 
 export enum CollisionDir {
@@ -18,6 +21,7 @@ export enum CollisionDir {
 export class Hitbox {
     size: Vec2 = new Vec2(0, 0);
     pos: Vec2 = new Vec2(0, 0);
+    pos_diff = Vec2.zeros();
     constructor(size: Vec2, pos: Vec2) {
         this.size.set_vec(size);
         this.pos.set_vec(pos);
@@ -38,28 +42,29 @@ export class GameObject {
     collidable: boolean;
     isDynamic: boolean;
     object_tag: ObjectTag;
+    reactive: boolean;
     // --> hitbox
     hitbox: Hitbox;
-    hb_pos_diff: Vec2;
 
     // textures
     texture_buffer: { buffer: WebGLBuffer; attribute: number };
     texture_coords: Float32Array;
-    texture_index: number = SpriteSheets.Player;
+    texture_index: number = 0;
     sprite_index: number = 0;
     //--> animations
     current_frame = 0;
     animation_timer = 0;
-    constructor(size: Vec2, position: Vec2) {
+    constructor(size: Vec2, position: Vec2, auto_render = true, reactive = true) {
         this.object = renderer.base_quad_obj as Obj;
         this.mass = size.x * size.y;
         this.object_tag = ObjectTag.Empty;
         this.isDynamic = false;
         this.collidable = true;
+        this.reactive = reactive;
         this.pos = position;
         this.size = size;
         this.hitbox = new Hitbox(this.size, this.pos);
-        this.hb_pos_diff = this.pos.sub(this.hitbox.pos);
+        this.hitbox.pos_diff = this.pos.sub(this.hitbox.pos);
         this.rotation = 0;
         this.texture_coords = new Float32Array(8);
         this.texture_buffer = renderer.create_buffer(
@@ -67,7 +72,12 @@ export class GameObject {
             this.texture_coords,
             "texture_coord"
         );
-        GameObject.objects.push(this);
+        if (auto_render) {
+            GameObject.objects.push(this);
+        }
+        if (this.collidable) {
+            GameObject.hitboxes.push(this);
+        }
     }
 
     run(delta_time: number) {}
@@ -80,12 +90,17 @@ export class GameObject {
         return GameObject.objects.findIndex((obj) => obj == this);
     }
 
+    get hitbox_index() {
+        return GameObject.hitboxes.findIndex((obj) => obj == this);
+    }
+
     get texture() {
         return renderer.textures[this.texture_index];
     }
 
     remove() {
         GameObject.objects.splice(this.index, 1);
+        GameObject.hitboxes.splice(this.hitbox_index, 1);
     }
 
     get sprite() {
@@ -151,6 +166,7 @@ export class GameObject {
     }
 
     static objects: GameObject[] = [];
+    static hitboxes: GameObject[] = [];
 }
 
 export class Empty extends GameObject {
@@ -163,8 +179,8 @@ export class Empty extends GameObject {
 }
 
 export class StaticGameObj extends GameObject {
-    constructor(scale: Vec2, position: Vec2) {
-        super(scale, position);
+    constructor(scale: Vec2, position: Vec2, auto_render = true, collidable = true) {
+        super(scale, position, auto_render, collidable);
     }
 
     run(delta_time: number) {
@@ -200,17 +216,8 @@ export class DynamicGameObj extends GameObject {
 
     collide(delta_time: number) {
         let collisions = [];
-        for (let obj of GameObject.objects) {
-            if (
-                (this.isDynamic && !this.reactive && obj.isDynamic) ||
-                (obj.isDynamic &&
-                    !(obj as DynamicGameObj).reactive &&
-                    this.isDynamic)
-            ) {
-                continue;
-            }
-
-            if (!(this.collidable && obj.collidable && obj != this)) {
+        for (let obj of GameObject.hitboxes) {
+            if (!(obj != this)) {
                 continue;
             }
 
@@ -324,7 +331,7 @@ export class DynamicGameObj extends GameObject {
     }
 
     private set_hb_position() {
-        this.hitbox.pos.set_vec(this.pos.add(this.hb_pos_diff));
+        this.hitbox.pos.set_vec(this.pos.add(this.hitbox.pos_diff));
     }
 
     motion(delta_time: number) {
@@ -352,14 +359,17 @@ export class DynamicGameObj extends GameObject {
     }
 
     on_collision_x(obj: GameObject, dir: CollisionDir) {
+        if (!this.reactive || !obj.reactive) {
+            return;
+        }
         if (dir == CollisionDir.Left) {
             this.pos.x =
-                obj.hitbox.pos.x + obj.hitbox.size.x - this.hb_pos_diff.x;
+                obj.hitbox.pos.x + obj.hitbox.size.x - this.hitbox.pos_diff.x;
 
             this.collisions[CollisionDir.Left] = true;
         } else {
             this.pos.x =
-                obj.hitbox.pos.x - this.hitbox.size.x - this.hb_pos_diff.x;
+                obj.hitbox.pos.x - this.hitbox.size.x - this.hitbox.pos_diff.x;
             this.collisions[CollisionDir.Right] = true;
         }
 
@@ -367,13 +377,16 @@ export class DynamicGameObj extends GameObject {
     }
 
     on_collision_y(obj: GameObject, dir: CollisionDir) {
+        if (!this.reactive || !obj.reactive) {
+            return;
+        }
         if (dir == CollisionDir.Top) {
             this.pos.y =
-                obj.hitbox.pos.y + obj.hitbox.size.y - this.hb_pos_diff.y;
+                obj.hitbox.pos.y + obj.hitbox.size.y - this.hitbox.pos_diff.y;
             this.collisions[CollisionDir.Top] = true;
         } else {
             this.pos.y =
-                obj.hitbox.pos.y - this.hitbox.size.y - this.hb_pos_diff.y;
+                obj.hitbox.pos.y - this.hitbox.size.y - this.hitbox.pos_diff.y;
             this.collisions[CollisionDir.Bottom] = true;
         }
 

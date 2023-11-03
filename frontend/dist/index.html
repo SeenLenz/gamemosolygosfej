@@ -9,10 +9,12 @@
 </head>
 
 <body>
-    <button id="msg_bt">Send Msg</button>
-    <input type="text" name="lobby" id="join_label">
-    <button id="join_bt">Join Lobby</button>
-    <button id="create_bt">create Lobby</button>
+    <div style="display: none;">
+        <button id="msg_bt">Send Msg</button>
+        <input type="text" name="lobby" id="join_label">
+        <button id="join_bt">Join Lobby</button>
+        <button id="create_bt">create Lobby</button>
+    </div>
     <canvas id="main_canvas">
     </canvas>
 </body>
@@ -34,6 +36,7 @@
 
         out vec2 v_texture_coords;
         out float shade_multip;
+        out float f_z_coord;
         void main() {
             vec2 new_pos = a_pos - vec2(0.5, 0.5);
             new_pos = vec2(new_pos.x * u_rotation.y + new_pos.y * u_rotation.x, new_pos.y * u_rotation.y - new_pos.x * u_rotation.x);
@@ -44,8 +47,8 @@
             //calculate the transformations
             vec2 screen_pos = new_pos * u_scale + u_screen_position;
             shade_multip = 1.;
-            if (screen_pos.y > 1.) {
-                shade_multip = 1. / screen_pos.y * 30.;
+            if (screen_pos.y > 15.) {
+                shade_multip = 1. / screen_pos.y * 10.;
             }
             screen_pos -= camera.xy * u_z_coord + vec2(1, 1) / 2. * u_res;
             screen_pos = vec2(screen_pos.x * camera_rot.y + screen_pos.y * camera_rot.x, screen_pos.y * camera_rot.y - screen_pos.x * camera_rot.x);
@@ -56,6 +59,7 @@
             
             // flip y axis to match with js
             screen_pos *= vec2(1, -1);
+            f_z_coord = u_z_coord;
 
             gl_Position = vec4(screen_pos, 0, 1);
             vec2 text_coord = vec2(texture_coord.x, texture_coord.y);
@@ -67,13 +71,14 @@
 
         in vec2 v_texture_coords;
         in float shade_multip;
+        in float f_z_coord;
         out vec4 fragColor;
 
         uniform sampler2D u_sampler;
 
         void main() {
             fragColor = texture(u_sampler, v_texture_coords);\
-            fragColor.xyz *= shade_multip;
+            fragColor.xyz *= shade_multip * f_z_coord * f_z_coord;
         }
     </script>
 

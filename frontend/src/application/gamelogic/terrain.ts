@@ -5,6 +5,8 @@ export class Terrain extends StaticGameObj {
     constructor(pos: Vec2, scale: Vec2, t_index: number) {
         super(scale, pos);
         this.object_tag = ObjectTag.Terrain;
+        this.hitbox.size.y = this.size.y - 18;
+        this.hitbox.pos.y += 18;
         this.texture_index = t_index;
         this.z_coord = 1;
     }
@@ -18,7 +20,6 @@ export class Terrain extends StaticGameObj {
     }
 }
 
-
 export class Background extends StaticGameObj {
     constructor(pos: Vec2, scale: Vec2, t_index: number, z_coord: number) {
         super(scale, pos);
@@ -30,9 +31,6 @@ export class Background extends StaticGameObj {
 
     run(delta_time: number): void {
         super.run(delta_time);
-        this.set_texture_coords(
-            new Vec2(1, 1),
-            new Vec2(0, 0)
-        );
+        this.set_texture_coords(new Vec2(1, 1), new Vec2(0, 0));
     }
 }

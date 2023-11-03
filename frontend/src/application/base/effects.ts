@@ -1,5 +1,6 @@
-import { SpriteSheets, renderer } from "../../app";
+import { renderer } from "../../app";
 import { Vec2 } from "../../lin_alg";
+import { SpriteSheets } from "./textures";
 
 export class Effect {
     size: Vec2 = Vec2.zeros();

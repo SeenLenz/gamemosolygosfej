@@ -1,4 +1,4 @@
-import { SpriteSheets, event, gravity } from "../../app";
+import { event, gravity } from "../../app";
 import { Vec2 } from "../../lin_alg";
 import { Effect } from "../base/effects";
 import { EventType, Keys } from "../base/event_handler";
@@ -9,6 +9,7 @@ import {
     Hitbox,
     ObjectTag,
 } from "../base/gameobject";
+import { SpriteSheets } from "../base/textures";
 
 export class Player extends DynamicGameObj {
     public focused: boolean = false;
@@ -29,7 +30,7 @@ export class Player extends DynamicGameObj {
             this.size.div(new Vec2(4, 4 / 3)),
             this.pos.sub(new Vec2((this.size.x / 4) * 1.5, this.size.y / 4))
         );
-        this.hb_pos_diff = new Vec2((this.size.x / 4) * 1.5, this.size.x / 4);
+        this.hitbox.pos_diff = new Vec2((this.size.x / 4) * 1.5, this.size.x / 4);
         this.mass = 1;
         this.reactive = true;
         this.focused = true;
@@ -104,12 +105,12 @@ export class Player extends DynamicGameObj {
 
         if (this.wall_slide) {
             this.hitbox.size = this.size.div(new Vec2(2, 4 / 3));
-            this.hb_pos_diff = new Vec2(this.size.x / 4, this.size.x / 4);
+            this.hitbox.pos_diff = new Vec2(this.size.x / 4, this.size.x / 4);
             this.velocity.y += (0 - this.velocity.y) * 0.08 * delta_time;
             this.force.y = 0;
         } else {
             this.hitbox.size = this.size.div(new Vec2(4, 4 / 3));
-            this.hb_pos_diff = new Vec2(
+            this.hitbox.pos_diff = new Vec2(
                 (this.size.x / 4) * 1.5,
                 this.size.x / 4
             );
@@ -171,12 +172,20 @@ export class Player extends DynamicGameObj {
 
     on_collision_x(obj: GameObject, dir: CollisionDir): void {
         super.on_collision_x(obj, dir);
-        if (!this.grounded) {
+        if (!this.grounded && obj.reactive) {
             this.wall_slide = true;
             this.has_jump = true;
             this.jump_dir = this.x_direction;
         }
         this.running = false;
         this.x_collision = true;
+    }
+
+    on_collision(collision: { obj: GameObject; dir: CollisionDir; }): void {
+        super.on_collision(collision);
+        const obj = collision.obj;
+        if (obj.object_tag == ObjectTag.StreetLamp) {
+            new Effect(obj.size.mul(new Vec2(2.5, 1)), obj.pos.sub(new Vec2(8 * 6, 0)), 1, SpriteSheets.LampLightEffect, 0, 0, 0);
+        }
     }
 }

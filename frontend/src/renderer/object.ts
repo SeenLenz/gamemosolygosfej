@@ -1,3 +1,4 @@
+import { camera } from "../app";
 import { GameObject } from "../application/base/gameobject";
 import { Vec2 } from "../lin_alg";
 import { Renderer } from "./renderer";
@@ -9,7 +10,7 @@ interface Renderable {
     x_direction: number;
     texture_buffer: { buffer: WebGLBuffer; attribute: number };
     texture_index: number;
-    z_coord: number,
+    z_coord: number;
 }
 
 export class Obj {
@@ -35,6 +36,15 @@ export class Obj {
     }
 
     render(renderer: Renderer, obj: Renderable) {
+        if (
+            obj.pos.x + obj.size.x - camera.pos.x < 0 ||
+            obj.pos.y + obj.size.y - camera.pos.y < 0 ||
+            obj.pos.x - camera.pos.x > camera.width * camera.scale ||
+            obj.pos.y - camera.pos.y > camera.height * camera.scale
+        ) {
+            return;
+        }
+
         renderer.gl.uniform2fv(renderer.uniform_position, obj.pos.as_raw());
         renderer.gl.uniform2fv(renderer.uniform_scale, obj.size.as_raw());
         renderer.gl.uniform2f(
@@ -42,7 +52,7 @@ export class Obj {
             Math.sin(obj.rotation),
             Math.cos(obj.rotation)
         );
-        
+
         renderer.gl.uniform1f(renderer.uniform_flip, obj.z_coord);
         renderer.gl.enableVertexAttribArray(this.vertex_buffer.attribute);
         renderer.gl.bindBuffer(

@@ -8,20 +8,42 @@ import { Background, Terrain } from "./application/gamelogic/terrain";
 import { Effect } from "./application/base/effects";
 import { Map } from "./application/gamelogic/map/map";
 import { create_textures } from "./application/base/textures";
-
-document.addEventListener("DOMContentLoaded", () => {
-    main();
-});
-
-
+import { Type, Test } from "../../types";
+import { Network } from "./networking/networking";
 
 export const renderer = new Renderer();
 export const event = new EventHandler(renderer);
 export let camera = new Camera();
 export let gravity = 0.5;
+export const network = new Network("127.0.0.1:3000");
 let start = 1;
 
 export let map: Map;
+
+document.addEventListener("DOMContentLoaded", () => {
+    document.querySelector("#join_bt")?.addEventListener("click", (e) => {
+        const joinLabelValue = (
+            document.querySelector("#join_label") as HTMLInputElement | null
+        )?.value;
+        if (joinLabelValue) {
+            network.join_lobby(joinLabelValue);
+        }
+    });
+    document.querySelector("#create_bt")?.addEventListener("click", (e) => {
+        network.create_lobby();
+    });
+    document.querySelector("#msg_bt")?.addEventListener("click", (e) => {
+        console.log("asdfasd" + network.domain);
+        network.send({
+            type: Type.test,
+            cid: network.ws_cfg?.lobby.client_id,
+            id: network.ws_cfg?.lobby.key,
+            data: { msg: "hello from the frontend" } as Test,
+        });
+    });
+
+    main();
+});
 
 function setup() {
     renderer.setup();
@@ -30,7 +52,6 @@ function setup() {
     map = new Map();
     camera.focus_multip = 0.03;
     camera.focus_on(new Player([96, 96], [100, -500]));
-    
 }
 
 function main_loop() {

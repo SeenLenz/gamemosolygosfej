@@ -9,7 +9,7 @@
 </head>
 
 <body>
-    <div style="display: none;">
+    <div style="position: absolute;">
         <button id="msg_bt">Send Msg</button>
         <input type="text" name="lobby" id="join_label">
         <button id="join_bt">Join Lobby</button>
@@ -18,7 +18,6 @@
     <canvas id="main_canvas">
     </canvas>
 </body>
-<script src="./networking.js" type="module"></script>
 <script src="index.js" type="module"></script>
 <script type="x-shader/x-vertex" id="vertex_shader">#version 300 es
         in vec2 a_pos;

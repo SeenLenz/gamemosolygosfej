@@ -13,6 +13,7 @@ export enum SpriteSheets {
     Bench,
     HouseFg,
     Background,
+    Wire,
 }
 
 export function create_textures() {
@@ -92,5 +93,12 @@ export function create_textures() {
             [new Vec2(2, 0), 1],
         ],
         new Vec2(3, 1)
+    );
+    renderer.create_texture(
+        "./textures/map/wire.png",
+        [
+            [Vec2.zeros(), 5],
+        ],
+        new Vec2(5, 1)
     );
 }

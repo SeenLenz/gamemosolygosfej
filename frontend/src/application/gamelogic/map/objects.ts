@@ -1,5 +1,8 @@
 import { Vec2 } from "../../../lin_alg";
+import { Obj } from "../../../renderer/object";
+import { Effect } from "../../base/effects";
 import {
+    CollisionDir,
     Hitbox,
     HitboxFlags,
     ObjectTag,
@@ -8,6 +11,8 @@ import {
 import { SpriteSheets } from "../../base/textures";
 
 export class StreetLamp extends StaticGameObj {
+    switchable = false;
+    light_effect: Effect | null = null;
     constructor(size: Vec2, pos: Vec2) {
         super(size, pos, false, true);
         this.texture_index = SpriteSheets.SteetLamp;
@@ -17,11 +22,32 @@ export class StreetLamp extends StaticGameObj {
         this.hitboxes[0].size.x = 5 * 6;
         this.hitboxes[0].pos.x += 3.5 * 6;
         this.hitboxes.push(new Hitbox(this.size, this.pos, false));
+        this.set_texture_coords(new Vec2(1, 1), new Vec2(0, 0));
     }
 
     run(delta_time: number) {
+        if (this.hitboxes[0].collision_dir(CollisionDir.Top)) {
+            if (this.switchable) {
+                if (!this.light_effect) {
+                    this.light_effect = new Effect(
+                        this.size.mul(new Vec2(2.5, 1)),
+                        this.pos.sub(new Vec2(8 * 6, 0)),
+                        1,
+                        SpriteSheets.LampLightEffect,
+                        0,
+                        0,
+                        -1
+                    );
+                } else {
+                    this.light_effect.remove();
+                    this.light_effect = null;
+                }
+            }
+            this.switchable = false;
+        } else {
+            this.switchable = true;
+        }
         super.run(delta_time);
-        this.animate(100);
     }
 }
 

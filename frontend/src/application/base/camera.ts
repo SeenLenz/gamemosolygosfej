@@ -74,7 +74,6 @@ export class Camera {
             this.rotation +=
                 (0 - this.rotation) * this.shake_strength * delta_time;
         }
-        // 200 / height
     }
 
     get zero() {

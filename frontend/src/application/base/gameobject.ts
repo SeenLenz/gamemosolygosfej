@@ -1,7 +1,6 @@
 import { Obj } from "../../renderer/object";
 import { renderer } from "../../app";
 import { Vec2 } from "../../lin_alg";
-import { StreetLamp } from "../gamelogic/map/objects";
 
 export enum ObjectTag {
     Empty,
@@ -29,10 +28,15 @@ export class Hitbox {
     pos_diff = Vec2.zeros();
     reactive = false;
     flags: HitboxFlags[] = [];
+    collisions: boolean[] = [false, false, false, false];
     constructor(size: Vec2, pos: Vec2, reactive = true) {
         this.size.set_vec(size);
         this.pos.set_vec(pos);
         this.reactive = reactive;
+    }
+
+    collision_dir(dir: CollisionDir): boolean {
+        return this.collisions[dir];
     }
 }
 
@@ -91,7 +95,13 @@ export class GameObject {
         }
     }
 
-    run(delta_time: number) {}
+    run(delta_time: number) {
+        for (let hb of this.hitboxes) {
+            for (let i = 0; i < 4; i++) {
+                hb.collisions[i] = false;
+            }
+        }
+    }
 
     render() {
         this.object.render(renderer, this);
@@ -195,6 +205,7 @@ export class Empty extends GameObject {
 }
 
 export class StaticGameObj extends GameObject {
+    collision_obj: GameObject | null = null;
     constructor(
         scale: Vec2,
         position: Vec2,
@@ -206,13 +217,13 @@ export class StaticGameObj extends GameObject {
 
     run(delta_time: number) {
         super.run(delta_time);
+        this.collision_obj = null;
     }
 }
 
 export class DynamicGameObj extends GameObject {
     velocity: Vec2;
     force: Vec2;
-    collisions: boolean[];
     constructor(scale: Vec2, position: Vec2) {
         super(scale, position);
 
@@ -220,7 +231,6 @@ export class DynamicGameObj extends GameObject {
 
         this.velocity = new Vec2(0, 0);
         this.force = new Vec2(0, 0);
-        this.collisions = new Array(4);
     }
 
     start() {}
@@ -357,16 +367,19 @@ export class DynamicGameObj extends GameObject {
 
     collision(delta_time: number) {
         const collisions = this.collide(delta_time);
-        for (let i = 0; i < 4; i++) {
-            this.collisions[i] = false;
+        for (let hb of this.hitboxes) {
+            for (let i = 0; i < 4; i++) {
+                hb.collisions[i] = false;
+            }
         }
         for (let collision of collisions) {
             this.on_collision(collision);
+            let obj_col_dir = collision.dir + (collision.dir % 2) * -2 + 1;
+            if (!collision.obj.isDynamic) {
+                collision.obj_hitbox.collisions[obj_col_dir] = true;
+                (collision.obj as StaticGameObj).collision_obj = this;
+            }
         }
-    }
-
-    collision_dir(dir: CollisionDir): boolean {
-        return this.collisions[dir];
     }
 
     private set_hb_position() {
@@ -429,11 +442,11 @@ export class DynamicGameObj extends GameObject {
             this.pos.x =
                 obj_hitbox.pos.x + obj_hitbox.size.x - this_hitbox.pos_diff.x;
 
-            this.collisions[CollisionDir.Left] = true;
+            this_hitbox.collisions[CollisionDir.Left] = true;
         } else {
             this.pos.x =
                 obj_hitbox.pos.x - this_hitbox.size.x - this_hitbox.pos_diff.x;
-            this.collisions[CollisionDir.Right] = true;
+            this_hitbox.collisions[CollisionDir.Right] = true;
         }
 
         this.velocity.x = 0;
@@ -452,11 +465,11 @@ export class DynamicGameObj extends GameObject {
         if (dir == CollisionDir.Top) {
             this.pos.y =
                 obj_hitbox.pos.y + obj_hitbox.size.y - this_hitbox.pos_diff.y;
-            this.collisions[CollisionDir.Top] = true;
+            this_hitbox.collisions[CollisionDir.Top] = true;
         } else {
             this.pos.y =
                 obj_hitbox.pos.y - this_hitbox.size.y - this_hitbox.pos_diff.y;
-            this.collisions[CollisionDir.Bottom] = true;
+            this_hitbox.collisions[CollisionDir.Bottom] = true;
         }
 
         this.velocity.y = 0;

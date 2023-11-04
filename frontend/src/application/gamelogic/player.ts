@@ -40,7 +40,7 @@ export class Player extends DynamicGameObj {
     }
 
     get grounded() {
-        return this.collision_dir(CollisionDir.Bottom);
+        return this.hitboxes[0].collision_dir(CollisionDir.Bottom);
     }
 
     run(delta_time: number): void {
@@ -195,27 +195,6 @@ export class Player extends DynamicGameObj {
         }
         this.running = false;
         this.x_collision = true;
-    }
-
-    on_collision(collision: {
-        obj: GameObject;
-        dir: CollisionDir;
-        obj_hitbox: Hitbox;
-        this_hitbox: Hitbox;
-    }): void {
-        super.on_collision(collision);
-        const obj = collision.obj;
-        if (obj.object_tag == ObjectTag.StreetLamp) {
-            new Effect(
-                obj.size.mul(new Vec2(2.5, 1)),
-                obj.pos.sub(new Vec2(8 * 6, 0)),
-                1,
-                SpriteSheets.LampLightEffect,
-                0,
-                0,
-                0
-            );
-        }
     }
 
     on_collision_y(

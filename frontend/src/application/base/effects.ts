@@ -83,7 +83,11 @@ export class Effect {
             );
         }
         this.object?.render(renderer, this);
-        if (this.current_frame == 0 && this.current_cycle >= this.repeat) {
+        if (
+            this.repeat != -1 &&
+            this.current_frame == 0 &&
+            this.current_cycle >= this.repeat
+        ) {
             this.remove();
         }
     }

@@ -7,6 +7,10 @@ export class Vec2 {
         this.y = y;
     }
 
+    static uniform(value: number) {
+        return new Vec2(value, value);
+    }
+
     static zeros() {
         return new Vec2(0, 0);
     }
@@ -92,6 +96,10 @@ export class Vec2 {
     as_raw() {
         return new Float32Array([this.x, this.y]);
     }
+
+    interpolate(target: Vec2, speed: Vec2) {
+        return target.sub(this).mul(speed);
+    }
 }
 
 export class Vec3 {
@@ -170,4 +178,8 @@ export class Vec3 {
     as_raw() {
         return new Float32Array([this.x, this.y, this.z]);
     }
+}
+
+export function interpolate(value: number, target: number, speed: number) {
+    return (value - target) * speed;
 }

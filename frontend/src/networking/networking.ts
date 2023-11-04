@@ -1,8 +1,8 @@
-import { Type, Setup, WebsocketCfg, WorkerMsg } from "../../../types";
+import { Type, Setup, WebsocketCfg, WorkerMsg, Lobby } from "../../../types";
 
 export class Network {
     public domain: String;
-    public ws_cfg?: WebsocketCfg;
+    public ws_cfg?: Lobby;
     private ws?: WebSocket;
     private Pisti?: Worker;
 
@@ -33,7 +33,9 @@ export class Network {
 
     update_remote() {}
 
-    update_local() {}
+    update_local() {
+        
+    }
 
     async create_lobby() {
         const response = await fetch(
@@ -44,8 +46,8 @@ export class Network {
             console.log(this.ws_cfg);
             this.Pisti?.postMessage({
                 type: Type.init,
-                id: this.ws_cfg?.lobby.id,
-                cid: this.ws_cfg?.lobby.cid,
+                id: this.ws_cfg?.id,
+                cid: this.ws_cfg?.cid,
                 data: {
                     domain: this.domain,
                 } as Setup,
@@ -62,19 +64,16 @@ export class Network {
             "http://" + this.domain + "/setup/joinlobby/" + lobby_key
         );
         this.ws_cfg = await response.json();
-        if (this.ws_cfg?.error) {
-            console.error(this.ws_cfg.error);
-        } else {
-            if (this.Pisti) {
-                this.Pisti?.postMessage({
-                    type: Type.init,
-                    id: this.ws_cfg?.lobby.id,
-                    cid: this.ws_cfg?.lobby.cid,
-                    data: {
-                        domain: this.domain,
-                    } as Setup,
-                } as WorkerMsg);
-            }
+        
+        if (this.Pisti) {
+            this.Pisti?.postMessage({
+                type: Type.init,
+                id: this.ws_cfg?.id,
+                cid: this.ws_cfg?.cid,
+                data: {
+                    domain: this.domain,
+                } as Setup,
+            } as WorkerMsg);
         }
     }
 

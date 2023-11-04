@@ -1,6 +1,6 @@
 import { lobbies } from "..";
 import { RawData } from "ws";
-import { Type, Render } from "../../../types";
+import { Type } from "../../../types";
 import { start_msg, test_msg } from "./msg";
 import WebSocket from "ws";
 

@@ -1,5 +1,4 @@
 import { camera } from "../app";
-import { GameObject } from "../application/base/gameobject";
 import { Vec2 } from "../lin_alg";
 import { Renderer } from "./renderer";
 

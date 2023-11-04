@@ -1,15 +1,12 @@
 import { Renderer } from "./renderer/renderer";
 import { EventHandler } from "./application/base/event_handler";
-import { GameObject } from "./application/base/gameobject";
 import { Camera } from "./application/base/camera";
 import { Player } from "./application/gamelogic/player";
-import { Vec2 } from "./lin_alg";
-import { Background, Terrain } from "./application/gamelogic/terrain";
-import { Effect } from "./application/base/effects";
 import { Map } from "./application/gamelogic/map/map";
 import { create_textures } from "./application/base/textures";
 import { Type, Test, WorkerMsg } from "../../types";
 import { Network } from "./networking/networking";
+import { EvilRole, PlayerRole, Role } from "./application/gamelogic/roles/role";
 
 export const renderer = new Renderer();
 export const event = new EventHandler(renderer);
@@ -31,7 +28,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
     document.querySelector("#start_bt")?.addEventListener("click", (e) => {
         network.send({
-            ...network.ws_cfg?.lobby,
+            ...network.ws_cfg,
             type: Type.start,
         } as WorkerMsg);
     });
@@ -42,8 +39,8 @@ document.addEventListener("DOMContentLoaded", () => {
         console.log("asdfasd" + network.domain);
         network.send({
             type: Type.test,
-            cid: network.ws_cfg?.lobby.cid,
-            id: network.ws_cfg?.lobby.id,
+            cid: network.ws_cfg?.cid,
+            id: network.ws_cfg?.id,
             data: { msg: "hello from the frontend" } as Test,
         });
     });
@@ -51,12 +48,13 @@ document.addEventListener("DOMContentLoaded", () => {
     main();
 });
 
+let current_role: Role = new PlayerRole();
+
 function setup() {
     renderer.setup();
     create_textures();
-
+    
     map = new Map();
-    camera.focus_multip = 0.03;
     camera.focus_on(new Player([96, 96], [100, -500]));
 }
 
@@ -67,14 +65,7 @@ function main_loop() {
     camera.move(delta_time);
     map.render(delta_time);
 
-    GameObject.objects.forEach((go) => {
-        go.run(delta_time);
-        go.render();
-    });
-
-    Effect.effects.forEach((e) => {
-        e.animate();
-    });
+    current_role.render(delta_time);
 
     map.foreground.forEach((obj) => {
         obj.run(delta_time);

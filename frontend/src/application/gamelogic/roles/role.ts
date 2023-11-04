@@ -8,15 +8,14 @@ export interface Role {
 }
 
 export class PlayerRole implements Role {
-    constructor() {
-    }
+    constructor() {}
 
     render(delta_time: number) {
         GameObject.objects.forEach((go) => {
             go.run(delta_time);
             go.render();
         });
-    
+
         Effect.effects.forEach((e) => {
             e.animate();
         });
@@ -25,11 +24,7 @@ export class PlayerRole implements Role {
 
 export class EvilRole implements Role {
     network_renderer: NetworkRenderable[] = [];
-    constructor() {
-        
-    } 
+    constructor() {}
 
-    render(delta_time: number) {
-        
-    }
+    render(delta_time: number) {}
 }

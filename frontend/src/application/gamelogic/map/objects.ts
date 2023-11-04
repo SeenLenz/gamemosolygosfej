@@ -1,5 +1,5 @@
 import { Vec2 } from "../../../lin_alg";
-import { ObjectTag, StaticGameObj } from "../../base/gameobject";
+import { Hitbox, ObjectTag, StaticGameObj } from "../../base/gameobject";
 import { SpriteSheets } from "../../base/textures";
 
 export class StreetLamp extends StaticGameObj {
@@ -7,9 +7,11 @@ export class StreetLamp extends StaticGameObj {
         super(size, pos, false, true);
         this.texture_index = SpriteSheets.SteetLamp;
         this.object_tag = ObjectTag.StreetLamp;
-        this.hitbox.size.y = 4 * 6;
-        this.hitbox.size.x = 5 * 6;
-        this.hitbox.pos.x += 3.5 * 6;
+        this.hitboxes[0].size.y = 4 * 6;
+        this.hitboxes[0].size.x = 5 * 6;
+        this.hitboxes[0].pos.x += 3.5 * 6;
+
+        this.hitboxes.push(new Hitbox(this.size, this.pos, false));
         this.sprite_index = 0;
     }
 
@@ -37,8 +39,8 @@ export class Bench extends StaticGameObj {
         super(size, pos, false, true);
         this.texture_index = SpriteSheets.Bench;
         this.object_tag = ObjectTag.Bench;
-        this.hitbox.size.y = 3 * 6;
-        this.hitbox.pos.y += 5 * 6;
+        this.hitboxes[0].size.y = 3 * 6;
+        this.hitboxes[0].pos.y += 5 * 6;
         this.sprite_index = 0;
         this.set_texture_coords(new Vec2(1, 1), new Vec2(0, 0));
     }
@@ -53,10 +55,10 @@ export class House extends StaticGameObj {
         super(size, pos, false, true);
         this.texture_index = SpriteSheets.HouseFg;
         this.object_tag = ObjectTag.House;
-        this.hitbox.size.y = 4 * 6;
-        this.hitbox.pos.y += 40 * 6;
-        this.hitbox.size.x = 52 * 6;
-        this.hitbox.pos.x += 6 * 6;
+        this.hitboxes[0].size.y = 4 * 6;
+        this.hitboxes[0].pos.y += 40 * 6;
+        this.hitboxes[0].size.x = 52 * 6;
+        this.hitboxes[0].pos.x += 6 * 6;
         this.sprite_index = 0;
         this.set_texture_coords(new Vec2(1, 1), new Vec2(0, 0));
     }

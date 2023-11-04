@@ -22,9 +22,11 @@ export class Hitbox {
     size: Vec2 = new Vec2(0, 0);
     pos: Vec2 = new Vec2(0, 0);
     pos_diff = Vec2.zeros();
-    constructor(size: Vec2, pos: Vec2) {
+    reactive = false;
+    constructor(size: Vec2, pos: Vec2, reactive = true) {
         this.size.set_vec(size);
         this.pos.set_vec(pos);
+        this.reactive = reactive;
     }
 }
 
@@ -44,7 +46,7 @@ export class GameObject {
     object_tag: ObjectTag;
     reactive: boolean;
     // --> hitbox
-    hitbox: Hitbox;
+    hitboxes: Hitbox[] = [];
 
     // textures
     texture_buffer: { buffer: WebGLBuffer; attribute: number };
@@ -54,7 +56,12 @@ export class GameObject {
     //--> animations
     current_frame = 0;
     animation_timer = 0;
-    constructor(size: Vec2, position: Vec2, auto_render = true, reactive = true) {
+    constructor(
+        size: Vec2,
+        position: Vec2,
+        auto_render = true,
+        reactive = true
+    ) {
         this.object = renderer.base_quad_obj as Obj;
         this.mass = size.x * size.y;
         this.object_tag = ObjectTag.Empty;
@@ -63,8 +70,8 @@ export class GameObject {
         this.reactive = reactive;
         this.pos = position;
         this.size = size;
-        this.hitbox = new Hitbox(this.size, this.pos);
-        this.hitbox.pos_diff = this.pos.sub(this.hitbox.pos);
+        this.hitboxes.push(new Hitbox(this.size, this.pos, reactive));
+        this.hitboxes[0].pos_diff = this.pos.sub(this.hitboxes[0].pos);
         this.rotation = 0;
         this.texture_coords = new Float32Array(8);
         this.texture_buffer = renderer.create_buffer(
@@ -91,7 +98,8 @@ export class GameObject {
     }
 
     get hitbox_index() {
-        return GameObject.hitboxes.findIndex((obj) => obj == this);
+        const index = GameObject.hitboxes.findIndex((obj) => obj == this);
+        return index;
     }
 
     get texture() {
@@ -101,6 +109,10 @@ export class GameObject {
     remove() {
         GameObject.objects.splice(this.index, 1);
         GameObject.hitboxes.splice(this.hitbox_index, 1);
+    }
+
+    remove_hitbox(hitbox_index: number) {
+        this.hitboxes.splice(hitbox_index, 1);
     }
 
     get sprite() {
@@ -179,7 +191,12 @@ export class Empty extends GameObject {
 }
 
 export class StaticGameObj extends GameObject {
-    constructor(scale: Vec2, position: Vec2, auto_render = true, collidable = true) {
+    constructor(
+        scale: Vec2,
+        position: Vec2,
+        auto_render = true,
+        collidable = true
+    ) {
         super(scale, position, auto_render, collidable);
     }
 
@@ -217,97 +234,117 @@ export class DynamicGameObj extends GameObject {
     collide(delta_time: number) {
         let collisions = [];
         for (let obj of GameObject.hitboxes) {
-            if (!(obj != this)) {
-                continue;
-            }
-
-            let x_collision =
-                this.hitbox.pos.x +
-                this.hitbox.size.x -
-                obj.hitbox.pos.x +
-                this.velocity.x * delta_time;
-            let y_collision =
-                this.hitbox.pos.y +
-                this.hitbox.size.y -
-                obj.hitbox.pos.y +
-                this.velocity.y * delta_time;
-
-            if (obj.isDynamic) {
-                x_collision -= (obj as DynamicGameObj).velocity.x * delta_time;
-                y_collision -= (obj as DynamicGameObj).velocity.y * delta_time;
-            }
-
-            if (
-                x_collision > 0 &&
-                x_collision < this.hitbox.size.x + obj.hitbox.size.x
-            ) {
-                if (
-                    y_collision > 0 &&
-                    y_collision < this.hitbox.size.y + obj.hitbox.size.y
-                ) {
-                    let x_min = Math.min(this.hitbox.pos.x, obj.hitbox.pos.x);
-                    let x_max = Math.max(
-                        this.hitbox.pos.x + this.hitbox.size.x,
-                        obj.hitbox.pos.x + obj.hitbox.size.x
-                    );
-
-                    let y_min = Math.min(this.hitbox.pos.y, obj.hitbox.pos.y);
-                    let y_max = Math.max(
-                        this.hitbox.pos.y + this.hitbox.size.y,
-                        obj.hitbox.pos.y + obj.hitbox.size.y
-                    );
-
-                    let x_diff = Math.abs(
-                        obj.hitbox.size.x - (x_max - x_min - this.hitbox.size.x)
-                    );
-                    let y_diff = Math.abs(
-                        obj.hitbox.size.y - (y_max - y_min - this.hitbox.size.y)
-                    );
-
-                    if (x_diff < y_diff) {
-                        if (
-                            Math.abs(obj.hitbox.pos.x - this.hitbox.pos.x) <
-                            Math.abs(
-                                obj.hitbox.pos.x +
-                                    obj.hitbox.size.x -
-                                    this.hitbox.pos.x
-                            )
-                        ) {
-                            collisions.push({
-                                obj: obj,
-                                dir: CollisionDir.Right,
-                            });
-                        } else {
-                            collisions.push({
-                                obj: obj,
-                                dir: CollisionDir.Left,
-                            });
-                        }
-                    } else {
-                        if (
-                            Math.abs(obj.hitbox.pos.y - this.hitbox.pos.y) <
-                            Math.abs(
-                                obj.hitbox.pos.y +
-                                    obj.hitbox.size.y -
-                                    this.hitbox.pos.y
-                            )
-                        ) {
-                            collisions.push({
-                                obj: obj,
-                                x: 0,
-                                dir: CollisionDir.Bottom,
-                            });
-                        } else {
-                            collisions.push({
-                                obj: obj,
-                                x: 0,
-                                dir: CollisionDir.Top,
-                            });
-                        }
+            for (let this_hitbox of this.hitboxes) {
+                for (let obj_hitbox of obj.hitboxes) {
+                    if (!(obj != this)) {
+                        continue;
                     }
 
-                    if (collisions.length == 4) {
-                        return collisions;
+                    let x_collision =
+                        this_hitbox.pos.x +
+                        this_hitbox.size.x -
+                        obj_hitbox.pos.x +
+                        this.velocity.x * delta_time;
+                    let y_collision =
+                        this_hitbox.pos.y +
+                        this_hitbox.size.y -
+                        obj_hitbox.pos.y +
+                        this.velocity.y * delta_time;
+
+                    if (obj.isDynamic) {
+                        x_collision -=
+                            (obj as DynamicGameObj).velocity.x * delta_time;
+                        y_collision -=
+                            (obj as DynamicGameObj).velocity.y * delta_time;
+                    }
+
+                    if (
+                        x_collision > 0 &&
+                        x_collision < this_hitbox.size.x + obj_hitbox.size.x
+                    ) {
+                        if (
+                            y_collision > 0 &&
+                            y_collision < this_hitbox.size.y + obj_hitbox.size.y
+                        ) {
+                            let x_min = Math.min(
+                                this_hitbox.pos.x,
+                                obj_hitbox.pos.x
+                            );
+                            let x_max = Math.max(
+                                this_hitbox.pos.x + this_hitbox.size.x,
+                                obj_hitbox.pos.x + obj_hitbox.size.x
+                            );
+
+                            let y_min = Math.min(
+                                this_hitbox.pos.y,
+                                obj_hitbox.pos.y
+                            );
+                            let y_max = Math.max(
+                                this_hitbox.pos.y + this_hitbox.size.y,
+                                obj_hitbox.pos.y + obj_hitbox.size.y
+                            );
+
+                            let x_diff = Math.abs(
+                                obj_hitbox.size.x -
+                                    (x_max - x_min - this_hitbox.size.x)
+                            );
+                            let y_diff = Math.abs(
+                                obj_hitbox.size.y -
+                                    (y_max - y_min - this_hitbox.size.y)
+                            );
+
+                            if (x_diff < y_diff) {
+                                if (
+                                    Math.abs(
+                                        obj_hitbox.pos.x - this_hitbox.pos.x
+                                    ) <
+                                    Math.abs(
+                                        obj_hitbox.pos.x +
+                                            obj_hitbox.size.x -
+                                            this_hitbox.pos.x
+                                    )
+                                ) {
+                                    collisions.push({
+                                        obj: obj,
+                                        dir: CollisionDir.Right,
+                                        obj_hitbox: obj_hitbox,
+                                        this_hitbox: this_hitbox,
+                                    });
+                                } else {
+                                    collisions.push({
+                                        obj: obj,
+                                        dir: CollisionDir.Left,
+                                        obj_hitbox: obj_hitbox,
+                                        this_hitbox: this_hitbox,
+                                    });
+                                }
+                            } else {
+                                if (
+                                    Math.abs(
+                                        obj_hitbox.pos.y - this_hitbox.pos.y
+                                    ) <
+                                    Math.abs(
+                                        obj_hitbox.pos.y +
+                                            obj_hitbox.size.y -
+                                            this_hitbox.pos.y
+                                    )
+                                ) {
+                                    collisions.push({
+                                        obj: obj,
+                                        dir: CollisionDir.Bottom,
+                                        obj_hitbox: obj_hitbox,
+                                        this_hitbox: this_hitbox,
+                                    });
+                                } else {
+                                    collisions.push({
+                                        obj: obj,
+                                        dir: CollisionDir.Top,
+                                        obj_hitbox: obj_hitbox,
+                                        this_hitbox: this_hitbox,
+                                    });
+                                }
+                            }
+                        }
                     }
                 }
             }
@@ -331,7 +368,9 @@ export class DynamicGameObj extends GameObject {
     }
 
     private set_hb_position() {
-        this.hitbox.pos.set_vec(this.pos.add(this.hitbox.pos_diff));
+        for (let hitbox of this.hitboxes) {
+            hitbox.pos.set_vec(this.pos.add(hitbox.pos_diff));
+        }
     }
 
     motion(delta_time: number) {
@@ -349,44 +388,69 @@ export class DynamicGameObj extends GameObject {
         super.run(delta_time);
     }
 
-    on_collision(collision: { obj: GameObject; dir: CollisionDir }) {
+    on_collision(collision: {
+        obj: GameObject;
+        dir: CollisionDir;
+        obj_hitbox: Hitbox;
+        this_hitbox: Hitbox;
+    }) {
         if (collision.dir > 1) {
-            this.on_collision_x(collision.obj, collision.dir);
+            this.on_collision_x(
+                collision.obj,
+                collision.dir,
+                collision.obj_hitbox,
+                collision.this_hitbox
+            );
         } else {
-            this.on_collision_y(collision.obj, collision.dir);
+            this.on_collision_y(
+                collision.obj,
+                collision.dir,
+                collision.obj_hitbox,
+                collision.this_hitbox
+            );
         }
         this.set_hb_position();
     }
 
-    on_collision_x(obj: GameObject, dir: CollisionDir) {
-        if (!this.reactive || !obj.reactive) {
+    on_collision_x(
+        obj: GameObject,
+        dir: CollisionDir,
+        obj_hitbox: Hitbox,
+        this_hitbox: Hitbox
+    ) {
+        if (!this_hitbox.reactive || !obj_hitbox.reactive) {
             return;
         }
         if (dir == CollisionDir.Left) {
             this.pos.x =
-                obj.hitbox.pos.x + obj.hitbox.size.x - this.hitbox.pos_diff.x;
+                obj_hitbox.pos.x + obj_hitbox.size.x - this_hitbox.pos_diff.x;
 
             this.collisions[CollisionDir.Left] = true;
         } else {
             this.pos.x =
-                obj.hitbox.pos.x - this.hitbox.size.x - this.hitbox.pos_diff.x;
+                obj_hitbox.pos.x - this_hitbox.size.x - this_hitbox.pos_diff.x;
             this.collisions[CollisionDir.Right] = true;
         }
 
         this.velocity.x = 0;
     }
 
-    on_collision_y(obj: GameObject, dir: CollisionDir) {
+    on_collision_y(
+        obj: GameObject,
+        dir: CollisionDir,
+        obj_hitbox: Hitbox,
+        this_hitbox: Hitbox
+    ) {
         if (!this.reactive || !obj.reactive) {
             return;
         }
         if (dir == CollisionDir.Top) {
             this.pos.y =
-                obj.hitbox.pos.y + obj.hitbox.size.y - this.hitbox.pos_diff.y;
+                obj_hitbox.pos.y + obj_hitbox.size.y - this_hitbox.pos_diff.y;
             this.collisions[CollisionDir.Top] = true;
         } else {
             this.pos.y =
-                obj.hitbox.pos.y - this.hitbox.size.y - this.hitbox.pos_diff.y;
+                obj_hitbox.pos.y - this_hitbox.size.y - this_hitbox.pos_diff.y;
             this.collisions[CollisionDir.Bottom] = true;
         }
 

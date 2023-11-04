@@ -5,8 +5,8 @@ export class Terrain extends StaticGameObj {
     constructor(pos: Vec2, scale: Vec2, t_index: number) {
         super(scale, pos);
         this.object_tag = ObjectTag.Terrain;
-        this.hitbox.size.y = this.size.y - 18;
-        this.hitbox.pos.y += 18;
+        this.hitboxes[0].size.y = this.size.y - 18;
+        this.hitboxes[0].pos.y += 18;
         this.texture_index = t_index;
         this.z_coord = 1;
     }

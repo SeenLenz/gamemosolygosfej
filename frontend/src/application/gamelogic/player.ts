@@ -26,11 +26,11 @@ export class Player extends DynamicGameObj {
     constructor(size: number[], pos: number[]) {
         super(new Vec2(size[0], size[1]), new Vec2(pos[0], pos[1]));
         this.object_tag = ObjectTag.Player;
-        this.hitbox = new Hitbox(
+        this.hitboxes[0] = new Hitbox(
             this.size.div(new Vec2(4, 4 / 3)),
             this.pos.sub(new Vec2((this.size.x / 4) * 1.5, this.size.y / 4))
         );
-        this.hitbox.pos_diff = new Vec2(
+        this.hitboxes[0].pos_diff = new Vec2(
             (this.size.x / 4) * 1.5,
             this.size.x / 4
         );
@@ -112,13 +112,16 @@ export class Player extends DynamicGameObj {
         }
 
         if (this.wall_slide) {
-            this.hitbox.size = this.size.div(new Vec2(2, 4 / 3));
-            this.hitbox.pos_diff = new Vec2(this.size.x / 4, this.size.x / 4);
+            this.hitboxes[0].size = this.size.div(new Vec2(2, 4 / 3));
+            this.hitboxes[0].pos_diff = new Vec2(
+                this.size.x / 4,
+                this.size.x / 4
+            );
             this.velocity.y += (0 - this.velocity.y) * 0.08 * delta_time;
             this.force.y = 0;
         } else {
-            this.hitbox.size = this.size.div(new Vec2(4, 4 / 3));
-            this.hitbox.pos_diff = new Vec2(
+            this.hitboxes[0].size = this.size.div(new Vec2(4, 4 / 3));
+            this.hitboxes[0].pos_diff = new Vec2(
                 (this.size.x / 4) * 1.5,
                 this.size.x / 4
             );
@@ -178,8 +181,13 @@ export class Player extends DynamicGameObj {
         }
     }
 
-    on_collision_x(obj: GameObject, dir: CollisionDir): void {
-        super.on_collision_x(obj, dir);
+    on_collision_x(
+        obj: GameObject,
+        dir: CollisionDir,
+        obj_hitbox: Hitbox,
+        this_hitbox: Hitbox
+    ): void {
+        super.on_collision_x(obj, dir, obj_hitbox, this_hitbox);
         if (!this.grounded && obj.reactive) {
             this.wall_slide = true;
             this.has_jump = true;
@@ -189,10 +197,16 @@ export class Player extends DynamicGameObj {
         this.x_collision = true;
     }
 
-    on_collision(collision: { obj: GameObject; dir: CollisionDir }): void {
+    on_collision(collision: {
+        obj: GameObject;
+        dir: CollisionDir;
+        obj_hitbox: Hitbox;
+        this_hitbox: Hitbox;
+    }): void {
         super.on_collision(collision);
         const obj = collision.obj;
         if (obj.object_tag == ObjectTag.StreetLamp) {
+            console.log(obj);
             new Effect(
                 obj.size.mul(new Vec2(2.5, 1)),
                 obj.pos.sub(new Vec2(8 * 6, 0)),
@@ -205,7 +219,12 @@ export class Player extends DynamicGameObj {
         }
     }
 
-    on_collision_y(obj: GameObject, dir: CollisionDir): void {
+    on_collision_y(
+        obj: GameObject,
+        dir: CollisionDir,
+        obj_hitbox: Hitbox,
+        this_hitbox: Hitbox
+    ): void {
         if (obj.object_tag == ObjectTag.House) {
             if (this.velocity.y < 0 || this.platform_fall) {
                 return;
@@ -218,6 +237,6 @@ export class Player extends DynamicGameObj {
                 camera.shake();
             }
         }
-        super.on_collision_y(obj, dir);
+        super.on_collision_y(obj, dir, obj_hitbox, this_hitbox);
     }
 }

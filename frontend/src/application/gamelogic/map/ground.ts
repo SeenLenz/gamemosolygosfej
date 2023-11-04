@@ -1,5 +1,5 @@
 import { Vec2 } from "../../../lin_alg";
-import { StaticGameObj } from "../../base/gameobject";
+import { ObjectTag, StaticGameObj } from "../../base/gameobject";
 import { SpriteSheets } from "../../base/textures";
 
 export enum GroundPos {
@@ -13,6 +13,7 @@ export class Ground extends StaticGameObj {
         super(size.mul(new Vec2(48, 48)), pos.mul(new Vec2(48, 48)), false);
         this.hitbox.size.y = this.size.y - 18;
         this.hitbox.pos.y = 18;
+        this.object_tag = ObjectTag.Terrain;
         this.texture_index = SpriteSheets.Ground + Math.abs(type);
         this.sprite_index = (type + 1) / 2;
         this.set_texture_coords(

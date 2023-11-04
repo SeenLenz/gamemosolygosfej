@@ -1,5 +1,6 @@
 import { event, gravity } from "../../app";
 import { Vec2 } from "../../lin_alg";
+import { Obj } from "../../renderer/object";
 import { Effect } from "../base/effects";
 import { EventType, Keys } from "../base/event_handler";
 import {
@@ -21,8 +22,8 @@ export class Player extends DynamicGameObj {
     jump = false;
     jump_dir = 0;
     x_collision = false;
-
     grounded_effect = false;
+    platform_fall = false;
     constructor(size: number[], pos: number[]) {
         super(new Vec2(size[0], size[1]), new Vec2(pos[0], pos[1]));
         this.object_tag = ObjectTag.Player;
@@ -80,6 +81,9 @@ export class Player extends DynamicGameObj {
         }
         if (event.key_state(Keys.Shift, EventType.Pressed)) {
             this.dash = true;
+        }
+        if (event.key_state(Keys.S, EventType.Pressed)) {
+            this.platform_fall = true;
         }
     }
 
@@ -187,5 +191,17 @@ export class Player extends DynamicGameObj {
         if (obj.object_tag == ObjectTag.StreetLamp) {
             new Effect(obj.size.mul(new Vec2(2.5, 1)), obj.pos.sub(new Vec2(8 * 6, 0)), 1, SpriteSheets.LampLightEffect, 0, 0, 0);
         }
+    }
+
+    on_collision_y(obj: GameObject, dir: CollisionDir): void {
+        if (obj.object_tag == ObjectTag.House) {
+            if (this.velocity.y < 0 || (this.platform_fall)) {
+                return;
+            }
+        }
+        if (dir == CollisionDir.Bottom) {
+            this.platform_fall = false;
+        }
+        super.on_collision_y(obj, dir);
     }
 }

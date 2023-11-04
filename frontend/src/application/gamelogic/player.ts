@@ -7,6 +7,7 @@ import {
     DynamicGameObj,
     GameObject,
     Hitbox,
+    HitboxFlags,
     ObjectTag,
 } from "../base/gameobject";
 import { SpriteSheets } from "../base/textures";
@@ -35,7 +36,6 @@ export class Player extends DynamicGameObj {
             this.size.x / 4
         );
         this.mass = 1;
-        this.reactive = true;
         this.focused = true;
     }
 
@@ -188,7 +188,7 @@ export class Player extends DynamicGameObj {
         this_hitbox: Hitbox
     ): void {
         super.on_collision_x(obj, dir, obj_hitbox, this_hitbox);
-        if (!this.grounded && obj.reactive) {
+        if (!this.grounded && obj_hitbox.reactive) {
             this.wall_slide = true;
             this.has_jump = true;
             this.jump_dir = this.x_direction;
@@ -206,7 +206,6 @@ export class Player extends DynamicGameObj {
         super.on_collision(collision);
         const obj = collision.obj;
         if (obj.object_tag == ObjectTag.StreetLamp) {
-            console.log(obj);
             new Effect(
                 obj.size.mul(new Vec2(2.5, 1)),
                 obj.pos.sub(new Vec2(8 * 6, 0)),
@@ -225,12 +224,12 @@ export class Player extends DynamicGameObj {
         obj_hitbox: Hitbox,
         this_hitbox: Hitbox
     ): void {
-        if (obj.object_tag == ObjectTag.House) {
+        if (obj_hitbox.flags.includes(HitboxFlags.Platform)) {
             if (this.velocity.y < 0 || this.platform_fall) {
                 return;
             }
         }
-        if (dir == CollisionDir.Bottom) {
+        if (obj_hitbox.reactive && dir == CollisionDir.Bottom) {
             this.platform_fall = false;
 
             if (this.velocity.y > 18) {

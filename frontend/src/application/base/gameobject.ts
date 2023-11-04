@@ -1,6 +1,7 @@
 import { Obj } from "../../renderer/object";
 import { renderer } from "../../app";
 import { Vec2 } from "../../lin_alg";
+import { StreetLamp } from "../gamelogic/map/objects";
 
 export enum ObjectTag {
     Empty,
@@ -18,11 +19,16 @@ export enum CollisionDir {
     Left,
 }
 
+export enum HitboxFlags {
+    Platform,
+}
+
 export class Hitbox {
     size: Vec2 = new Vec2(0, 0);
     pos: Vec2 = new Vec2(0, 0);
     pos_diff = Vec2.zeros();
     reactive = false;
+    flags: HitboxFlags[] = [];
     constructor(size: Vec2, pos: Vec2, reactive = true) {
         this.size.set_vec(size);
         this.pos.set_vec(pos);
@@ -44,7 +50,6 @@ export class GameObject {
     collidable: boolean;
     isDynamic: boolean;
     object_tag: ObjectTag;
-    reactive: boolean;
     // --> hitbox
     hitboxes: Hitbox[] = [];
 
@@ -67,7 +72,6 @@ export class GameObject {
         this.object_tag = ObjectTag.Empty;
         this.isDynamic = false;
         this.collidable = true;
-        this.reactive = reactive;
         this.pos = position;
         this.size = size;
         this.hitboxes.push(new Hitbox(this.size, this.pos, reactive));
@@ -206,7 +210,6 @@ export class StaticGameObj extends GameObject {
 }
 
 export class DynamicGameObj extends GameObject {
-    reactive: boolean;
     velocity: Vec2;
     force: Vec2;
     collisions: boolean[];
@@ -214,7 +217,6 @@ export class DynamicGameObj extends GameObject {
         super(scale, position);
 
         this.isDynamic = true;
-        this.reactive = false;
 
         this.velocity = new Vec2(0, 0);
         this.force = new Vec2(0, 0);
@@ -409,6 +411,7 @@ export class DynamicGameObj extends GameObject {
                 collision.this_hitbox
             );
         }
+
         this.set_hb_position();
     }
 
@@ -421,6 +424,7 @@ export class DynamicGameObj extends GameObject {
         if (!this_hitbox.reactive || !obj_hitbox.reactive) {
             return;
         }
+
         if (dir == CollisionDir.Left) {
             this.pos.x =
                 obj_hitbox.pos.x + obj_hitbox.size.x - this_hitbox.pos_diff.x;
@@ -441,9 +445,10 @@ export class DynamicGameObj extends GameObject {
         obj_hitbox: Hitbox,
         this_hitbox: Hitbox
     ) {
-        if (!this.reactive || !obj.reactive) {
+        if (!this_hitbox.reactive || !obj_hitbox.reactive) {
             return;
         }
+
         if (dir == CollisionDir.Top) {
             this.pos.y =
                 obj_hitbox.pos.y + obj_hitbox.size.y - this_hitbox.pos_diff.y;

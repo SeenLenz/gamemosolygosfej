@@ -1,5 +1,10 @@
 import { Vec2 } from "../../../lin_alg";
-import { Hitbox, ObjectTag, StaticGameObj } from "../../base/gameobject";
+import {
+    Hitbox,
+    HitboxFlags,
+    ObjectTag,
+    StaticGameObj,
+} from "../../base/gameobject";
 import { SpriteSheets } from "../../base/textures";
 
 export class StreetLamp extends StaticGameObj {
@@ -7,12 +12,11 @@ export class StreetLamp extends StaticGameObj {
         super(size, pos, false, true);
         this.texture_index = SpriteSheets.SteetLamp;
         this.object_tag = ObjectTag.StreetLamp;
-        this.hitboxes[0].size.y = 4 * 6;
+        this.hitboxes[0].flags.push(HitboxFlags.Platform);
+        this.hitboxes[0].size.y = 1 * 6;
         this.hitboxes[0].size.x = 5 * 6;
         this.hitboxes[0].pos.x += 3.5 * 6;
-
         this.hitboxes.push(new Hitbox(this.size, this.pos, false));
-        this.sprite_index = 0;
     }
 
     run(delta_time: number) {
@@ -59,6 +63,7 @@ export class House extends StaticGameObj {
         this.hitboxes[0].pos.y += 40 * 6;
         this.hitboxes[0].size.x = 52 * 6;
         this.hitboxes[0].pos.x += 6 * 6;
+        this.hitboxes[0].flags.push(HitboxFlags.Platform);
         this.sprite_index = 0;
         this.set_texture_coords(new Vec2(1, 1), new Vec2(0, 0));
     }

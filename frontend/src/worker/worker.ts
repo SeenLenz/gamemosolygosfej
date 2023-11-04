@@ -1,4 +1,4 @@
-import { Calculation, Config, Sync, Type, WorkerMsg } from "../../../types";
+import { Type, WorkerMsg } from "../../../types";
 
 interface Setup {
     domain: String;
@@ -18,52 +18,27 @@ class Self {
         console.log("created stuff");
     }
 
-    ws_setup(args: Setup) {}
-
     readmsg(event: MessageEvent) {
-        console.log(event);
         switch (event.data.type) {
             case Type.init:
                 this.init_msg(event.data);
                 break;
-            case Type.setup:
-                this.setup_msg(event.data);
-                break;
-            case Type.sync:
-                this.sync_msg(event.data);
-                break;
-            case Type.config:
-                this.config_msg(event.data);
-                break;
-            case Type.calculation:
-                this.calculation_msg(event.data);
-                break;
-            case Type.test:
-                this.test_msg(event.data);
-                break;
-            case Type.err:
-                this.err_msg(event.data);
-                break;
             default:
+                this.ws?.send(JSON.stringify(event.data));
                 break;
-        }
-    }
-
-    test_msg(msg: WorkerMsg) {
-        if (this.ws) {
-            this.ws.send(JSON.stringify(msg));
         }
     }
 
     init_msg(msg: WorkerMsg) {
+        console.log(msg);
         let setupObj = msg.data as Setup;
         this.ws = new WebSocket(
             "ws://" + setupObj.domain + "/" + msg?.id + "/" + msg?.cid
         );
 
-        //        setInterval((e) => {
-        //            this.ws_keepalive();
-        //        }, this.keepalive_time);
+        setInterval((e) => {
+            this.ws_keepalive();
+        }, this.keepalive_time);
 
         this.ws.onopen = (e) => {
             this.ws_open(e);
@@ -79,19 +54,12 @@ class Self {
         };
     }
 
-    sync_msg(event: MessageEvent) {}
+    start_msg(event: MessageEvent) {
+        this.ws?.send(JSON.stringify(event.data));
+    }
 
-    config_msg(event: MessageEvent) {}
-
-    calculation_msg(event: MessageEvent) {}
-
-    err_msg(event: MessageEvent) {}
-
-    setup_msg(event: MessageEvent) {}
-
-    sendmsg(res: WorkerMsg) {}
     ws_message(event: MessageEvent) {
-        console.log(JSON.parse(event.data));
+        postMessage(JSON.parse(event.data));
     }
 
     ws_error(event: Event) {}

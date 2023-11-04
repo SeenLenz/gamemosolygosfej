@@ -6,27 +6,36 @@ export enum Type {
     //synchronizing game logic
     sync,
     //configuration of the worker
-    config,
+    start,
     //calculation from the server requestsed by the client
-    calculation,
-    //something went wrong
     err,
     //no types and shit just a string for testing purposes
     test,
+    render,
 }
-
+export enum Roles {
+    good,
+    evil,
+    player,
+}
 enum ErrType {}
 
 export interface Setup {
     domain: String;
 }
-export interface Sync {}
-export interface Calculation {}
+
+export interface Start {
+    role: Roles;
+}
+
 export interface Error {
     type: ErrType;
     message: String;
 }
 export interface Config {}
+
+export interface Render {}
+
 export interface Test {
     msg: string;
 }
@@ -35,12 +44,12 @@ export interface WorkerMsg {
     type: Type;
     id?: String;
     cid?: Number;
-    data: Setup | Sync | Calculation | Error | Config | Test;
+    data: Setup | Start | Error | Config | Test | Render;
 }
 
 export interface Lobby {
-    client_id: number;
-    key: String;
+    cid: number;
+    id: String;
 }
 
 export interface WebsocketCfg {

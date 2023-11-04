@@ -10,7 +10,17 @@ export class Network {
         this.Pisti = new Worker(
             new URL("../worker/worker.ts", import.meta.url)
         );
+
+        this.Pisti.onmessage = (event) => {
+            this.worker_msg(event);
+        };
         this.domain = domain;
+    }
+
+    worker_msg(event: MessageEvent) {
+        console.log("hello from the event handlerf;");
+
+        console.log(event);
     }
 
     send(msg: WorkerMsg) {
@@ -21,6 +31,10 @@ export class Network {
         }
     }
 
+    update_remote() {}
+
+    update_local() {}
+
     async create_lobby() {
         const response = await fetch(
             "http://" + this.domain + "/setup/lobbycrt"
@@ -30,22 +44,14 @@ export class Network {
             console.log(this.ws_cfg);
             this.Pisti?.postMessage({
                 type: Type.init,
-                id: this.ws_cfg?.lobby.key,
-                cid: this.ws_cfg?.lobby.client_id,
+                id: this.ws_cfg?.lobby.id,
+                cid: this.ws_cfg?.lobby.cid,
                 data: {
                     domain: this.domain,
                 } as Setup,
             } as WorkerMsg);
         } else {
             console.error("Failed to communicate with backend");
-        }
-    }
-
-    read_buff() {}
-
-    write_buff(req: WorkerMsg) {
-        if (this.Pisti) {
-            this.Pisti.postMessage(req);
         }
     }
 
@@ -62,8 +68,8 @@ export class Network {
             if (this.Pisti) {
                 this.Pisti?.postMessage({
                     type: Type.init,
-                    id: this.ws_cfg?.lobby.key,
-                    cid: this.ws_cfg?.lobby.client_id,
+                    id: this.ws_cfg?.lobby.id,
+                    cid: this.ws_cfg?.lobby.cid,
                     data: {
                         domain: this.domain,
                     } as Setup,

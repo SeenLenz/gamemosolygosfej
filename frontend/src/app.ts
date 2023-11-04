@@ -8,7 +8,7 @@ import { Background, Terrain } from "./application/gamelogic/terrain";
 import { Effect } from "./application/base/effects";
 import { Map } from "./application/gamelogic/map/map";
 import { create_textures } from "./application/base/textures";
-import { Type, Test } from "../../types";
+import { Type, Test, WorkerMsg } from "../../types";
 import { Network } from "./networking/networking";
 
 export const renderer = new Renderer();
@@ -29,6 +29,12 @@ document.addEventListener("DOMContentLoaded", () => {
             network.join_lobby(joinLabelValue);
         }
     });
+    document.querySelector("#start_bt")?.addEventListener("click", (e) => {
+        network.send({
+            ...network.ws_cfg?.lobby,
+            type: Type.start,
+        } as WorkerMsg);
+    });
     document.querySelector("#create_bt")?.addEventListener("click", (e) => {
         network.create_lobby();
     });
@@ -36,8 +42,8 @@ document.addEventListener("DOMContentLoaded", () => {
         console.log("asdfasd" + network.domain);
         network.send({
             type: Type.test,
-            cid: network.ws_cfg?.lobby.client_id,
-            id: network.ws_cfg?.lobby.key,
+            cid: network.ws_cfg?.lobby.cid,
+            id: network.ws_cfg?.lobby.id,
             data: { msg: "hello from the frontend" } as Test,
         });
     });

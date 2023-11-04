@@ -1,14 +1,7 @@
 import { lobbies } from "..";
 import { RawData } from "ws";
-import { Type } from "../../../types";
-import {
-    setup_msg,
-    sync_msg,
-    config_msg,
-    calculation_msg,
-    test_msg,
-    err_msg,
-} from "./msg";
+import { Type, Render } from "../../../types";
+import { start_msg, test_msg } from "./msg";
 import WebSocket from "ws";
 
 export function open(d: RawData, ws: WebSocket) {}
@@ -17,28 +10,22 @@ export function close(d: RawData, ws: WebSocket) {
 }
 export function message(d: RawData, ws: WebSocket) {
     const data = JSON.parse(d.toString());
+    const lobby = lobbies.get(data.id);
     if (data) {
         switch (data.type) {
-            case Type.setup:
-                setup_msg(data, ws);
-                break;
-            case Type.sync:
-                sync_msg(data, ws);
-                break;
-            case Type.config:
-                config_msg(data, ws);
-                break;
-            case Type.calculation:
-                calculation_msg(data, ws);
+            case Type.start:
+                start_msg(data, ws);
                 break;
             case Type.test:
                 test_msg(data, ws);
                 break;
-            case Type.err:
-                err_msg(data, ws);
-                break;
             default:
-                break;
+                for (let i = 1; i < lobby[0] + 1; i++) {
+                    if (lobby[i] !== ws) {
+                        lobby[i].send(JSON.stringify(data));
+                        break;
+                    }
+                }
         }
     } else {
         console.log("invalid data");

@@ -53,7 +53,7 @@ let current_role: Role = new PlayerRole();
 function setup() {
     renderer.setup();
     create_textures();
-    
+
     map = new Map();
     camera.focus_on(new Player([96, 96], [100, -500]));
 }
@@ -63,6 +63,7 @@ function main_loop() {
     start = performance.now();
     renderer.run(camera);
     camera.move(delta_time);
+    camera.shake_camera(delta_time);
     map.render(delta_time);
 
     current_role.render(delta_time);

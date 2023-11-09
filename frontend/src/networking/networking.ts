@@ -1,10 +1,21 @@
-import { Type, Setup, WebsocketCfg, WorkerMsg, Lobby } from "../../../types";
+import {
+    Type,
+    Setup,
+    WebsocketCfg,
+    WorkerMsg,
+    Lobby,
+    Start,
+} from "../../../types";
+import { main } from "../app";
+import { PlayerRole } from "../application/gamelogic/roles/role";
 
 export class Network {
     public domain: String;
     public ws_cfg?: Lobby;
     private ws?: WebSocket;
     private Pisti?: Worker;
+
+    private msg?: WorkerMsg;
 
     constructor(domain: String) {
         this.Pisti = new Worker(
@@ -17,10 +28,15 @@ export class Network {
         this.domain = domain;
     }
 
-    worker_msg(event: MessageEvent) {
-        console.log("hello from the event handlerf;");
+    get data() {
+        return this.msg;
+    }
 
-        console.log(event);
+    worker_msg(event: MessageEvent) {
+        this.msg = event.data as WorkerMsg;
+        if (this.msg.type == Type.start) {
+            main((this.msg.data as Start).role);
+        }
     }
 
     send(msg: WorkerMsg) {
@@ -33,9 +49,7 @@ export class Network {
 
     update_remote() {}
 
-    update_local() {
-        
-    }
+    update_local() {}
 
     async create_lobby() {
         const response = await fetch(
@@ -64,7 +78,7 @@ export class Network {
             "http://" + this.domain + "/setup/joinlobby/" + lobby_key
         );
         this.ws_cfg = await response.json();
-        
+
         if (this.Pisti) {
             this.Pisti?.postMessage({
                 type: Type.init,

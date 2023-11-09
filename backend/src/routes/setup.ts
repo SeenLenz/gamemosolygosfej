@@ -9,7 +9,8 @@ router.get("/joinlobby/:lobby_key", (req, res) => {
         let clientarr = lobbies.get(req.params.lobby_key);
         if (clientarr[0] < 3) {
             return res.json({
-                lobby: { id: req.params.lobby_key, cid: ++clientarr[0] },
+                id: req.params.lobby_key,
+                cid: ++clientarr[0],
             });
         } else {
             return res.json({ Error: "Lobby full" });
@@ -25,7 +26,8 @@ router.get("/lobbycrt", (req, res) => {
     const lobby_key = uuid().slice(0, 8);
     lobbies.set(lobby_key, [1, {}, {}, {}]);
     return res.json({
-        lobby: { id: lobby_key, cid: 1 },
+        id: lobby_key,
+        cid: 1,
     });
 });
 

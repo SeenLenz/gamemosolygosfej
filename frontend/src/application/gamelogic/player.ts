@@ -1,4 +1,4 @@
-import { camera, event, gravity } from "../../app";
+import { camera, event, gravity, renderer } from "../../app";
 import { Vec2 } from "../../lin_alg";
 import { Effect } from "../base/effects";
 import { EventType, Keys } from "../base/event_handler";

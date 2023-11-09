@@ -7,6 +7,8 @@ export enum Type {
     init,
     //synchronizing game logic
     sync,
+    camera,
+    dynamic_game_object,
     //configuration of the worker
     start,
     //calculation from the server requestsed by the client
@@ -34,15 +36,24 @@ export interface Error {
     type: ErrType;
     message: String;
 }
+
 export interface Config {}
 
 export interface NetworkRenderable {
+    index: number;
     pos: Vec2;
     size: Vec2;
     rotation: number;
     x_direction: number;
     texture_index: number;
+    texture_coords: Float32Array;
     z_coord: number;
+}
+
+export interface CameraSync {
+    pos: Vec2;
+    scale: number;
+    rotation: number;
 }
 
 export interface Test {
@@ -51,14 +62,21 @@ export interface Test {
 
 export interface WorkerMsg {
     type: Type;
-    id?: String;
-    cid?: Number;
-    data: Setup | Start | Error | Config | Test | NetworkRenderable;
+    id?: string;
+    cid?: number;
+    data:
+        | Setup
+        | Start
+        | Error
+        | Config
+        | Test
+        | NetworkRenderable
+        | CameraSync;
 }
 
 export interface Lobby {
     cid: number;
-    id: String;
+    id: string;
 }
 
 export interface WebsocketCfg {

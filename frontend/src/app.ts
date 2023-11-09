@@ -4,15 +4,17 @@ import { Camera } from "./application/base/camera";
 import { Player } from "./application/gamelogic/player";
 import { Map } from "./application/gamelogic/map/map";
 import { create_textures } from "./application/base/textures";
-import { Type, Test, WorkerMsg } from "../../types";
+import { Type, Test, WorkerMsg, Roles } from "../../types";
 import { Network } from "./networking/networking";
 import { Observer, PlayerRole, Role } from "./application/gamelogic/roles/role";
+import { GameObject } from "./application/base/gameobject";
 
 export const renderer = new Renderer();
 export const event = new EventHandler(renderer);
 export let camera = new Camera();
 export let gravity = 0.5;
 export const network = new Network("127.0.0.1:3000");
+export let current_role: Role;
 let start = 1;
 
 export let map: Map;
@@ -44,17 +46,19 @@ document.addEventListener("DOMContentLoaded", () => {
             data: { msg: "hello from the frontend" } as Test,
         });
     });
-
-    main();
 });
 
-let current_role: Role;
-
-function setup() {
+function setup(role: number) {
     renderer.setup();
     create_textures();
 
-    current_role = new PlayerRole();
+    if (role == Roles.player) {
+        current_role = new PlayerRole();
+    } else {
+        current_role = new Observer();
+    }
+
+    start = performance.now();
     map = new Map();
 }
 
@@ -66,7 +70,7 @@ function main_loop() {
     camera.shake_camera(delta_time);
     map.render(delta_time);
 
-    current_role.render(delta_time);
+    current_role.run(delta_time);
     map.foreground.forEach((obj) => {
         obj.run(delta_time);
         obj.render();
@@ -76,8 +80,8 @@ function main_loop() {
     requestAnimationFrame(main_loop);
 }
 
-function main() {
-    setup();
+export function main(role: number) {
+    setup(role);
 
     main_loop();
 }

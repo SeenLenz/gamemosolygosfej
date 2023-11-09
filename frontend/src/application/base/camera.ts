@@ -7,7 +7,7 @@ export class Camera {
     pos: Vec2;
     scale: number;
     focus_multip: number = 0.03;
-    focus_obj!: GameObject;
+    focus_obj?: GameObject;
     rotation: number;
     target_zoom = 275;
     cam_shake = false;
@@ -48,6 +48,9 @@ export class Camera {
     }
 
     move(delta_time: number) {
+        if (!this.focus_obj) {
+            return;
+        }
         this.pos.x +=
             (this.focus_obj.pos.x +
                 this.focus_obj.size.x / 2 -

@@ -2,7 +2,7 @@ import { camera } from "../app";
 import { Vec2 } from "../lin_alg";
 import { Renderer } from "./renderer";
 
-interface Renderable {
+export interface Renderable {
     pos: Vec2;
     size: Vec2;
     rotation: number;
@@ -10,6 +10,7 @@ interface Renderable {
     texture_buffer: { buffer: WebGLBuffer; attribute: number };
     texture_index: number;
     z_coord: number;
+    texture_coords: Float32Array;
 }
 
 export class Obj {
@@ -44,8 +45,8 @@ export class Obj {
             return;
         }
 
-        renderer.gl.uniform2fv(renderer.uniform_position, obj.pos.as_raw());
-        renderer.gl.uniform2fv(renderer.uniform_scale, obj.size.as_raw());
+        renderer.gl.uniform2f(renderer.uniform_position, obj.pos.x, obj.pos.y);
+        renderer.gl.uniform2f(renderer.uniform_scale, obj.size.x, obj.size.y);
         renderer.gl.uniform2f(
             renderer.uniform_rotation,
             Math.sin(obj.rotation),

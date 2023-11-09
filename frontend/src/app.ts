@@ -7,12 +7,14 @@ import { create_textures } from "./application/base/textures";
 import { Type, Test, WorkerMsg } from "../../types";
 import { Network } from "./networking/networking";
 import { EvilRole, PlayerRole, Role } from "./application/gamelogic/roles/role";
+import { Vec2 } from "./lin_alg";
 
 export const renderer = new Renderer();
 export const event = new EventHandler(renderer);
 export let camera = new Camera();
 export let gravity = 0.5;
 export const network = new Network("127.0.0.1:3000");
+export let delta_time: number = 1;
 let start = 1;
 
 export let map: Map;
@@ -54,12 +56,14 @@ function setup() {
     renderer.setup();
     create_textures();
 
+    console.log(Vec2.from({x: 1, y: 2}).normalize());
+
     map = new Map();
     camera.focus_on(new Player([96, 96], [100, -500]));
 }
 
 function main_loop() {
-    const delta_time = (performance.now() - start) / 10;
+    delta_time = (performance.now() - start) / 10;
     start = performance.now();
     renderer.run(camera);
     camera.move(delta_time);
@@ -73,7 +77,7 @@ function main_loop() {
     });
 
     event.refresh();
-    requestAnimationFrame(main_loop);
+    setTimeout(() => requestAnimationFrame(main_loop), 100)
 }
 
 function main() {

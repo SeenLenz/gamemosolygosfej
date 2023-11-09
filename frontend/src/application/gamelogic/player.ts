@@ -27,14 +27,15 @@ export class Player extends DynamicGameObj {
     constructor(size: number[], pos: number[]) {
         super(new Vec2(size[0], size[1]), new Vec2(pos[0], pos[1]));
         this.object_tag = ObjectTag.Player;
-        this.hitboxes[0] = new Hitbox(
-            this.size.div(new Vec2(4, 4 / 3)),
-            this.pos.sub(new Vec2((this.size.x / 4) * 1.5, this.size.y / 4))
-        );
-        this.hitboxes[0].pos_diff = new Vec2(
-            (this.size.x / 4) * 1.5,
-            this.size.x / 4
-        );
+        // this.hitboxes[0] = new Hitbox(
+        //     this.size.div(new Vec2(4, 4 / 3)),
+        //     this.pos.sub(new Vec2((this.size.x / 4) * 1.5, this.size.y / 4))
+        // );
+        // this.hitboxes[0].pos_diff = new Vec2(
+        //     (this.size.x / 4) * 1.5,
+        //     this.size.x / 4
+        // );
+        console.log(this.pos, this.hitboxes[0].pos, this.hitboxes[0].pos_diff);
         this.mass = 1;
         this.focused = true;
     }
@@ -119,7 +120,8 @@ export class Player extends DynamicGameObj {
             );
             this.velocity.y += (0 - this.velocity.y) * 0.08 * delta_time;
             this.force.y = 0;
-        } else {
+        }
+        else {
             this.hitboxes[0].size = this.size.div(new Vec2(4, 4 / 3));
             this.hitboxes[0].pos_diff = new Vec2(
                 (this.size.x / 4) * 1.5,
@@ -187,7 +189,6 @@ export class Player extends DynamicGameObj {
         obj_hitbox: Hitbox,
         this_hitbox: Hitbox
     ): void {
-        super.on_collision_x(obj, dir, obj_hitbox, this_hitbox);
         if (!this.grounded && obj_hitbox.reactive) {
             this.wall_slide = true;
             this.has_jump = true;
@@ -195,6 +196,8 @@ export class Player extends DynamicGameObj {
         }
         this.running = false;
         this.x_collision = true;
+
+        super.on_collision_x(obj, dir, obj_hitbox, this_hitbox);
     }
 
     on_collision_y(

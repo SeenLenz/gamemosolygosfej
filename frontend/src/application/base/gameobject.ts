@@ -1,6 +1,7 @@
 import { Obj } from "../../renderer/object";
-import { renderer } from "../../app";
+import { delta_time, renderer } from "../../app";
 import { Vec2 } from "../../lin_alg";
+import { create_line, create_section } from "./rays";
 
 export enum ObjectTag {
     Empty,
@@ -233,7 +234,7 @@ export class DynamicGameObj extends GameObject {
         this.force = new Vec2(0, 0);
     }
 
-    start() {}
+    start() { }
 
     get acceleration() {
         return new Vec2(this.force.x / this.mass, this.force.y / this.mass);
@@ -244,7 +245,7 @@ export class DynamicGameObj extends GameObject {
     }
 
     collide(delta_time: number) {
-        let collisions = [];
+        let collisions: any[] = [];
         for (let obj of GameObject.hitboxes) {
             for (let this_hitbox of this.hitboxes) {
                 for (let obj_hitbox of obj.hitboxes) {
@@ -252,126 +253,27 @@ export class DynamicGameObj extends GameObject {
                         continue;
                     }
 
-                    let x_collision =
-                        this_hitbox.pos.x +
-                        this_hitbox.size.x -
-                        obj_hitbox.pos.x +
-                        this.velocity.x * delta_time;
-                    let y_collision =
-                        this_hitbox.pos.y +
-                        this_hitbox.size.y -
-                        obj_hitbox.pos.y +
-                        this.velocity.y * delta_time;
-
-                    if (obj.isDynamic) {
-                        x_collision -=
-                            (obj as DynamicGameObj).velocity.x * delta_time;
-                        y_collision -=
-                            (obj as DynamicGameObj).velocity.y * delta_time;
+                    let ray1;
+                    let ray2;
+                    if (this.velocity.x * this.velocity.y < 0) {
+                        ray1 = create_line(this.velocity, this_hitbox.pos.add(Vec2.from({x: this_hitbox.size.x, y: 0})));
+                        ray2 = create_line(this.velocity, this_hitbox.pos.add(Vec2.from({x: 0, y: this_hitbox.size.y})));
+                    }
+                    else {
+                        ray1 = create_line(this.velocity, this_hitbox.pos);
+                        ray2 = create_line(this.velocity, this_hitbox.pos.add(this_hitbox.size));
                     }
 
-                    if (
-                        x_collision > 0 &&
-                        x_collision < this_hitbox.size.x + obj_hitbox.size.x
-                    ) {
-                        if (
-                            y_collision > 0 &&
-                            y_collision < this_hitbox.size.y + obj_hitbox.size.y
-                        ) {
-                            let x_min = Math.min(
-                                this_hitbox.pos.x,
-                                obj_hitbox.pos.x
-                            );
-                            let x_max = Math.max(
-                                this_hitbox.pos.x + this_hitbox.size.x,
-                                obj_hitbox.pos.x + obj_hitbox.size.x
-                            );
 
-                            let y_min = Math.min(
-                                this_hitbox.pos.y,
-                                obj_hitbox.pos.y
-                            );
-                            let y_max = Math.max(
-                                this_hitbox.pos.y + this_hitbox.size.y,
-                                obj_hitbox.pos.y + obj_hitbox.size.y
-                            );
-
-                            let x_diff = Math.abs(
-                                obj_hitbox.size.x -
-                                    (x_max - x_min - this_hitbox.size.x)
-                            );
-                            let y_diff = Math.abs(
-                                obj_hitbox.size.y -
-                                    (y_max - y_min - this_hitbox.size.y)
-                            );
-
-                            if (x_diff < y_diff) {
-                                if (
-                                    Math.abs(
-                                        obj_hitbox.pos.x - this_hitbox.pos.x
-                                    ) <
-                                    Math.abs(
-                                        obj_hitbox.pos.x +
-                                            obj_hitbox.size.x -
-                                            this_hitbox.pos.x
-                                    )
-                                ) {
-                                    collisions.push({
-                                        obj: obj,
-                                        dir: CollisionDir.Right,
-                                        obj_hitbox: obj_hitbox,
-                                        this_hitbox: this_hitbox,
-                                    });
-                                } else {
-                                    collisions.push({
-                                        obj: obj,
-                                        dir: CollisionDir.Left,
-                                        obj_hitbox: obj_hitbox,
-                                        this_hitbox: this_hitbox,
-                                    });
-                                }
-                            } else {
-                                if (
-                                    Math.abs(
-                                        obj_hitbox.pos.y - this_hitbox.pos.y
-                                    ) <
-                                    Math.abs(
-                                        obj_hitbox.pos.y +
-                                            obj_hitbox.size.y -
-                                            this_hitbox.pos.y
-                                    )
-                                ) {
-                                    collisions.push({
-                                        obj: obj,
-                                        dir: CollisionDir.Bottom,
-                                        obj_hitbox: obj_hitbox,
-                                        this_hitbox: this_hitbox,
-                                    });
-                                } else {
-                                    collisions.push({
-                                        obj: obj,
-                                        dir: CollisionDir.Top,
-                                        obj_hitbox: obj_hitbox,
-                                        this_hitbox: this_hitbox,
-                                    });
-                                }
-                            }
-                        }
-                    }
                 }
             }
         }
-
         return collisions;
     }
 
     collision(delta_time: number) {
         const collisions = this.collide(delta_time);
-        for (let hb of this.hitboxes) {
-            for (let i = 0; i < 4; i++) {
-                hb.collisions[i] = false;
-            }
-        }
+
         for (let collision of collisions) {
             this.on_collision(collision);
             let obj_col_dir = collision.dir + (collision.dir % 2) * -2 + 1;

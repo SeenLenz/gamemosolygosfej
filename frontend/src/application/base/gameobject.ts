@@ -1,7 +1,7 @@
 import { Obj } from "../../renderer/object";
 import { delta_time, renderer } from "../../app";
 import { Vec2 } from "../../lin_alg";
-import { create_line, create_section } from "./rays";
+import { create_line, create_section, ray_side_collision, ray_side_intersection } from "./rays";
 
 export enum ObjectTag {
     Empty,
@@ -253,18 +253,34 @@ export class DynamicGameObj extends GameObject {
                         continue;
                     }
 
-                    let ray1;
-                    let ray2;
+                    let rayXSide;
+                    let rayYSide;
                     if (this.velocity.x * this.velocity.y < 0) {
-                        ray1 = create_line(this.velocity, this_hitbox.pos.add(Vec2.from({x: this_hitbox.size.x, y: 0})));
-                        ray2 = create_line(this.velocity, this_hitbox.pos.add(Vec2.from({x: 0, y: this_hitbox.size.y})));
+                        rayXSide = create_line(this.velocity, this_hitbox.pos.add(Vec2.from({x: this_hitbox.size.x, y: 0})));
+                        rayYSide = create_line(this.velocity, this_hitbox.pos.add(Vec2.from({x: 0, y: this_hitbox.size.y})));
                     }
                     else {
-                        ray1 = create_line(this.velocity, this_hitbox.pos);
-                        ray2 = create_line(this.velocity, this_hitbox.pos.add(this_hitbox.size));
+                        rayXSide = create_line(this.velocity, this_hitbox.pos);
+                        rayYSide = create_line(this.velocity, this_hitbox.pos.add(this_hitbox.size));
                     }
 
-
+                    let sidex = 0;
+                    let sidey = 0;
+                    if (this.velocity.x < 0) {
+                        sidex = 1;
+                    }
+                    if (this.velocity.y < 0) {
+                        sidey = 1;
+                    }
+                    let sideY = create_section(obj_hitbox.pos.add(obj_hitbox.size.mul(new Vec2(sidex, 0))), obj_hitbox.pos.add(obj_hitbox.size.mul(new Vec2(sidex, 1))));
+                    let sideX = create_section(obj_hitbox.pos.add(obj_hitbox.size.mul(new Vec2(0, sidey))), obj_hitbox.pos.add(obj_hitbox.size.mul(new Vec2(1, sidey))));
+                    
+                    
+                    let intersection_pointX = ray_side_intersection(rayXSide, sideX);
+                    let intersection_pointY = ray_side_intersection(rayXSide, sideY);
+                    if (!intersection_pointX) {
+                        
+                    }
                 }
             }
         }

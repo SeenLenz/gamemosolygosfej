@@ -54,16 +54,16 @@ export function line_intersection_point(l1: Line, l2: Line) {
     return new Vec2(x, y);
 }
 
-export function ray_side_collision(ray: Line, side: Section) {
+export function ray_side_intersection(ray: Line, side: Section) {
     const intersection_point = line_intersection_point(ray, side.line);
     if (!intersection_point) {
         return undefined;
     }
     if (float_eq(Math.abs(side.p1.x - intersection_point.x) + Math.abs(side.p2.x - intersection_point.x), Math.abs(side.p1.x - side.p2.x))) {
         if (float_eq(Math.abs(side.p1.y - intersection_point.y) + Math.abs(side.p2.y - intersection_point.y), Math.abs(side.p1.y - side.p2.y))) {
-            return intersection_point;
+            return {point: intersection_point, side_intersection: true};
         }
     }
 
-    return undefined;
+    return {point: intersection_point, side_intersection: false};
 }

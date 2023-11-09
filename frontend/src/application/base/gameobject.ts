@@ -234,7 +234,7 @@ export class DynamicGameObj extends GameObject {
         this.force = new Vec2(0, 0);
     }
 
-    start() { }
+    start() {}
 
     get acceleration() {
         return new Vec2(this.force.x / this.mass, this.force.y / this.mass);
@@ -256,15 +256,30 @@ export class DynamicGameObj extends GameObject {
                     let ray1;
                     let ray2;
                     if (this.velocity.x * this.velocity.y < 0) {
-                        ray1 = create_line(this.velocity, this_hitbox.pos.add(Vec2.from({x: this_hitbox.size.x, y: 0})));
-                        ray2 = create_line(this.velocity, this_hitbox.pos.add(Vec2.from({x: 0, y: this_hitbox.size.y})));
-                    }
-                    else {
+                        ray1 = create_line(
+                            this.velocity,
+                            this_hitbox.pos.add(
+                                Vec2.from({ x: this_hitbox.size.x, y: 0 })
+                            )
+                        );
+                        ray2 = create_line(
+                            this.velocity,
+                            this_hitbox.pos.add(
+                                Vec2.from({ x: 0, y: this_hitbox.size.y })
+                            )
+                        );
+                    } else {
                         ray1 = create_line(this.velocity, this_hitbox.pos);
-                        ray2 = create_line(this.velocity, this_hitbox.pos.add(this_hitbox.size));
+                        ray2 = create_line(
+                            this.velocity,
+                            this_hitbox.pos.add(this_hitbox.size)
+                        );
                     }
 
-
+                    if (this.velocity.x < 0) {
+                    }
+                    if (this.velocity.y < 0) {
+                    }
                 }
             }
         }

@@ -5,6 +5,7 @@ import {
     WorkerMsg,
     Lobby,
     Start,
+    NetworkBuffer,
 } from "../../../types";
 import { main } from "../app";
 import { PlayerRole } from "../application/gamelogic/roles/role";
@@ -14,6 +15,7 @@ export class Network {
     public ws_cfg?: Lobby;
     private ws?: WebSocket;
     private Pisti?: Worker;
+    private outBuff: NetworkBuffer;
 
     private msg?: WorkerMsg;
 
@@ -26,6 +28,7 @@ export class Network {
             this.worker_msg(event);
         };
         this.domain = domain;
+        this.outBuff = { types: [], data: [] };
     }
 
     get data() {
@@ -39,7 +42,13 @@ export class Network {
         }
     }
 
-    send(msg: WorkerMsg) {
+    async flush() {
+        console.log("this.outbuff:");
+        console.log(this.outBuff);
+        this.Pisti?.postMessage(this.outBuff);
+    }
+
+    async send(msg: WorkerMsg) {
         if (this.Pisti) {
             this.Pisti.postMessage(msg);
         } else {
@@ -47,17 +56,20 @@ export class Network {
         }
     }
 
-    update_remote() {}
-
-    update_local() {}
+    outBuff_add(msg: any) {
+        this.outBuff?.types.push(msg.type);
+        this.outBuff?.data.push(msg);
+    }
 
     async create_lobby() {
         const response = await fetch(
             "http://" + this.domain + "/setup/lobbycrt"
         );
         this.ws_cfg = await response.json();
+        this.outBuff.id = this.ws_cfg?.id;
+        this.outBuff.cid = this.ws_cfg?.cid;
+
         if (this.Pisti) {
-            console.log(this.ws_cfg);
             this.Pisti?.postMessage({
                 type: Type.init,
                 id: this.ws_cfg?.id,

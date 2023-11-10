@@ -27,7 +27,7 @@ export class PlayerRole implements Role {
         GameObject.objects.forEach((go) => {
             go.run(delta_time);
             go.render();
-            network.send({
+            network.outBuff_add({
                 id: network.ws_cfg?.id,
                 cid: network.ws_cfg?.cid,
                 type: Type.dynamic_game_object,
@@ -49,20 +49,16 @@ export class PlayerRole implements Role {
             e.animate();
         });
 
-        setTimeout(
-            () =>
-                network.send({
-                    id: network.ws_cfg?.id,
-                    cid: network.ws_cfg?.cid,
-                    type: Type.camera,
-                    data: {
-                        pos: camera.pos,
-                        scale: camera.scale,
-                        rotation: camera.rotation,
-                    },
-                }),
-            500
-        );
+        network.outBuff_add({
+            id: network.ws_cfg?.id,
+            cid: network.ws_cfg?.cid,
+            type: Type.camera,
+            data: {
+                pos: camera.pos,
+                scale: camera.scale,
+                rotation: camera.rotation,
+            },
+        });
     }
 }
 
@@ -115,6 +111,7 @@ export class Observer implements Role {
             );
             this.base_obj?.render(renderer, obj);
         });
+
         switch (data?.type) {
             case Type.camera:
                 const camerasync = data.data as CameraSync;

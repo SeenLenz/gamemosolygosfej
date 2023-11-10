@@ -1,7 +1,7 @@
 import { Obj } from "../../renderer/object";
 import { delta_time, renderer } from "../../app";
 import { Vec2 } from "../../lin_alg";
-import { create_line, create_section, ray_side_collision, ray_side_intersection } from "./rays";
+import { create_line, create_section, ray_side_intersection } from "./rays";
 
 export enum ObjectTag {
     Empty,
@@ -245,7 +245,10 @@ export class DynamicGameObj extends GameObject {
     }
 
     collide(delta_time: number) {
-        let collisions: any[] = [];
+        let first_possible_collision = {
+            x: 0,
+            y: 0,
+        };
         for (let obj of GameObject.hitboxes) {
             for (let this_hitbox of this.hitboxes) {
                 for (let obj_hitbox of obj.hitboxes) {
@@ -253,50 +256,95 @@ export class DynamicGameObj extends GameObject {
                         continue;
                     }
 
-                    let rayXSide;
-                    let rayYSide;
-                    if (this.velocity.x * this.velocity.y < 0) {
-                        ray1 = create_line(
-                            this.velocity,
-                            this_hitbox.pos.add(
-                                Vec2.from({ x: this_hitbox.size.x, y: 0 })
-                            )
-                        );
-                        ray2 = create_line(
-                            this.velocity,
-                            this_hitbox.pos.add(
-                                Vec2.from({ x: 0, y: this_hitbox.size.y })
-                            )
-                        );
-                    } else {
-                        ray1 = create_line(this.velocity, this_hitbox.pos);
-                        ray2 = create_line(
-                            this.velocity,
-                            this_hitbox.pos.add(this_hitbox.size)
-                        );
+                    let rayXSide = { x: 0, y: 0 };
+                    let rayYSide = { x: 1, y: 1 };
+                    let y_dir = -1;
+                    let x_dir = -1;
+                    if (this.velocity.x > 0) {
+                        rayXSide.x = 1;
+                        rayYSide.x = 0;
+                        x_dir = 1;
+                    }
+                    if (this.velocity.y > 0) {
+                        rayXSide.y = 1;
+                        rayYSide.y = 0;
+                        y_dir = 1;
                     }
 
-                    if (this.velocity.x < 0) {
-                    }
-                    if (this.velocity.y < 0) {
-                    }
+                    let rayX_start_point = this_hitbox.pos.add(
+                        this_hitbox.size.mul(Vec2.from(rayXSide))
+                    );
+
+                    let rayY_start_point = this_hitbox.pos.add(
+                        this_hitbox.size.mul(Vec2.from(rayYSide))
+                    );
+
+                    let rayX = create_line(this.velocity, rayX_start_point);
+                    let rayY = create_line(this.velocity, rayY_start_point);
+
+                    let obj_side_x = create_section(
+                        obj_hitbox.pos.add(
+                            this_hitbox.size.mul({
+                                x: Math.abs(rayXSide.x - 1),
+                                y: 0,
+                            })
+                        ),
+                        obj_hitbox.pos.add(
+                            this_hitbox.size.mul({
+                                x: Math.abs(rayXSide.x - 1),
+                                y: 1,
+                            })
+                        )
+                    );
+
+                    let obj_side_y = create_section(
+                        obj_hitbox.pos.add(
+                            this_hitbox.size.mul({
+                                x: 0,
+                                y: Math.abs(rayXSide.y - 1),
+                            })
+                        ),
+                        obj_hitbox.pos.add(
+                            this_hitbox.size.mul({
+                                x: 1,
+                                y: Math.abs(rayXSide.y - 1),
+                            })
+                        )
+                    );
+
+                    const intersection_side_x_ray_x = ray_side_intersection(
+                        rayX,
+                        obj_side_x
+                    );
+                    const intersection_side_x_ray_y = ray_side_intersection(
+                        rayY,
+                        obj_side_x
+                    );
+                    const intersection_side_y_ray_x = ray_side_intersection(
+                        rayX,
+                        obj_side_y
+                    );
+                    const intersection_side_y_ray_y = ray_side_intersection(
+                        rayY,
+                        obj_side_y
+                    );
                 }
             }
         }
-        return collisions;
+        return [first_possible_collision];
     }
 
     collision(delta_time: number) {
         const collisions = this.collide(delta_time);
 
-        for (let collision of collisions) {
-            this.on_collision(collision);
-            let obj_col_dir = collision.dir + (collision.dir % 2) * -2 + 1;
-            if (!collision.obj.isDynamic) {
-                collision.obj_hitbox.collisions[obj_col_dir] = true;
-                (collision.obj as StaticGameObj).collision_obj = this;
-            }
-        }
+        // for (let collision of collisions) {
+        //     this.on_collision(collision);
+        //     let obj_col_dir = collision.dir + (collision.dir % 2) * -2 + 1;
+        //     if (!collision.obj.isDynamic) {
+        //         collision.obj_hitbox.collisions[obj_col_dir] = true;
+        //         (collision.obj as StaticGameObj).collision_obj = this;
+        //     }
+        // }
     }
 
     private set_hb_position() {

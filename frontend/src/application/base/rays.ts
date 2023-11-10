@@ -73,9 +73,9 @@ export function ray_side_intersection(ray: Line, side: Section) {
                 Math.abs(side.p1.y - side.p2.y)
             )
         ) {
-            return intersection_point;
+            return { point: intersection_point, side_intersection: true };
         }
     }
 
-    return {point: intersection_point, side_intersection: false};
+    return { point: intersection_point, side_intersection: false };
 }

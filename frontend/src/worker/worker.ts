@@ -18,14 +18,20 @@ class Self {
         console.log("created stuff");
     }
 
-    readmsg(event: MessageEvent) {
-        switch (event.data.type) {
-            case Type.init:
-                this.init_msg(event.data);
-                break;
-            default:
-                this.ws?.send(JSON.stringify(event.data));
-                break;
+    async readmsg(event: MessageEvent) {
+        if (event.data.types) {
+            this.ws?.send(JSON.stringify(event.data));
+        } else {
+            switch (event.data.type) {
+                case Type.init:
+                    this.init_msg(event.data);
+                    break;
+                default:
+                    const result = await this.ws?.send(
+                        JSON.stringify(event.data)
+                    );
+                    break;
+            }
         }
     }
 

@@ -60,6 +60,13 @@ export interface Test {
     msg: string;
 }
 
+export interface NetworkBuffer {
+    types: Type[];
+    id?: string;
+    cid?: number;
+    data: any[];
+}
+
 export interface WorkerMsg {
     type: Type;
     id?: string;

@@ -77,6 +77,7 @@ function main_loop() {
     });
 
     event.refresh();
+    network.flush();
     requestAnimationFrame(main_loop);
 }
 

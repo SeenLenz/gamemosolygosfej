@@ -46,6 +46,7 @@ export class Player extends DynamicGameObj {
 
     run(delta_time: number): void {
         this.clear();
+        super.motion(delta_time);
         super.collision(delta_time);
         this.keyboard_events(delta_time);
         this.movement(delta_time);
@@ -53,7 +54,6 @@ export class Player extends DynamicGameObj {
         this.set_animations(delta_time);
         this.animate(this.frame_time);
 
-        super.motion(delta_time);
         super.run(delta_time);
     }
 
@@ -120,8 +120,7 @@ export class Player extends DynamicGameObj {
             );
             this.velocity.y += (0 - this.velocity.y) * 0.08 * delta_time;
             this.force.y = 0;
-        }
-        else {
+        } else {
             this.hitboxes[0].size = this.size.div(new Vec2(4, 4 / 3));
             this.hitboxes[0].pos_diff = new Vec2(
                 (this.size.x / 4) * 1.5,

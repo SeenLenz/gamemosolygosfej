@@ -1,5 +1,9 @@
 import { Renderer } from "./renderer/renderer";
-import { EventHandler } from "./application/base/event_handler";
+import {
+    EventHandler,
+    EventType,
+    Keys,
+} from "./application/base/event_handler";
 import { Camera } from "./application/base/camera";
 import { Player } from "./application/gamelogic/player";
 import { Map } from "./application/gamelogic/map/map";
@@ -56,10 +60,9 @@ function setup() {
     renderer.setup();
     create_textures();
 
-    console.log(Vec2.from({x: 1, y: 2}).normalize());
-
     map = new Map();
     camera.focus_on(new Player([96, 96], [100, -500]));
+    start = performance.now();
 }
 
 function main_loop() {
@@ -77,7 +80,7 @@ function main_loop() {
     });
 
     event.refresh();
-    setTimeout(() => requestAnimationFrame(main_loop), 100)
+    setTimeout(() => requestAnimationFrame(main_loop), 0);
 }
 
 function main() {

@@ -25,7 +25,7 @@ export function create_line(vec: Vec2, p2: Point): Line {
     const x = -1 * vec.y;
     const y = vec.x;
 
-    const normal = Vec2.from({ x, y }).normalize();
+    const normal = new Vec2(x, y).normalize();
 
     return {
         a: normal.x,
@@ -44,13 +44,17 @@ export function create_section(p1: Point, p2: Point): Section {
 }
 
 export function line_intersection_point(l1: Line, l2: Line) {
-    if (Math.abs(l1.a - l2.a) < 1e-5 && Math.abs(l1.b - l2.b) < 1e-5) {
+    if (Math.abs(l1.a - l2.a) < 0.1 || Math.abs(l1.b - l2.b) < 0.1) {
         return undefined;
     }
 
     let x = (l1.b * l2.c - l2.b * l1.c) / (l1.a * l2.b - l2.a * l1.b);
-    let y = (-l1.c - l1.a * x) / l1.b;
-
+    let y;
+    if (float_eq(l1.b, 0)) {
+        y = (-l2.c - l2.a * x) / l2.b;
+    } else {
+        y = (-l1.c - l1.a * x) / l1.b;
+    }
     return new Vec2(x, y);
 }
 
@@ -59,23 +63,14 @@ export function ray_side_intersection(ray: Line, side: Section) {
     if (!intersection_point) {
         return undefined;
     }
-    if (
-        float_eq(
-            Math.abs(side.p1.x - intersection_point.x) +
-                Math.abs(side.p2.x - intersection_point.x),
-            Math.abs(side.p1.x - side.p2.x)
-        )
-    ) {
-        if (
-            float_eq(
-                Math.abs(side.p1.y - intersection_point.y) +
-                    Math.abs(side.p2.y - intersection_point.y),
-                Math.abs(side.p1.y - side.p2.y)
-            )
-        ) {
-            return { point: intersection_point, side_intersection: true };
-        }
-    }
 
+    if (
+        intersection_point.x >= side.p1.x &&
+        intersection_point.x <= side.p2.x &&
+        intersection_point.y <= side.p1.y &&
+        intersection_point.y >= side.p2.y
+    ) {
+        return { point: intersection_point, side_intersection: true };
+    }
     return { point: intersection_point, side_intersection: false };
 }

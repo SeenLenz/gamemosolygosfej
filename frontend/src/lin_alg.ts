@@ -79,11 +79,15 @@ export class Vec2 {
         this.y /= vec2.y;
     }
 
+    get magnitude() {
+        return Math.sqrt(this.x * this.x + this.y * this.y);
+    }
+
     normalize() {
         let result = new Vec2(0, 0);
-        let a = this.x / this.y;
-        result.y = Math.sqrt(1 / (a * a + 1));
-        result.x = result.y * a;
+        let magn = this.magnitude;
+        result.x = this.x / magn;
+        result.y = this.y / magn;
         return result;
     }
 
@@ -98,9 +102,15 @@ export class Vec2 {
     as_raw() {
         return new Float32Array([this.x, this.y]);
     }
-    
+
     interpolate(target: Vec2, speed: Point) {
         return target.sub(this).mul(speed);
+    }
+
+    dist_squared(point: Point) {
+        let distx = this.x - point.x;
+        let disty = this.y - point.y;
+        return distx * distx + disty * disty;
     }
 }
 

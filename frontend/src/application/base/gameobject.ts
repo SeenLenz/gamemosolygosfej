@@ -1,7 +1,13 @@
 import { Obj } from "../../renderer/object";
 import { delta_time, renderer } from "../../app";
 import { Vec2 } from "../../lin_alg";
-import { create_line, create_section, ray_side_intersection } from "./rays";
+import {
+    Point,
+    create_line,
+    create_section,
+    float_eq,
+    ray_side_intersection,
+} from "./rays";
 
 export enum ObjectTag {
     Empty,
@@ -11,6 +17,14 @@ export enum ObjectTag {
     Bench,
     House,
 }
+
+export type CollisionObj = {
+    this_hitbox: Hitbox;
+    obj: GameObject;
+    obj_hitbox: Hitbox;
+    point: Point;
+    direction: CollisionDir;
+};
 
 export enum CollisionDir {
     Top,
@@ -55,6 +69,7 @@ export class GameObject {
     collidable: boolean;
     isDynamic: boolean;
     object_tag: ObjectTag;
+
     // --> hitbox
     hitboxes: Hitbox[] = [];
 
@@ -225,6 +240,12 @@ export class StaticGameObj extends GameObject {
 export class DynamicGameObj extends GameObject {
     velocity: Vec2;
     force: Vec2;
+    prev_frame_velocity_normalized: Vec2 = Vec2.zeros();
+    velocity_changed = false;
+    closest_intersection_obj?: {
+        x: CollisionObj | undefined;
+        y: CollisionObj | undefined;
+    };
     constructor(scale: Vec2, position: Vec2) {
         super(scale, position);
 
@@ -244,11 +265,11 @@ export class DynamicGameObj extends GameObject {
         this.force.add_self(force);
     }
 
-    collide(delta_time: number) {
-        let first_possible_collision = {
-            x: 0,
-            y: 0,
-        };
+    get_closest_interection() {
+        let closest_itersection_point: {
+            x: CollisionObj | undefined;
+            y: CollisionObj | undefined;
+        } = { x: undefined, y: undefined };
         for (let obj of GameObject.hitboxes) {
             for (let this_hitbox of this.hitboxes) {
                 for (let obj_hitbox of obj.hitboxes) {
@@ -260,12 +281,12 @@ export class DynamicGameObj extends GameObject {
                     let rayYSide = { x: 1, y: 1 };
                     let y_dir = -1;
                     let x_dir = -1;
-                    if (this.velocity.x > 0) {
+                    if (this.velocity.x >= 0) {
                         rayXSide.x = 1;
                         rayYSide.x = 0;
                         x_dir = 1;
                     }
-                    if (this.velocity.y > 0) {
+                    if (this.velocity.y >= 0) {
                         rayXSide.y = 1;
                         rayYSide.y = 0;
                         y_dir = 1;
@@ -279,72 +300,161 @@ export class DynamicGameObj extends GameObject {
                         this_hitbox.size.mul(Vec2.from(rayYSide))
                     );
 
-                    let rayX = create_line(this.velocity, rayX_start_point);
-                    let rayY = create_line(this.velocity, rayY_start_point);
-
                     let obj_side_x = create_section(
                         obj_hitbox.pos.add(
-                            this_hitbox.size.mul({
-                                x: Math.abs(rayXSide.x - 1),
+                            obj_hitbox.size.mul({
+                                x: rayXSide.x,
                                 y: 0,
                             })
                         ),
                         obj_hitbox.pos.add(
-                            this_hitbox.size.mul({
-                                x: Math.abs(rayXSide.x - 1),
+                            obj_hitbox.size.mul({
+                                x: rayXSide.x,
                                 y: 1,
                             })
                         )
                     );
-
                     let obj_side_y = create_section(
                         obj_hitbox.pos.add(
-                            this_hitbox.size.mul({
+                            obj_hitbox.size.mul({
                                 x: 0,
-                                y: Math.abs(rayXSide.y - 1),
+                                y: rayYSide.y,
                             })
                         ),
                         obj_hitbox.pos.add(
-                            this_hitbox.size.mul({
+                            obj_hitbox.size.mul({
                                 x: 1,
-                                y: Math.abs(rayXSide.y - 1),
+                                y: rayYSide.y,
                             })
                         )
                     );
 
-                    const intersection_side_x_ray_x = ray_side_intersection(
-                        rayX,
-                        obj_side_x
-                    );
-                    const intersection_side_x_ray_y = ray_side_intersection(
-                        rayY,
-                        obj_side_x
-                    );
-                    const intersection_side_y_ray_x = ray_side_intersection(
-                        rayX,
-                        obj_side_y
-                    );
-                    const intersection_side_y_ray_y = ray_side_intersection(
-                        rayY,
-                        obj_side_y
-                    );
+                    if (
+                        (obj_side_y.p1.x * x_dir < rayX_start_point.x * x_dir &&
+                            obj_side_y.p2.x * x_dir <
+                                rayX_start_point.x * x_dir) ||
+                        (obj_side_x.p1.y * y_dir < rayX_start_point.y * y_dir &&
+                            obj_side_x.p2.y * y_dir <
+                                rayX_start_point.y * y_dir)
+                    ) {
+                        continue;
+                    }
+
+                    let rayX = create_line(this.velocity, rayX_start_point);
+                    let rayY = create_line(this.velocity, rayY_start_point);
+
+                    //is = INTERSECTION SIDE (with ray) :))))))
+                    const is_x = {
+                        x: ray_side_intersection(rayX, obj_side_x),
+                        y: ray_side_intersection(rayY, obj_side_x),
+                    };
+                    const is_y = {
+                        x: ray_side_intersection(rayX, obj_side_y),
+                        y: ray_side_intersection(rayY, obj_side_y),
+                    };
+
+                    if (is_x.x && is_x.y) {
+                        if (
+                            (!is_x.x.side_intersection &&
+                                !is_x.y.side_intersection &&
+                                (is_x.x.point.y - obj_side_x.p1.y) *
+                                    (is_x.y.point.y - obj_side_x.p1.y) <
+                                    0) ||
+                            is_x.x.side_intersection ||
+                            is_x.y.side_intersection
+                        ) {
+                            if (!closest_itersection_point.x) {
+                                closest_itersection_point.x = {
+                                    this_hitbox: this_hitbox,
+                                    obj: obj,
+                                    obj_hitbox: obj_hitbox,
+                                    point: is_x.x.point,
+                                    direction: 2 + (x_dir + 1) / 2,
+                                };
+                            } else if (
+                                Math.abs(
+                                    rayX_start_point.x -
+                                        closest_itersection_point.x.point.x
+                                ) >
+                                Math.abs(rayX_start_point.x - is_x.x.point.x)
+                            ) {
+                                closest_itersection_point.x.obj_hitbox =
+                                    obj_hitbox;
+                                closest_itersection_point.x.this_hitbox =
+                                    this_hitbox;
+                                closest_itersection_point.x.point =
+                                    is_x.x.point;
+                                closest_itersection_point.x.obj = obj;
+                                closest_itersection_point.x.direction =
+                                    2 + (x_dir + 1) / 2;
+                            }
+                        }
+                    }
+                    if (is_y.x && is_y.y) {
+                        if (
+                            (!is_y.x.side_intersection &&
+                                !is_y.y.side_intersection &&
+                                (is_y.x.point.x - obj_side_y.p1.x) *
+                                    (is_y.y.point.x - obj_side_x.p1.x) <
+                                    0) ||
+                            is_y.x.side_intersection ||
+                            is_y.y.side_intersection
+                        ) {
+                            if (!closest_itersection_point.y) {
+                                closest_itersection_point.y = {
+                                    this_hitbox: this_hitbox,
+                                    obj_hitbox: obj_hitbox,
+                                    obj: obj,
+                                    point: is_y.y.point,
+                                    direction: 0 + (y_dir + 1) / 2,
+                                };
+                            } else if (
+                                Math.abs(
+                                    rayY_start_point.y -
+                                        closest_itersection_point.y.point.y
+                                ) >
+                                Math.abs(rayY_start_point.y - is_y.y.point.y)
+                            ) {
+                                closest_itersection_point.y.obj_hitbox =
+                                    obj_hitbox;
+                                closest_itersection_point.y.this_hitbox =
+                                    this_hitbox;
+                                closest_itersection_point.y.point =
+                                    is_y.y.point;
+                                closest_itersection_point.y.obj = obj;
+                                closest_itersection_point.y.direction =
+                                    0 + (y_dir + 1) / 2;
+                            }
+                        }
+                    }
                 }
             }
         }
-        return [first_possible_collision];
+
+        return closest_itersection_point;
     }
 
     collision(delta_time: number) {
-        const collisions = this.collide(delta_time);
+        if (this.velocity_changed) {
+            this.closest_intersection_obj = this.get_closest_interection();
+        }
 
-        // for (let collision of collisions) {
-        //     this.on_collision(collision);
-        //     let obj_col_dir = collision.dir + (collision.dir % 2) * -2 + 1;
-        //     if (!collision.obj.isDynamic) {
-        //         collision.obj_hitbox.collisions[obj_col_dir] = true;
-        //         (collision.obj as StaticGameObj).collision_obj = this;
-        //     }
-        // }
+        if (
+            this.closest_intersection_obj?.y &&
+            this.closest_intersection_obj.y.point.y -
+                this.closest_intersection_obj.y.this_hitbox.pos.y -
+                this.closest_intersection_obj.y.this_hitbox.size.y <=
+                0
+        ) {
+            this.on_collision_y(
+                this.closest_intersection_obj.y.obj,
+                this.closest_intersection_obj.y.direction,
+                this.closest_intersection_obj.y.obj_hitbox,
+                this.closest_intersection_obj.y.this_hitbox
+            );
+        }
+
+        this.set_hb_position();
     }
 
     private set_hb_position() {
@@ -354,9 +464,27 @@ export class DynamicGameObj extends GameObject {
     }
 
     motion(delta_time: number) {
+        this.velocity_changed = false;
         this.velocity.y += this.force.y * delta_time;
         this.velocity.x -= this.force.x * delta_time;
 
+        const normalized_velocity = this.velocity.normalize();
+        if (
+            !(
+                float_eq(
+                    this.prev_frame_velocity_normalized.x,
+                    normalized_velocity.x
+                ) &&
+                float_eq(
+                    this.prev_frame_velocity_normalized.y,
+                    normalized_velocity.y
+                )
+            )
+        ) {
+            this.prev_frame_velocity_normalized =
+                Vec2.from(normalized_velocity);
+            this.velocity_changed = true;
+        }
         this.pos.y += this.velocity.y * delta_time;
         this.pos.x += this.velocity.x * delta_time;
 

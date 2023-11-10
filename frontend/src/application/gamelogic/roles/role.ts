@@ -1,6 +1,7 @@
 import { Lobby, NetworkRenderable, WorkerMsg } from "../../../../../types";
-import { camera, network } from "../../../app";
+import { event } from "../../../app";
 import { Effect } from "../../base/effects";
+import { EventType, Keys } from "../../base/event_handler";
 import { GameObject } from "../../base/gameobject";
 
 export interface Role {

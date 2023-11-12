@@ -1,5 +1,5 @@
 import { Obj } from "../../renderer/object";
-import { delta_time, renderer } from "../../app";
+import { delta_time, gravity, renderer } from "../../app";
 import { Vec2 } from "../../lin_alg";
 import {
     Point,
@@ -435,7 +435,7 @@ export class DynamicGameObj extends GameObject {
     }
 
     collision(delta_time: number) {
-        if (this.velocity_changed) {
+        if (this.velocity_changed && this.velocity.magnitude != 0) {
             this.closest_intersection_obj = this.get_closest_interection();
         }
 
@@ -469,6 +469,7 @@ export class DynamicGameObj extends GameObject {
         this.velocity.x -= this.force.x * delta_time;
 
         const normalized_velocity = this.velocity.normalize();
+
         if (
             !(
                 float_eq(
@@ -485,6 +486,7 @@ export class DynamicGameObj extends GameObject {
                 Vec2.from(normalized_velocity);
             this.velocity_changed = true;
         }
+
         this.pos.y += this.velocity.y * delta_time;
         this.pos.x += this.velocity.x * delta_time;
 

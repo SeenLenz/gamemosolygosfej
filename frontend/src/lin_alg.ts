@@ -86,6 +86,9 @@ export class Vec2 {
     normalize() {
         let result = new Vec2(0, 0);
         let magn = this.magnitude;
+        if (magn == 0) {
+            return result;
+        }
         result.x = this.x / magn;
         result.y = this.y / magn;
         return result;

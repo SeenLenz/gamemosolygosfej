@@ -12,7 +12,7 @@ export class Ground extends StaticGameObj {
     constructor(size: Vec2, pos: Vec2, type: number) {
         super(size.mul(new Vec2(48, 48)), pos.mul(new Vec2(48, 48)), false);
         this.hitboxes[0].size.y = this.size.y - 18;
-        this.hitboxes[0].pos.y = 18;
+        this.hitboxes[0].pos.y += 18;
         this.object_tag = ObjectTag.Terrain;
         this.texture_index = SpriteSheets.Ground + Math.abs(type);
         this.sprite_index = (type + 1) / 2;

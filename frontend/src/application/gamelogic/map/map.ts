@@ -15,8 +15,10 @@ export class Map {
             //     new Vec2(64 * 6, 64 * 6),
             //     new Vec2(5 * 48, 0 - 64 * 6 + 3 * 6)
             // ),
-            new Ground(new Vec2(40, 1), new Vec2(5, -10), GroundPos.Center),
-            new Ground(new Vec2(40, 1), new Vec2(0, -7), GroundPos.Center),
+            // new Ground(new Vec2(1, 8), new Vec2(8, -14), GroundPos.Center),
+            new Ground(new Vec2(1, 8), new Vec2(0, -14), GroundPos.Center),
+            new Ground(new Vec2(8, 1), new Vec2(1, -14), GroundPos.Center),
+            // new Ground(new Vec2(8, 1), new Vec2(1, -7), GroundPos.Center),
             // new Ground(new Vec2(1, 1), new Vec2(-1, 0), GroundPos.LeftCorner),
             // new Ground(new Vec2(1, 1), new Vec2(40, 0), GroundPos.RightCorner),
             // new UnderGround(new Vec2(42, 20), new Vec2(-1, 1)),

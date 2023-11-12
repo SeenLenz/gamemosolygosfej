@@ -10,8 +10,7 @@ import { Map } from "./application/gamelogic/map/map";
 import { create_textures } from "./application/base/textures";
 import { Type, Test, WorkerMsg } from "../../types";
 import { Network } from "./networking/networking";
-import { EvilRole, PlayerRole, Role } from "./application/gamelogic/roles/role";
-import { Vec2 } from "./lin_alg";
+import { PlayerRole, Role } from "./application/gamelogic/roles/role";
 
 export const renderer = new Renderer();
 export const event = new EventHandler(renderer);
@@ -54,14 +53,13 @@ document.addEventListener("DOMContentLoaded", () => {
     main();
 });
 
-let current_role: Role = new PlayerRole();
+let current_role: Role;
 
 function setup() {
     renderer.setup();
     create_textures();
-
+    current_role = new PlayerRole();
     map = new Map();
-    camera.focus_on(new Player([96, 96], [100, -500]));
     start = performance.now();
 }
 

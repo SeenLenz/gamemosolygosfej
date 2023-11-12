@@ -1,15 +1,17 @@
-import { Lobby, NetworkRenderable, WorkerMsg } from "../../../../../types";
-import { event } from "../../../app";
+import { NetworkRenderable } from "../../../../../types";
+import { camera } from "../../../app";
 import { Effect } from "../../base/effects";
-import { EventType, Keys } from "../../base/event_handler";
 import { GameObject } from "../../base/gameobject";
+import { Player } from "../player";
 
 export interface Role {
     render(delta_time: number): void;
 }
 
 export class PlayerRole implements Role {
-    constructor() {}
+    constructor() {
+        camera.focus_on(new Player([96, 96], [100, -500]));
+    }
 
     render(delta_time: number) {
         GameObject.objects.forEach((go) => {

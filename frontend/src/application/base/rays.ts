@@ -65,10 +65,14 @@ export function ray_side_intersection(ray: Line, side: Section) {
     }
 
     if (
-        intersection_point.x >= side.p1.x &&
-        intersection_point.x <= side.p2.x &&
-        intersection_point.y <= side.p1.y &&
-        intersection_point.y >= side.p2.y
+        ((intersection_point.x >= side.p1.x &&
+            intersection_point.x <= side.p2.x) ||
+            (intersection_point.x <= side.p1.x &&
+                intersection_point.x >= side.p2.x)) &&
+        ((intersection_point.y >= side.p1.y &&
+            intersection_point.y <= side.p2.y) ||
+            (intersection_point.y <= side.p1.y &&
+                intersection_point.y >= side.p2.y))
     ) {
         return { point: intersection_point, side_intersection: true };
     }

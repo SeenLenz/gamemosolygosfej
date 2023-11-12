@@ -9,6 +9,7 @@ import {
     Hitbox,
     HitboxFlags,
     ObjectTag,
+    Ray,
 } from "../base/gameobject";
 import { SpriteSheets } from "../base/textures";
 
@@ -35,8 +36,9 @@ export class Player extends DynamicGameObj {
         //     (this.size.x / 4) * 1.5,
         //     this.size.x / 4
         // );
-        console.log(this.pos, this.hitboxes[0].pos, this.hitboxes[0].pos_diff);
+        // this.velocity.x = 1;
         this.mass = 1;
+
         this.focused = true;
     }
 
@@ -79,34 +81,40 @@ export class Player extends DynamicGameObj {
         ) {
             this.running = false;
         }
-        // if (event.key_state(Keys.W, EventType.Pressed)) {
-        //     this.jump = true;
-        // }
-        // if (event.key_state(Keys.Shift, EventType.Pressed)) {
-        //     this.dash = true;
-        // }
-        // if (event.key_state(Keys.S, EventType.Pressed)) {
-        //     this.platform_fall = true;
-        // }
-        // if (event.key_state(Keys.Space, EventType.Pressed)) {
-        // }
+        if (event.key_state(Keys.W, EventType.Pressed)) {
+            this.jump = true;
+        }
+        if (event.key_state(Keys.Shift, EventType.Pressed)) {
+            this.dash = true;
+        }
+        if (event.key_state(Keys.S, EventType.Pressed)) {
+            this.platform_fall = true;
+        }
+        if (event.key_state(Keys.Space, EventType.Down)) {
+            this.velocity.x = -1;
+            this.velocity.y = -1;
+        } else {
+            this.velocity.x = 0;
+            this.velocity.y = 0;
+        }
     }
 
     movement(delta_time: number) {
-        if (!this.hitboxes[0].collision_dir(CollisionDir.Bottom)) {
-            this.add_force(new Vec2(0, gravity * this.mass));
-        }
+        // this.add_force(new Vec2(-gravity * this.mass, 0));
+
         if (
             this.dash &&
             !(!this.x_collision && Math.abs(this.velocity.x) > 7)
         ) {
             this.velocity.x = 20 * this.x_direction;
         }
-        if (this.running) {
-            this.velocity.x = 6 * this.x_direction;
-        } else {
-            this.velocity.x = 0;
-        }
+
+        // if (this.running) {
+        //     this.velocity.x +=
+        //         (6 * this.x_direction - this.velocity.x) * 0.07 * delta_time;
+        // } else {
+        //     this.velocity.x += (0 - this.velocity.x) * 0.08 * delta_time;
+        // }
 
         if ((this.grounded || this.has_jump) && this.jump) {
             this.velocity.y = -12;
@@ -128,8 +136,6 @@ export class Player extends DynamicGameObj {
                 this.size.x / 4
             );
         }
-
-        console.log(this.velocity);
     }
 
     set_animations(delta_time: number) {

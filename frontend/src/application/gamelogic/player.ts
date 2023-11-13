@@ -4,6 +4,7 @@ import { Effect } from "../base/effects";
 import { EventType, Keys } from "../base/event_handler";
 import {
     CollisionDir,
+    CollisionObj,
     DynamicGameObj,
     GameObject,
     Hitbox,
@@ -47,10 +48,10 @@ export class Player extends DynamicGameObj {
 
     run(delta_time: number): void {
         this.clear();
-        super.motion(delta_time);
-        super.collision(delta_time);
         this.keyboard_events(delta_time);
         this.movement(delta_time);
+        super.motion(delta_time);
+        super.collision(delta_time);
 
         this.set_animations(delta_time);
         this.animate(this.frame_time);
@@ -65,20 +66,15 @@ export class Player extends DynamicGameObj {
         this.has_jump = false;
         this.dash = false;
         this.wall_slide = false;
-
     }
 
     keyboard_events(delta_time: number) {
-        this.velocity.x = 0;
-        this.velocity.y = 0;
         if (event.key_state(Keys.A, EventType.Down)) {
             this.running = true;
             this.x_direction = -1;
-            this.velocity.x = -1;
         } else if (event.key_state(Keys.D, EventType.Down)) {
             this.running = true;
             this.x_direction = 1;
-            this.velocity.x = 1;
         } else if (
             event.key_state(Keys.A, EventType.Up) ||
             event.key_state(Keys.A, EventType.Up)
@@ -86,27 +82,20 @@ export class Player extends DynamicGameObj {
             this.running = false;
         }
         if (event.key_state(Keys.W, EventType.Down)) {
-            // this.jump = true;
-            this.velocity.y = -1;
+            this.jump = true;
         }
         if (event.key_state(Keys.Shift, EventType.Pressed)) {
             this.dash = true;
         }
         if (event.key_state(Keys.S, EventType.Down)) {
-            // this.platform_fall = true;
-            this.velocity.y = 1;
+            this.platform_fall = true;
         }
-        // if (event.key_state(Keys.Space, EventType.Down)) {
-        //     this.velocity.x = -1;
-        //     this.velocity.y = -1;
-        // } else {
-        //     this.velocity.x = 0;
-        //     this.velocity.y = 0;
-        // }
     }
 
     movement(delta_time: number) {
-        // this.add_force(new Vec2(-gravity * this.mass, 0));
+        if (!this.hitboxes[0].collisions[CollisionDir.Bottom]) {
+            this.velocity.y = 2;
+        }
 
         if (
             this.dash &&
@@ -115,12 +104,11 @@ export class Player extends DynamicGameObj {
             this.velocity.x = 20 * this.x_direction;
         }
 
-        // if (this.running) {
-        //     this.velocity.x +=
-        //         (6 * this.x_direction - this.velocity.x) * 0.07 * delta_time;
-        // } else {
-        //     this.velocity.x += (0 - this.velocity.x) * 0.08 * delta_time;
-        // }
+        if (this.running) {
+            this.velocity.x = 6 * this.x_direction;
+        } else {
+            this.velocity.x = 0;
+        }
 
         if ((this.grounded || this.has_jump) && this.jump) {
             this.velocity.y = -12;
@@ -197,13 +185,8 @@ export class Player extends DynamicGameObj {
         }
     }
 
-    on_collision_x(
-        obj: GameObject,
-        dir: CollisionDir,
-        obj_hitbox: Hitbox,
-        this_hitbox: Hitbox
-    ): void {
-        if (!this.grounded && obj_hitbox.reactive) {
+    on_collision_x(obj: CollisionObj): void {
+        if (!this.grounded && obj.obj_hitbox.reactive) {
             this.wall_slide = true;
             this.has_jump = true;
             this.jump_dir = this.x_direction;
@@ -211,27 +194,22 @@ export class Player extends DynamicGameObj {
         this.running = false;
         this.x_collision = true;
 
-        super.on_collision_x(obj, dir, obj_hitbox, this_hitbox);
+        super.on_collision_x(obj);
     }
 
-    on_collision_y(
-        obj: GameObject,
-        dir: CollisionDir,
-        obj_hitbox: Hitbox,
-        this_hitbox: Hitbox
-    ): void {
-        if (obj_hitbox.flags.includes(HitboxFlags.Platform)) {
+    on_collision_y(obj: CollisionObj): void {
+        if (obj.obj_hitbox.flags.includes(HitboxFlags.Platform)) {
             if (this.velocity.y < 0 || this.platform_fall) {
                 return;
             }
         }
-        if (obj_hitbox.reactive && dir == CollisionDir.Bottom) {
+        if (obj.obj_hitbox.reactive && obj.dir == CollisionDir.Bottom) {
             this.platform_fall = false;
 
             if (this.velocity.y > 18) {
                 camera.shake();
             }
         }
-        super.on_collision_y(obj, dir, obj_hitbox, this_hitbox);
+        super.on_collision_y(obj);
     }
 }

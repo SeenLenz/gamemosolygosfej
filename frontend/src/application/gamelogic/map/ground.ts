@@ -22,8 +22,8 @@ export class Ground extends StaticGameObj {
         );
     }
 
-    run(delta_time: number) {
-        super.run(delta_time);
+    loop(delta_time: number) {
+        super.loop(delta_time);
     }
 }
 
@@ -37,7 +37,7 @@ export class UnderGround extends StaticGameObj {
         );
     }
 
-    run(delta_time: number) {
-        super.run(delta_time);
+    loop(delta_time: number) {
+        super.loop(delta_time);
     }
 }

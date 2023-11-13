@@ -25,7 +25,7 @@ export class StreetLamp extends StaticGameObj {
         this.set_texture_coords(new Vec2(1, 1), new Vec2(0, 0));
     }
 
-    run(delta_time: number) {
+    loop(delta_time: number) {
         if (this.hitboxes[0].collision_dir(CollisionDir.Top)) {
             if (this.switchable) {
                 if (!this.light_effect) {
@@ -47,7 +47,7 @@ export class StreetLamp extends StaticGameObj {
         } else {
             this.switchable = true;
         }
-        super.run(delta_time);
+        super.loop(delta_time);
     }
 }
 
@@ -58,8 +58,8 @@ export class Wire extends StaticGameObj {
         this.object_tag = ObjectTag.Empty;
     }
 
-    run(delta_time: number) {
-        super.run(delta_time);
+    loop(delta_time: number) {
+        super.loop(delta_time);
         this.animate(400);
     }
 }
@@ -75,8 +75,8 @@ export class Bench extends StaticGameObj {
         this.set_texture_coords(new Vec2(1, 1), new Vec2(0, 0));
     }
 
-    run(delta_time: number) {
-        super.run(delta_time);
+    loop(delta_time: number) {
+        super.loop(delta_time);
     }
 }
 
@@ -94,7 +94,7 @@ export class House extends StaticGameObj {
         this.set_texture_coords(new Vec2(1, 1), new Vec2(0, 0));
     }
 
-    run(delta_time: number) {
-        super.run(delta_time);
+    loop(delta_time: number) {
+        super.loop(delta_time);
     }
 }

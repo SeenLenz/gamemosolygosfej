@@ -51,11 +51,11 @@ export class Map {
 
     render(delta_time: number) {
         this.background.forEach((obj) => {
-            obj.run(delta_time);
+            obj.loop(delta_time);
             obj.render();
         });
         this.objects.forEach((obj) => {
-            obj.run(delta_time);
+            obj.loop(delta_time);
             obj.render();
         });
     }
@@ -73,7 +73,7 @@ class Background extends StaticGameObj {
         );
     }
 
-    run(delta_time: number) {
-        super.run(delta_time);
+    loop(delta_time: number) {
+        super.loop(delta_time);
     }
 }

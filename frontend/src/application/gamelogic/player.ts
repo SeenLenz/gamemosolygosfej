@@ -28,15 +28,6 @@ export class Player extends DynamicGameObj {
     constructor(size: number[], pos: number[]) {
         super(new Vec2(size[0], size[1]), new Vec2(pos[0], pos[1]));
         this.object_tag = ObjectTag.Player;
-        // this.hitboxes[0] = new Hitbox(
-        //     this.size.div(new Vec2(4, 4 / 3)),
-        //     this.pos.sub(new Vec2((this.size.x / 4) * 1.5, this.size.y / 4))
-        // );
-        // this.hitboxes[0].pos_diff = new Vec2(
-        //     (this.size.x / 4) * 1.5,
-        //     this.size.x / 4
-        // );
-        // this.velocity.x = 1;
         this.mass = 1;
 
         this.focused = true;
@@ -46,17 +37,16 @@ export class Player extends DynamicGameObj {
         return this.hitboxes[0].collision_dir(CollisionDir.Bottom);
     }
 
+    get hitbox() {
+        return this.hitboxes[0];
+    }
+
     run(delta_time: number): void {
         this.clear();
         this.keyboard_events(delta_time);
         this.movement(delta_time);
-        super.motion(delta_time);
-        super.collision(delta_time);
-
         this.set_animations(delta_time);
         this.animate(this.frame_time);
-
-        super.run(delta_time);
     }
 
     clear() {
@@ -93,9 +83,8 @@ export class Player extends DynamicGameObj {
     }
 
     movement(delta_time: number) {
-        if (!this.hitboxes[0].collisions[CollisionDir.Bottom]) {
-            this.velocity.y = 2;
-        }
+        // this.add_force(new Vec2(0, gravity * this.mass));
+        this.velocity.y = 0.5;
 
         if (
             this.dash &&
@@ -164,11 +153,7 @@ export class Player extends DynamicGameObj {
 
         this.frame_time = 0;
         this.sprite_index = 1;
-        if (this.wall_slide) {
-            this.sprite_index = 4;
-            this.x_direction *= -1;
-            return;
-        } else if (!this.x_collision && Math.abs(this.velocity.x) > 7) {
+        if (!this.x_collision && Math.abs(this.velocity.x) > 7) {
             this.sprite_index = 3;
             return;
         } else if (!this.grounded) {
@@ -186,11 +171,6 @@ export class Player extends DynamicGameObj {
     }
 
     on_collision_x(obj: CollisionObj): void {
-        if (!this.grounded && obj.obj_hitbox.reactive) {
-            this.wall_slide = true;
-            this.has_jump = true;
-            this.jump_dir = this.x_direction;
-        }
         this.running = false;
         this.x_collision = true;
 
@@ -198,18 +178,6 @@ export class Player extends DynamicGameObj {
     }
 
     on_collision_y(obj: CollisionObj): void {
-        if (obj.obj_hitbox.flags.includes(HitboxFlags.Platform)) {
-            if (this.velocity.y < 0 || this.platform_fall) {
-                return;
-            }
-        }
-        if (obj.obj_hitbox.reactive && obj.dir == CollisionDir.Bottom) {
-            this.platform_fall = false;
-
-            if (this.velocity.y > 18) {
-                camera.shake();
-            }
-        }
         super.on_collision_y(obj);
     }
 }

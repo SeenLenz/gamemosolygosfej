@@ -73,7 +73,7 @@ function main_loop() {
 
     current_role.render(delta_time);
     map.foreground.forEach((obj) => {
-        obj.run(delta_time);
+        obj.loop(delta_time);
         obj.render();
     });
 

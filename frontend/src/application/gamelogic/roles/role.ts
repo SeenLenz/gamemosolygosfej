@@ -15,7 +15,7 @@ export class PlayerRole implements Role {
 
     render(delta_time: number) {
         GameObject.objects.forEach((go) => {
-            go.run(delta_time);
+            go.loop(delta_time);
             go.render();
         });
 

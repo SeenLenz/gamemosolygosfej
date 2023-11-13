@@ -11,8 +11,8 @@ export class Terrain extends StaticGameObj {
         this.z_coord = 1;
     }
 
-    run(delta_time: number): void {
-        super.run(delta_time);
+    loop(delta_time: number): void {
+        super.loop(delta_time);
         this.set_texture_coords(
             new Vec2(this.size.x / 48 / 4, this.size.y / 48),
             new Vec2(0, 0)
@@ -29,8 +29,8 @@ export class Background extends StaticGameObj {
         this.collidable = false;
     }
 
-    run(delta_time: number): void {
-        super.run(delta_time);
+    loop(delta_time: number): void {
+        super.loop(delta_time);
         this.set_texture_coords(new Vec2(1, 1), new Vec2(0, 0));
     }
 }

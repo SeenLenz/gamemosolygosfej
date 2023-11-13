@@ -1,4 +1,7 @@
+import { renderer } from "../../app";
 import { Vec2 } from "../../lin_alg";
+import { Effect } from "./effects";
+import { SpriteSheets } from "./textures";
 
 export type Line = {
     a: number;
@@ -19,6 +22,80 @@ export type Section = {
 
 export function float_eq(a: number, b: number) {
     return Math.abs(a - b) < 1e-5;
+}
+
+export class Ray extends Effect {
+    constructor() {
+        super(Vec2.zeros(), Vec2.zeros(), 0, SpriteSheets.Debug, 0, 0, -1); 
+        this.set_texture_coords(
+            Vec2.uniform(1),
+            Vec2.zeros(),
+        );
+    }
+
+    set_pos(p1: Point) {
+        this.pos.set_vec(p1);
+    }
+    
+    animate() {
+        if (!renderer.base_quad_obj) {
+            return;
+        }
+        renderer.gl.uniform2fv(renderer.uniform_position, this.pos.as_raw());
+        renderer.gl.uniform2fv(renderer.uniform_scale, Vec2.uniform(3).as_raw());
+        renderer.gl.uniform2f(
+            renderer.uniform_rotation,
+            Math.sin(this.rotation),
+            Math.cos(this.rotation)
+        );
+
+        renderer.gl.uniform1f(renderer.uniform_flip, this.z_coord);
+        renderer.gl.enableVertexAttribArray(renderer.base_quad_obj.vertex_buffer.attribute);
+        renderer.gl.bindBuffer(
+            renderer.gl.ARRAY_BUFFER,
+            renderer.base_quad_obj.vertex_buffer.buffer
+        );
+        renderer.gl.vertexAttribPointer(
+            renderer.base_quad_obj.vertex_buffer.attribute,
+            2,
+            renderer.gl.FLOAT,
+            false,
+            0,
+            0
+        );
+
+        renderer.gl.enableVertexAttribArray(this.texture_buffer.attribute);
+        renderer.gl.bindBuffer(
+            renderer.gl.ARRAY_BUFFER,
+            this.texture_buffer.buffer
+        );
+        renderer.gl.vertexAttribPointer(
+            this.texture_buffer.attribute,
+            2,
+            renderer.gl.FLOAT,
+            true,
+            0,
+            0
+        );
+
+        renderer.gl.activeTexture(renderer.gl.TEXTURE0);
+        renderer.gl.bindTexture(
+            renderer.gl.TEXTURE_2D,
+            renderer.textures[this.texture_index].texture
+        );
+        renderer.gl.uniform1i(renderer.sampler, 0);
+            
+        renderer.gl.bindBuffer(
+            renderer.gl.ELEMENT_ARRAY_BUFFER,
+            renderer.base_quad_obj.index_buffer as Int16Array
+        );
+        renderer.gl.drawElements(
+            renderer.gl.TRIANGLES,
+            6,
+            renderer.gl.UNSIGNED_SHORT,
+            0
+        );
+    }
 }
 
 export function create_line(vec: Vec2, p2: Point): Line {

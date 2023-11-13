@@ -4,6 +4,7 @@ import { Vec2 } from "../../lin_alg";
 import {
     Line,
     Point,
+    Ray,
     create_line,
     create_section,
     float_eq,
@@ -241,32 +242,6 @@ export class StaticGameObj extends GameObject {
     }
 }
 
-export class Ray extends GameObject {
-    constructor() {
-        super(new Vec2(50, 20), Vec2.zeros(), true, false);
-        this.texture_index = SpriteSheets.Debug;
-        this.rotation = 0;
-    }
-
-    run(delta_time: number): void {
-        super.run(delta_time);
-        this.rotation += 0.01 * delta_time;
-    }
-
-    set_pos(pos: Point) {
-        this.pos.x = pos.x;
-        this.pos.y = pos.y;
-    }
-
-    set_rot(line: Line) {
-        if (line.a != 0) {
-            this.rotation = Math.atan2(line.b, -line.a);
-        } else {
-            this.rotation = Math.PI / 2;
-        }
-    }
-}
-
 export class DynamicGameObj extends GameObject {
     velocity: Vec2;
     force: Vec2;
@@ -276,7 +251,7 @@ export class DynamicGameObj extends GameObject {
         x: CollisionObj | undefined;
         y: CollisionObj | undefined;
     };
-    rays: Ray[] = [new Ray(), new Ray()];
+    rays: Ray[] = [new Ray(), new Ray(), new Ray(), new Ray()];
     constructor(scale: Vec2, position: Vec2) {
         super(scale, position);
 
@@ -357,26 +332,10 @@ export class DynamicGameObj extends GameObject {
                         )
                     );
 
-                    if (
-                        (obj_side_y.p1.x * x_dir < rayX_start_point.x * x_dir &&
-                            obj_side_y.p2.x * x_dir <
-                                rayX_start_point.x * x_dir) ||
-                        (obj_side_x.p1.y * y_dir < rayY_start_point.y * y_dir &&
-                            obj_side_x.p2.y * y_dir <
-                                rayY_start_point.y * y_dir)
-                    ) {
-                        continue;
-                    }
-
                     let rayX = create_line(this.velocity, rayX_start_point);
                     let rayY = create_line(this.velocity, rayY_start_point);
-                    this.rays[0].set_pos(rayX_start_point);
-                    this.rays[1].set_pos(rayY_start_point);
-                    this.rays[0].set_rot(rayX);
-                    console.log(rayX);
-                    console.log(rayY);
 
-                    this.rays[1].set_rot(rayY);
+
                     //is = INTERSECTION SIDE (with ray) :))))))
                     const is_x = {
                         x: ray_side_intersection(rayX, obj_side_x),
@@ -398,6 +357,8 @@ export class DynamicGameObj extends GameObject {
                             is_x.y.side_intersection
                         ) {
                             if (!closest_itersection_point.x) {
+                                this.rays[0].set_pos(is_x.x.point);
+                                this.rays[1].set_pos(is_x.y.point);
                                 closest_itersection_point.x = {
                                     this_hitbox: this_hitbox,
                                     obj_hitbox: obj_hitbox,
@@ -412,6 +373,8 @@ export class DynamicGameObj extends GameObject {
                                 ) >
                                 Math.abs(rayY_start_point.x - is_x.x.point.x)
                             ) {
+                                this.rays[0].set_pos(is_x.x.point);
+                                this.rays[1].set_pos(is_x.y.point);
                                 closest_itersection_point.x.obj_hitbox =
                                     obj_hitbox;
                                 closest_itersection_point.x.this_hitbox =
@@ -435,6 +398,8 @@ export class DynamicGameObj extends GameObject {
                             is_y.y.side_intersection
                         ) {
                             if (!closest_itersection_point.y) {
+                                this.rays[2].set_pos(is_y.x.point);
+                                this.rays[3].set_pos(is_y.y.point);
                                 closest_itersection_point.y = {
                                     this_hitbox: this_hitbox,
                                     obj_hitbox: obj_hitbox,
@@ -449,6 +414,8 @@ export class DynamicGameObj extends GameObject {
                                 ) >
                                 Math.abs(rayY_start_point.y - is_y.y.point.y)
                             ) {
+                                this.rays[2].set_pos(is_y.x.point);
+                                this.rays[3].set_pos(is_y.y.point);
                                 closest_itersection_point.y.obj_hitbox =
                                     obj_hitbox;
                                 closest_itersection_point.y.this_hitbox =
@@ -471,6 +438,7 @@ export class DynamicGameObj extends GameObject {
     collision(delta_time: number) {
         // if (this.velocity_changed && this.velocity.magnitude != 0) {
         this.closest_intersection_obj = this.get_closest_interection();
+
         // }
 
         // if (

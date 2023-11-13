@@ -9,7 +9,6 @@ import {
     Hitbox,
     HitboxFlags,
     ObjectTag,
-    Ray,
 } from "../base/gameobject";
 import { SpriteSheets } from "../base/textures";
 
@@ -66,37 +65,44 @@ export class Player extends DynamicGameObj {
         this.has_jump = false;
         this.dash = false;
         this.wall_slide = false;
+
     }
 
     keyboard_events(delta_time: number) {
+        this.velocity.x = 0;
+        this.velocity.y = 0;
         if (event.key_state(Keys.A, EventType.Down)) {
             this.running = true;
             this.x_direction = -1;
+            this.velocity.x = -1;
         } else if (event.key_state(Keys.D, EventType.Down)) {
             this.running = true;
             this.x_direction = 1;
+            this.velocity.x = 1;
         } else if (
             event.key_state(Keys.A, EventType.Up) ||
             event.key_state(Keys.A, EventType.Up)
         ) {
             this.running = false;
         }
-        if (event.key_state(Keys.W, EventType.Pressed)) {
-            this.jump = true;
+        if (event.key_state(Keys.W, EventType.Down)) {
+            // this.jump = true;
+            this.velocity.y = -1;
         }
         if (event.key_state(Keys.Shift, EventType.Pressed)) {
             this.dash = true;
         }
-        if (event.key_state(Keys.S, EventType.Pressed)) {
-            this.platform_fall = true;
+        if (event.key_state(Keys.S, EventType.Down)) {
+            // this.platform_fall = true;
+            this.velocity.y = 1;
         }
-        if (event.key_state(Keys.Space, EventType.Down)) {
-            this.velocity.x = -1;
-            this.velocity.y = -1;
-        } else {
-            this.velocity.x = 0;
-            this.velocity.y = 0;
-        }
+        // if (event.key_state(Keys.Space, EventType.Down)) {
+        //     this.velocity.x = -1;
+        //     this.velocity.y = -1;
+        // } else {
+        //     this.velocity.x = 0;
+        //     this.velocity.y = 0;
+        // }
     }
 
     movement(delta_time: number) {

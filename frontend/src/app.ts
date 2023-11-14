@@ -46,6 +46,8 @@ document.addEventListener("DOMContentLoaded", () => {
             data: { msg: "hello from the frontend" } as Test,
         });
     });
+
+    main(Roles.player);
 });
 
 function setup(role: number) {

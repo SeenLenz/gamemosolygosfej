@@ -34,9 +34,9 @@ export class Network {
 
     worker_msg(event: MessageEvent) {
         this.msg = event.data as WorkerMsg;
-        if (this.msg.type == Type.start) {
-            main((this.msg.data as Start).role);
-        }
+        // if (this.msg.type == Type.start) {
+        //     main((this.msg.data as Start).role);
+        // }
     }
 
     send(msg: WorkerMsg) {

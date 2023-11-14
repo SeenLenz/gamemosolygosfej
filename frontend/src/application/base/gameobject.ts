@@ -253,7 +253,11 @@ export class DynamicGameObj extends GameObject {
         y: CollisionObj | undefined;
     };
     components: [boolean, boolean] = [false, false];
-    points: DebugPoint[] = [new DebugPoint(), new DebugPoint()];
+    points: DebugPoint[] = [
+        new DebugPoint(),
+        new DebugPoint(),
+        new DebugPoint(),
+    ];
     constructor(scale: Vec2, position: Vec2) {
         super(scale, position);
 
@@ -319,8 +323,6 @@ export class DynamicGameObj extends GameObject {
     }
 
     set_positions() {
-        console.log(this.velocity);
-
         this.pos.y += this.velocity.y * delta_time;
         this.pos.x += this.velocity.x * delta_time;
 
@@ -329,25 +331,29 @@ export class DynamicGameObj extends GameObject {
     }
 
     collision() {
-        this.closest_intersection_obj = this.get_closest_interection();
+        if (this.velocity_changed && this.velocity.magnitude != 0) {
+            this.closest_intersection_obj = this.get_closest_interection();
+        }
         const x_obj = this.closest_intersection_obj?.x;
         const y_obj = this.closest_intersection_obj?.y;
         if (x_obj) {
             if (
-                Math.abs(x_obj.dir - 3) * x_obj.this_hitbox.size.x +
-                    x_obj.this_hitbox.pos.x -
-                    x_obj.point.x >=
-                0
+                Math.abs(
+                    Math.abs(x_obj.dir - 3) * x_obj.this_hitbox.size.x +
+                        x_obj.this_hitbox.pos.x -
+                        x_obj.point.x
+                ) <= Math.abs(this.velocity.x * delta_time)
             ) {
                 this.on_collision_x(x_obj);
             }
         }
         if (y_obj) {
             if (
-                y_obj.dir * y_obj.this_hitbox.size.y +
-                    y_obj.this_hitbox.pos.y -
-                    y_obj.point.y >=
-                0
+                Math.abs(
+                    y_obj.dir * y_obj.this_hitbox.size.y +
+                        y_obj.this_hitbox.pos.y -
+                        y_obj.point.y
+                ) <= Math.abs(this.velocity.y * delta_time)
             ) {
                 this.on_collision_y(y_obj);
             }
@@ -479,12 +485,10 @@ export class DynamicGameObj extends GameObject {
 
                     if (obj_side_x.p1.x * x_dir > rayY_start_point.x * x_dir) {
                         x_collision = true;
-                        // this.points[0].set_pos(rayY_start_point);
                     }
 
                     if (obj_side_y.p1.y * y_dir > rayX_start_point.y * y_dir) {
                         y_collision = true;
-                        this.points[1].set_pos(rayX_start_point);
                     }
 
                     if (x_collision && is_x.x && is_x.y) {
@@ -527,6 +531,7 @@ export class DynamicGameObj extends GameObject {
                             }
                         }
                     }
+
                     if (y_collision && is_y.x && is_y.y) {
                         if (
                             (!is_y.x.side_intersection &&

@@ -24,25 +24,33 @@ export function float_eq(a: number, b: number) {
     return Math.abs(a - b) < 1e-5;
 }
 
+export function float_less_eq(a: number, b: number) {
+    return float_eq(a, b) || a < b;
+}
+
+export function float_greater_eq(a: number, b: number) {
+    return float_eq(a, b) || a > b;
+}
+
 export class Ray extends Effect {
     constructor() {
-        super(Vec2.zeros(), Vec2.zeros(), 0, SpriteSheets.Debug, 0, 0, -1); 
-        this.set_texture_coords(
-            Vec2.uniform(1),
-            Vec2.zeros(),
-        );
+        super(Vec2.zeros(), Vec2.zeros(), 0, SpriteSheets.Debug, 0, 0, -1);
+        this.set_texture_coords(Vec2.uniform(1), Vec2.zeros());
     }
 
     set_pos(p1: Point) {
         this.pos.set_vec(p1);
     }
-    
+
     animate() {
         if (!renderer.base_quad_obj) {
             return;
         }
         renderer.gl.uniform2fv(renderer.uniform_position, this.pos.as_raw());
-        renderer.gl.uniform2fv(renderer.uniform_scale, Vec2.uniform(3).as_raw());
+        renderer.gl.uniform2fv(
+            renderer.uniform_scale,
+            Vec2.uniform(3).as_raw()
+        );
         renderer.gl.uniform2f(
             renderer.uniform_rotation,
             Math.sin(this.rotation),
@@ -50,7 +58,9 @@ export class Ray extends Effect {
         );
 
         renderer.gl.uniform1f(renderer.uniform_flip, this.z_coord);
-        renderer.gl.enableVertexAttribArray(renderer.base_quad_obj.vertex_buffer.attribute);
+        renderer.gl.enableVertexAttribArray(
+            renderer.base_quad_obj.vertex_buffer.attribute
+        );
         renderer.gl.bindBuffer(
             renderer.gl.ARRAY_BUFFER,
             renderer.base_quad_obj.vertex_buffer.buffer
@@ -84,7 +94,7 @@ export class Ray extends Effect {
             renderer.textures[this.texture_index].texture
         );
         renderer.gl.uniform1i(renderer.sampler, 0);
-            
+
         renderer.gl.bindBuffer(
             renderer.gl.ELEMENT_ARRAY_BUFFER,
             renderer.base_quad_obj.index_buffer as Int16Array
@@ -121,7 +131,7 @@ export function create_section(p1: Point, p2: Point): Section {
 }
 
 export function line_intersection_point(l1: Line, l2: Line) {
-    if (Math.abs(l1.a - l2.a) < 0.1 || Math.abs(l1.b - l2.b) < 0.1) {
+    if (Math.abs(l1.a - l2.a) < 1e-5 || Math.abs(l1.b - l2.b) < 1e-5) {
         return undefined;
     }
 
@@ -142,14 +152,14 @@ export function ray_side_intersection(ray: Line, side: Section) {
     }
 
     if (
-        ((intersection_point.x >= side.p1.x &&
-            intersection_point.x <= side.p2.x) ||
-            (intersection_point.x <= side.p1.x &&
-                intersection_point.x >= side.p2.x)) &&
-        ((intersection_point.y >= side.p1.y &&
-            intersection_point.y <= side.p2.y) ||
-            (intersection_point.y <= side.p1.y &&
-                intersection_point.y >= side.p2.y))
+        ((float_greater_eq(intersection_point.x, side.p1.x) &&
+            float_less_eq(intersection_point.x, side.p2.x)) ||
+            (float_less_eq(intersection_point.x, side.p1.x) &&
+                float_greater_eq(intersection_point.x, side.p2.x))) &&
+        ((float_greater_eq(intersection_point.y, side.p1.y) &&
+            float_less_eq(intersection_point.y, side.p2.y)) ||
+            (float_less_eq(intersection_point.y, side.p1.y) &&
+                float_greater_eq(intersection_point.y, side.p2.y)))
     ) {
         return { point: intersection_point, side_intersection: true };
     }

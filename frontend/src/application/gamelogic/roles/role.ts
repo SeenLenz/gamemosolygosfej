@@ -10,7 +10,7 @@ export interface Role {
 
 export class PlayerRole implements Role {
     constructor() {
-        camera.focus_on(new Player([96, 96], [100, -300]));
+        camera.focus_on(new Player([96, 96], [100, -100]));
     }
 
     render(delta_time: number) {

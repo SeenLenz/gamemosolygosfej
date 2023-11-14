@@ -17,13 +17,13 @@ export class Network {
     private Pisti?: Worker;
     private outBuff: NetworkBuffer;
 
-    private msg?: WorkerMsg;
+    private msg: WorkerMsg | NetworkBuffer;
 
     constructor(domain: String) {
         this.Pisti = new Worker(
             new URL("../worker/worker.ts", import.meta.url)
         );
-
+        this.msg = {} as WorkerMsg;
         this.Pisti.onmessage = (event) => {
             this.worker_msg(event);
         };
@@ -43,9 +43,9 @@ export class Network {
     }
 
     async flush() {
-        console.log("this.outbuff:");
-        console.log(this.outBuff);
         this.Pisti?.postMessage(this.outBuff);
+        this.outBuff.data = [];
+        this.outBuff.types = [];
     }
 
     async send(msg: WorkerMsg) {
@@ -66,6 +66,12 @@ export class Network {
             "http://" + this.domain + "/setup/lobbycrt"
         );
         this.ws_cfg = await response.json();
+
+        const lobbyElement = document.querySelector("#lobby_lb");
+        if (lobbyElement && this.ws_cfg && this.ws_cfg.id !== undefined) {
+            lobbyElement.innerHTML = this.ws_cfg.id;
+        }
+
         this.outBuff.id = this.ws_cfg?.id;
         this.outBuff.cid = this.ws_cfg?.cid;
 

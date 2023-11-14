@@ -2,6 +2,7 @@ import {
     CameraSync,
     Lobby,
     NetworkRenderable,
+    Roles,
     Type,
     WorkerMsg,
 } from "../../../../../types";
@@ -15,11 +16,15 @@ import { Renderable } from "../../../renderer/object";
 
 export interface Role {
     run(delta_time: number): void;
+    type?: Roles;
 }
 
 export class PlayerRole implements Role {
+    type: Roles;
+
     constructor() {
         camera.focus_on(new Player([96, 96], [100, -500]));
+        this.type = Roles.player;
     }
 
     run(delta_time: number) {
@@ -59,6 +64,8 @@ export class PlayerRole implements Role {
                 rotation: camera.rotation,
             },
         });
+
+        network.flush();
     }
 }
 
@@ -88,65 +95,134 @@ export class Observer implements Role {
 
     run(delta_time: number) {
         const data = network.data;
-        this.objects.forEach((obj) => {
-            renderer.gl.bindBuffer(
-                renderer.gl.ARRAY_BUFFER,
-                this.texture_buffer.buffer
-            );
 
-            this.texture_coords = new Float32Array([
-                obj.texture_coords[0],
-                obj.texture_coords[1],
-                obj.texture_coords[2],
-                obj.texture_coords[3],
-                obj.texture_coords[4],
-                obj.texture_coords[5],
-                obj.texture_coords[6],
-                obj.texture_coords[7],
-            ]);
-            renderer.gl.bufferSubData(
-                renderer.gl.ARRAY_BUFFER,
-                0,
-                this.texture_coords
-            );
-            this.base_obj?.render(renderer, obj);
-        });
+        console.log(data);
 
-        switch (data?.type) {
-            case Type.camera:
-                const camerasync = data.data as CameraSync;
-                camera.pos = camerasync.pos;
-                camera.rotation = camerasync.rotation;
-                camera.scale = camerasync.scale;
-                break;
-            case Type.dynamic_game_object:
-                const render_info = data.data as NetworkRenderable;
-                if (render_info.index >= this.objects.length) {
-                    this.objects.push({
-                        pos: render_info.pos as Vec2,
-                        size: render_info.size as Vec2,
-                        rotation: render_info.rotation as number,
-                        x_direction: render_info.x_direction as number,
-                        texture_buffer: this.texture_buffer,
-                        texture_index: render_info.texture_index as number,
-                        z_coord: render_info.z_coord as number,
-                        texture_coords:
-                            render_info.texture_coords as Float32Array,
-                    });
-                } else {
-                    this.objects[render_info.index] = {
-                        pos: render_info.pos as Vec2,
-                        size: render_info.size as Vec2,
-                        rotation: render_info.rotation as number,
-                        x_direction: render_info.x_direction as number,
-                        texture_buffer: this.texture_buffer,
-                        texture_index: render_info.texture_index as number,
-                        z_coord: render_info.z_coord as number,
-                        texture_coords:
-                            render_info.texture_coords as Float32Array,
-                    };
+        if ("types" in data) {
+            this.objects.forEach((obj) => {
+                renderer.gl.bindBuffer(
+                    renderer.gl.ARRAY_BUFFER,
+                    this.texture_buffer.buffer
+                );
+
+                this.texture_coords = new Float32Array([
+                    obj.texture_coords[0],
+                    obj.texture_coords[1],
+                    obj.texture_coords[2],
+                    obj.texture_coords[3],
+                    obj.texture_coords[4],
+                    obj.texture_coords[5],
+                    obj.texture_coords[6],
+                    obj.texture_coords[7],
+                ]);
+                renderer.gl.bufferSubData(
+                    renderer.gl.ARRAY_BUFFER,
+                    0,
+                    this.texture_coords
+                );
+                this.base_obj?.render(renderer, obj);
+            });
+            data.data.forEach((e, i) => {
+                switch (data.types[i]) {
+                    case Type.camera:
+                        const camerasync = e.data as CameraSync;
+                        camera.pos = camerasync.pos;
+                        camera.rotation = camerasync.rotation;
+                        camera.scale = camerasync.scale;
+                        break;
+                    case Type.dynamic_game_object:
+                        const render_info = e.data as NetworkRenderable;
+                        if (render_info.index >= this.objects.length) {
+                            this.objects.push({
+                                pos: render_info.pos as Vec2,
+                                size: render_info.size as Vec2,
+                                rotation: render_info.rotation as number,
+                                x_direction: render_info.x_direction as number,
+                                texture_buffer: this.texture_buffer,
+                                texture_index:
+                                    render_info.texture_index as number,
+                                z_coord: render_info.z_coord as number,
+                                texture_coords:
+                                    render_info.texture_coords as Float32Array,
+                            });
+                        } else {
+                            this.objects[render_info.index] = {
+                                pos: render_info.pos as Vec2,
+                                size: render_info.size as Vec2,
+                                rotation: render_info.rotation as number,
+                                x_direction: render_info.x_direction as number,
+                                texture_buffer: this.texture_buffer,
+                                texture_index:
+                                    render_info.texture_index as number,
+                                z_coord: render_info.z_coord as number,
+                                texture_coords:
+                                    render_info.texture_coords as Float32Array,
+                            };
+                        }
+                        break;
                 }
-                break;
+            });
+        } else {
+            this.objects.forEach((obj) => {
+                renderer.gl.bindBuffer(
+                    renderer.gl.ARRAY_BUFFER,
+                    this.texture_buffer.buffer
+                );
+
+                this.texture_coords = new Float32Array([
+                    obj.texture_coords[0],
+                    obj.texture_coords[1],
+                    obj.texture_coords[2],
+                    obj.texture_coords[3],
+                    obj.texture_coords[4],
+                    obj.texture_coords[5],
+                    obj.texture_coords[6],
+                    obj.texture_coords[7],
+                ]);
+                renderer.gl.bufferSubData(
+                    renderer.gl.ARRAY_BUFFER,
+                    0,
+                    this.texture_coords
+                );
+                this.base_obj?.render(renderer, obj);
+            });
+
+            switch (data.type) {
+                case Type.camera:
+                    const camerasync = data.data as CameraSync;
+                    camera.pos = camerasync.pos;
+                    camera.rotation = camerasync.rotation;
+                    camera.scale = camerasync.scale;
+                    break;
+                case Type.dynamic_game_object:
+                    const render_info = data.data as NetworkRenderable;
+                    if (render_info.index >= this.objects.length) {
+                        this.objects.push({
+                            pos: render_info.pos as Vec2,
+                            size: render_info.size as Vec2,
+                            rotation: render_info.rotation as number,
+                            x_direction: render_info.x_direction as number,
+                            texture_buffer: this.texture_buffer,
+                            texture_index: render_info.texture_index as number,
+                            z_coord: render_info.z_coord as number,
+                            texture_coords:
+                                render_info.texture_coords as Float32Array,
+                        });
+                    } else {
+                        this.objects[render_info.index] = {
+                            pos: render_info.pos as Vec2,
+                            size: render_info.size as Vec2,
+                            rotation: render_info.rotation as number,
+                            x_direction: render_info.x_direction as number,
+                            texture_buffer: this.texture_buffer,
+                            texture_index: render_info.texture_index as number,
+                            z_coord: render_info.z_coord as number,
+                            texture_coords:
+                                render_info.texture_coords as Float32Array,
+                        };
+                    }
+                    break;
+            }
         }
     }
 }

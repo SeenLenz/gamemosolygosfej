@@ -15,10 +15,11 @@ class Self {
             this.readmsg(e);
         };
         this.keepalive_time = keepalive_time;
-        console.log("created stuff");
     }
 
     async readmsg(event: MessageEvent) {
+        console.log(event.data);
+
         if (event.data.types) {
             this.ws?.send(JSON.stringify(event.data));
         } else {
@@ -36,7 +37,6 @@ class Self {
     }
 
     init_msg(msg: WorkerMsg) {
-        console.log(msg);
         let setupObj = msg.data as Setup;
         this.ws = new WebSocket(
             "ws://" + setupObj.domain + "/" + msg?.id + "/" + msg?.cid

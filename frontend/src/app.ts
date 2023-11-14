@@ -38,7 +38,6 @@ document.addEventListener("DOMContentLoaded", () => {
         network.create_lobby();
     });
     document.querySelector("#msg_bt")?.addEventListener("click", (e) => {
-        console.log("asdfasd" + network.domain);
         network.send({
             type: Type.test,
             cid: network.ws_cfg?.cid,
@@ -76,8 +75,11 @@ function main_loop() {
         obj.render();
     });
 
+    if (current_role.type) {
+        network.flush();
+    }
+
     event.refresh();
-    network.flush();
     requestAnimationFrame(main_loop);
 }
 

@@ -8,11 +8,13 @@ import {
     ObjectTag,
     StaticGameObj,
 } from "../../base/gameobject";
+import { DebugPoint } from "../../base/rays";
 import { SpriteSheets } from "../../base/textures";
 
 export class StreetLamp extends StaticGameObj {
     switchable = false;
     light_effect: Effect | null = null;
+    hitbox_point = new DebugPoint();
     constructor(size: Vec2, pos: Vec2) {
         super(size, pos, false, true);
         this.texture_index = SpriteSheets.SteetLamp;
@@ -23,6 +25,8 @@ export class StreetLamp extends StaticGameObj {
         this.hitboxes[0].pos.x += 3.5 * 6;
         this.hitboxes.push(new Hitbox(this.size, this.pos, false));
         this.set_texture_coords(new Vec2(1, 1), new Vec2(0, 0));
+        this.hitbox_point.size = this.hitboxes[0].size;
+        this.hitbox_point.pos = this.hitboxes[0].pos;
     }
 
     loop(delta_time: number) {

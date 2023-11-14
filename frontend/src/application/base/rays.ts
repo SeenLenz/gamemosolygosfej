@@ -32,9 +32,9 @@ export function float_greater_eq(a: number, b: number) {
     return float_eq(a, b) || a > b;
 }
 
-export class Ray extends Effect {
+export class DebugPoint extends Effect {
     constructor() {
-        super(Vec2.zeros(), Vec2.zeros(), 0, SpriteSheets.Debug, 0, 0, -1);
+        super(Vec2.uniform(5), Vec2.zeros(), 0, SpriteSheets.Debug, 0, 0, -1);
         this.set_texture_coords(Vec2.uniform(1), Vec2.zeros());
     }
 
@@ -47,10 +47,7 @@ export class Ray extends Effect {
             return;
         }
         renderer.gl.uniform2fv(renderer.uniform_position, this.pos.as_raw());
-        renderer.gl.uniform2fv(
-            renderer.uniform_scale,
-            Vec2.uniform(3).as_raw()
-        );
+        renderer.gl.uniform2fv(renderer.uniform_scale, this.size.as_raw());
         renderer.gl.uniform2f(
             renderer.uniform_rotation,
             Math.sin(this.rotation),

@@ -4,7 +4,7 @@ import { Vec2 } from "../../lin_alg";
 import {
     Line,
     Point,
-    Ray as DebugPoint,
+    DebugPoint as DebugPoint,
     create_line,
     create_section,
     float_eq,
@@ -253,11 +253,7 @@ export class DynamicGameObj extends GameObject {
         y: CollisionObj | undefined;
     };
     components: [boolean, boolean] = [false, false];
-    points: DebugPoint[] = [
-        new DebugPoint(),
-        new DebugPoint(),
-        new DebugPoint(),
-    ];
+    points: DebugPoint[] = [new DebugPoint(), new DebugPoint()];
     constructor(scale: Vec2, position: Vec2) {
         super(scale, position);
 
@@ -332,6 +328,7 @@ export class DynamicGameObj extends GameObject {
 
     collision() {
         if (this.velocity_changed && this.velocity.magnitude != 0) {
+            console.log("asd");
             this.closest_intersection_obj = this.get_closest_interection();
         }
         const x_obj = this.closest_intersection_obj?.x;
@@ -492,6 +489,8 @@ export class DynamicGameObj extends GameObject {
                     }
 
                     if (x_collision && is_x.x && is_x.y) {
+                        this.points[0].set_pos(is_x.x.point);
+                        this.points[1].set_pos(is_x.y.point);
                         if (
                             (!is_x.x.side_intersection &&
                                 !is_x.y.side_intersection &&

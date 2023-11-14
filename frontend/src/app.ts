@@ -78,7 +78,7 @@ function main_loop() {
     });
 
     event.refresh();
-    setTimeout(() => requestAnimationFrame(main_loop), 100);
+    requestAnimationFrame(main_loop);
 }
 
 function main() {

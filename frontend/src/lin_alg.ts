@@ -1,3 +1,5 @@
+import { Point } from "./application/base/rays";
+
 export class Vec2 {
     x: number;
     y: number;
@@ -7,11 +9,15 @@ export class Vec2 {
         this.y = y;
     }
 
+    static uniform(value: number) {
+        return new Vec2(value, value);
+    }
+
     static zeros() {
         return new Vec2(0, 0);
     }
 
-    static from(vec2: Vec2) {
+    static from(vec2: Point) {
         return new Vec2(vec2.x, vec2.y);
     }
 
@@ -20,64 +26,71 @@ export class Vec2 {
         this.y = y;
     }
 
-    set_vec(vec2: Vec2) {
+    set_vec(vec2: Point) {
         this.x = vec2.x;
         this.y = vec2.y;
     }
 
-    add(vec2: Vec2) {
+    add(vec2: Point) {
         let result = new Vec2(0, 0);
         result.x = this.x + vec2.x;
         result.y = this.y + vec2.y;
         return result;
     }
 
-    add_self(vec2: Vec2) {
+    add_self(vec2: Point) {
         this.x += vec2.x;
         this.y += vec2.y;
     }
 
-    sub(vec2: Vec2) {
+    sub(vec2: Point) {
         let result = new Vec2(0, 0);
         result.x = this.x - vec2.x;
         result.y = this.y - vec2.y;
         return result;
     }
 
-    sub_self(vec2: Vec2) {
+    sub_self(vec2: Point) {
         this.x -= vec2.x;
         this.y -= vec2.y;
     }
 
-    mul(vec2: Vec2) {
+    mul(vec2: Point) {
         let result = new Vec2(0, 0);
         result.x = this.x * vec2.x;
         result.y = this.y * vec2.y;
         return result;
     }
 
-    mul_self(vec2: Vec2) {
+    mul_self(vec2: Point) {
         this.x *= vec2.x;
         this.y *= vec2.y;
     }
 
-    div(vec2: Vec2) {
+    div(vec2: Point) {
         let result = new Vec2(0, 0);
         result.x = this.x / vec2.x;
         result.y = this.y / vec2.y;
         return result;
     }
 
-    div_self(vec2: Vec2) {
+    div_self(vec2: Point) {
         this.x /= vec2.x;
         this.y /= vec2.y;
     }
 
+    get magnitude() {
+        return Math.sqrt(this.x * this.x + this.y * this.y);
+    }
+
     normalize() {
         let result = new Vec2(0, 0);
-        let a = this.x / this.y;
-        result.y = Math.sqrt(1 / (a * a + 1));
-        result.x = result.y * a;
+        let magn = this.magnitude;
+        if (magn == 0) {
+            return result;
+        }
+        result.x = this.x / magn;
+        result.y = this.y / magn;
         return result;
     }
 
@@ -91,6 +104,16 @@ export class Vec2 {
 
     as_raw() {
         return new Float32Array([this.x, this.y]);
+    }
+
+    interpolate(target: Vec2, speed: Point) {
+        return target.sub(this).mul(speed);
+    }
+
+    dist_squared(point: Point) {
+        let distx = this.x - point.x;
+        let disty = this.y - point.y;
+        return distx * distx + disty * disty;
     }
 }
 
@@ -170,4 +193,8 @@ export class Vec3 {
     as_raw() {
         return new Float32Array([this.x, this.y, this.z]);
     }
+}
+
+export function interpolate(value: number, target: number, speed: number) {
+    return (value - target) * speed;
 }

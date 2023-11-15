@@ -1,4 +1,3 @@
-import { gravity } from "../../app";
 import { Vec2 } from "../../lin_alg";
 import { Renderer } from "../../renderer/renderer";
 

@@ -1,14 +1,17 @@
-import { SpriteSheets, event, gravity } from "../../app";
+import { camera, event, gravity, renderer } from "../../app";
 import { Vec2 } from "../../lin_alg";
 import { Effect } from "../base/effects";
 import { EventType, Keys } from "../base/event_handler";
 import {
     CollisionDir,
+    CollisionObj,
     DynamicGameObj,
     GameObject,
     Hitbox,
+    HitboxFlags,
     ObjectTag,
 } from "../base/gameobject";
+import { SpriteSheets } from "../base/textures";
 
 export class Player extends DynamicGameObj {
     public focused: boolean = false;
@@ -20,36 +23,30 @@ export class Player extends DynamicGameObj {
     jump = false;
     jump_dir = 0;
     x_collision = false;
-
     grounded_effect = false;
+    platform_fall = false;
     constructor(size: number[], pos: number[]) {
         super(new Vec2(size[0], size[1]), new Vec2(pos[0], pos[1]));
         this.object_tag = ObjectTag.Player;
-        this.hitbox = new Hitbox(
-            this.size.div(new Vec2(4, 4 / 3)),
-            this.pos.sub(new Vec2((this.size.x / 4) * 1.5, this.size.y / 4))
-        );
-        this.hb_pos_diff = new Vec2((this.size.x / 4) * 1.5, this.size.x / 4);
         this.mass = 1;
-        this.reactive = true;
+
         this.focused = true;
     }
 
     get grounded() {
-        return this.collision_dir(CollisionDir.Bottom);
+        return this.hitboxes[0].collision_dir(CollisionDir.Bottom);
+    }
+
+    get hitbox() {
+        return this.hitboxes[0];
     }
 
     run(delta_time: number): void {
         this.clear();
-        super.collision(delta_time);
-        this.keyboard_events();
+        this.keyboard_events(delta_time);
         this.movement(delta_time);
-
         this.set_animations(delta_time);
         this.animate(this.frame_time);
-
-        super.motion(delta_time);
-        super.run(delta_time);
     }
 
     clear() {
@@ -61,7 +58,7 @@ export class Player extends DynamicGameObj {
         this.wall_slide = false;
     }
 
-    keyboard_events() {
+    keyboard_events(delta_time: number) {
         if (event.key_state(Keys.A, EventType.Down)) {
             this.running = true;
             this.x_direction = -1;
@@ -80,10 +77,16 @@ export class Player extends DynamicGameObj {
         if (event.key_state(Keys.Shift, EventType.Pressed)) {
             this.dash = true;
         }
+        if (event.key_state(Keys.S, EventType.Pressed)) {
+            this.platform_fall = true;
+        }
+        if (event.key_state(Keys.Space, EventType.Pressed)) {
+        }
     }
 
     movement(delta_time: number) {
         this.add_force(new Vec2(0, gravity * this.mass));
+
         if (
             this.dash &&
             !(!this.x_collision && Math.abs(this.velocity.x) > 7)
@@ -98,18 +101,21 @@ export class Player extends DynamicGameObj {
         }
 
         if ((this.grounded || this.has_jump) && this.jump) {
-            this.velocity.y = -12;
+            this.velocity.y = -13;
             this.velocity.x += this.jump_dir * 15;
         }
 
         if (this.wall_slide) {
-            this.hitbox.size = this.size.div(new Vec2(2, 4 / 3));
-            this.hb_pos_diff = new Vec2(this.size.x / 4, this.size.x / 4);
+            this.hitboxes[0].size = this.size.div(new Vec2(2, 4 / 3));
+            this.hitboxes[0].pos_diff = new Vec2(
+                this.size.x / 4,
+                this.size.x / 4
+            );
             this.velocity.y += (0 - this.velocity.y) * 0.08 * delta_time;
             this.force.y = 0;
         } else {
-            this.hitbox.size = this.size.div(new Vec2(4, 4 / 3));
-            this.hb_pos_diff = new Vec2(
+            this.hitboxes[0].size = this.size.div(new Vec2(4, 4 / 3));
+            this.hitboxes[0].pos_diff = new Vec2(
                 (this.size.x / 4) * 1.5,
                 this.size.x / 4
             );
@@ -169,14 +175,14 @@ export class Player extends DynamicGameObj {
         }
     }
 
-    on_collision_x(obj: GameObject, dir: CollisionDir): void {
-        super.on_collision_x(obj, dir);
-        if (!this.grounded) {
-            this.wall_slide = true;
-            this.has_jump = true;
-            this.jump_dir = this.x_direction;
-        }
+    on_collision_x(obj: CollisionObj): void {
         this.running = false;
         this.x_collision = true;
+
+        super.on_collision_x(obj);
+    }
+
+    on_collision_y(obj: CollisionObj): void {
+        super.on_collision_y(obj);
     }
 }

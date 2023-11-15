@@ -1,113 +1,96 @@
 import { Renderer } from "./renderer/renderer";
-import { EventHandler } from "./application/base/event_handler";
-import { GameObject } from "./application/base/gameobject";
+import {
+    EventHandler,
+    EventType,
+    Keys,
+} from "./application/base/event_handler";
 import { Camera } from "./application/base/camera";
 import { Player } from "./application/gamelogic/player";
-import { Vec2 } from "./lin_alg";
-import { Background, Terrain } from "./application/gamelogic/terrain";
-import { Effect } from "./application/base/effects";
-
-document.addEventListener("DOMContentLoaded", () => {
-    main();
-});
+import { Map } from "./application/gamelogic/map/map";
+import { create_textures } from "./application/base/textures";
+import { Type, Test, WorkerMsg, Roles } from "../../types";
+import { Network } from "./networking/networking";
+import { Observer, PlayerRole, Role } from "./application/gamelogic/roles/role";
+import { GameObject } from "./application/base/gameobject";
 
 export const renderer = new Renderer();
 export const event = new EventHandler(renderer);
 export let camera = new Camera();
 export let gravity = 0.5;
+export const network = new Network("127.0.0.1:3000");
+export let delta_time: number = 1;
+export let current_role: Role;
 let start = 1;
 
-export enum SpriteSheets {
-    Player,
-    Map,
-    Ground,
-    GroundedEffect,
-    DashEffect,
-    Background,
-    OtherBackground
-}
+export let map: Map;
 
-function setup() {
+document.addEventListener("DOMContentLoaded", () => {
+    document.querySelector("#join_bt")?.addEventListener("click", (e) => {
+        const joinLabelValue = (
+            document.querySelector("#join_label") as HTMLInputElement | null
+        )?.value;
+        if (joinLabelValue) {
+            network.join_lobby(joinLabelValue);
+        }
+    });
+    document.querySelector("#start_bt")?.addEventListener("click", (e) => {
+        network.send({
+            ...network.ws_cfg,
+            type: Type.start,
+        } as WorkerMsg);
+    });
+    document.querySelector("#create_bt")?.addEventListener("click", (e) => {
+        network.create_lobby();
+    });
+    document.querySelector("#msg_bt")?.addEventListener("click", (e) => {
+        network.send({
+            type: Type.test,
+            cid: network.ws_cfg?.cid,
+            id: network.ws_cfg?.id,
+            data: { msg: "hello from the frontend" } as Test,
+        });
+    });
+});
+
+function setup(role: number) {
     renderer.setup();
-    renderer.create_texture(
-        "./textures/character/character_sprite_sheet.png",
-        [
-            [Vec2.zeros(), 8],
-            [new Vec2(0, 1), 1],
-            [new Vec2(1, 1), 1],
-            [new Vec2(2, 1), 1],
-            [new Vec2(3, 1), 1],
-            [new Vec2(4, 1), 1],
-        ],
-        new Vec2(8, 2)
-    );
-    renderer.create_texture(
-        "./textures/map/map.png",
-        [[Vec2.zeros(), 1]],
-        new Vec2(1, 1)
-    );
-    renderer.create_texture(
-        "./textures/map/underground.png",
-        [[Vec2.zeros(), 1]],
-        new Vec2(1, 1)
-    );
-    renderer.create_texture(
-        "./textures/effects/grounded.png",
-        [[Vec2.zeros(), 6]],
-        new Vec2(6, 1)
-    );
-    renderer.create_texture(
-        "./textures/effects/dash.png",
-        [[Vec2.zeros(), 12]],
-        new Vec2(12, 1)
-    );
-    renderer.create_texture(
-        "./textures/map/background.png",
-        [[Vec2.zeros(), 1]],
-        new Vec2(1, 1)
-    );
-    renderer.create_texture(
-        "./textures/map/background-1.png",
-        [[Vec2.zeros(), 1]],
-        new Vec2(1, 1)
-    );
+    create_textures();
 
-    camera.focus_multip = 0.03;
+    if (role == Roles.player) {
+        current_role = new PlayerRole();
+    } else {
+        current_role = new Observer();
+    }
 
-    new Terrain(
-        camera.zero.add(new Vec2(0, camera.height)),
-        new Vec2(Math.floor(camera.width / 48) * 48 * 4, 48),
-        SpriteSheets.Map
-    );
-    new Terrain(
-        camera.zero.add(new Vec2(0, camera.height + 48)),
-        new Vec2(Math.floor(camera.width / 48) * 48 * 4, 48 * 10),
-        SpriteSheets.Ground
-    );
-    camera.focus_on(new Player([96, 96], [camera.center.x, camera.center.y]));
+    start = performance.now();
+    map = new Map();
+    camera.focus_on(new Player([96, 96], [100, -500]));
 }
 
 function main_loop() {
-    const delta_time = (performance.now() - start) / 10;
+    delta_time = (performance.now() - start) / 10;
     start = performance.now();
     renderer.run(camera);
     camera.move(delta_time);
+    camera.shake_camera(delta_time);
+    map.render(delta_time);
 
-    GameObject.objects.forEach((go) => {
-        go.run(delta_time);
-        go.render();
+    current_role.run(delta_time);
+    map.foreground.forEach((obj) => {
+        obj.loop(delta_time);
+        obj.render();
     });
 
-    Effect.effects.forEach((e) => {
-        e.animate();
-    });
+    if (current_role.type) {
+        network.flush();
+    }
 
     event.refresh();
     requestAnimationFrame(main_loop);
 }
 
-function main() {
-    setup();
+export function main(role: number) {
+    setup(role);
 
     main_loop();
 }

@@ -1,5 +1,6 @@
-import { SpriteSheets, renderer } from "../../app";
+import { renderer } from "../../app";
 import { Vec2 } from "../../lin_alg";
+import { SpriteSheets } from "./textures";
 
 export class Effect {
     size: Vec2 = Vec2.zeros();
@@ -82,7 +83,11 @@ export class Effect {
             );
         }
         this.object?.render(renderer, this);
-        if (this.current_frame == 0 && this.current_cycle >= this.repeat) {
+        if (
+            this.repeat != -1 &&
+            this.current_frame == 0 &&
+            this.current_cycle >= this.repeat
+        ) {
             this.remove();
         }
     }

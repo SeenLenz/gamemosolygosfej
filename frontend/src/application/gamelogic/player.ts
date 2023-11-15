@@ -86,6 +86,7 @@ export class Player extends DynamicGameObj {
 
     movement(delta_time: number) {
         this.add_force(new Vec2(0, gravity * this.mass));
+
         if (
             this.dash &&
             !(!this.x_collision && Math.abs(this.velocity.x) > 7)

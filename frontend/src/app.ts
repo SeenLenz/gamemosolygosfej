@@ -8,6 +8,7 @@ import { Type, Test, WorkerMsg, Roles } from "../../types";
 import { Network } from "./networking/networking";
 import { Observer, PlayerRole, Role } from "./application/gamelogic/roles/role";
 import { GameObject } from "./application/base/gameobject";
+import { Hud } from "./hud/hud";
 
 export const renderer = new Renderer();
 export const event = new EventHandler(renderer);
@@ -18,6 +19,7 @@ export let current_role: Role;
 let start = 1;
 
 export let map: Map;
+let hud : Hud;
 
 document.addEventListener("DOMContentLoaded", () => {
     document.querySelector("#join_bt")?.addEventListener("click", (e) => {
@@ -62,6 +64,7 @@ function setup(role: number) {
 
     start = performance.now();
     map = new Map();
+    hud = new Hud();
 }
 
 function main_loop() {
@@ -71,7 +74,7 @@ function main_loop() {
     camera.move(delta_time);
     camera.shake_camera(delta_time);
     map.render(delta_time);
-
+    
     current_role.run(delta_time);
     map.foreground.forEach((obj) => {
         obj.run(delta_time);

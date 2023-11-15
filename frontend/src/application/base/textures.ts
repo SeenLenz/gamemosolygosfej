@@ -14,6 +14,7 @@ export enum SpriteSheets {
     HouseFg,
     Background,
     Wire,
+    Healthbar,
 }
 
 export function create_textures() {
@@ -100,5 +101,12 @@ export function create_textures() {
             [Vec2.zeros(), 5],
         ],
         new Vec2(5, 1)
+    );
+    renderer.create_texture(
+        "./textures/hud/HealthBar-ver1.png",
+        [
+            [Vec2.zeros(), 1],
+        ],
+        new Vec2(1, 1)
     );
 }

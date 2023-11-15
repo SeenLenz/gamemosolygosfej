@@ -1,5 +1,9 @@
 import { Renderer } from "./renderer/renderer";
-import { EventHandler } from "./application/base/event_handler";
+import {
+    EventHandler,
+    EventType,
+    Keys,
+} from "./application/base/event_handler";
 import { Camera } from "./application/base/camera";
 import { Player } from "./application/gamelogic/player";
 import { Map } from "./application/gamelogic/map/map";
@@ -14,6 +18,7 @@ export const event = new EventHandler(renderer);
 export let camera = new Camera();
 export let gravity = 0.5;
 export const network = new Network("127.0.0.1:3000");
+export let delta_time: number = 1;
 export let current_role: Role;
 let start = 1;
 
@@ -59,10 +64,11 @@ function setup(role: number) {
 
     start = performance.now();
     map = new Map();
+    camera.focus_on(new Player([96, 96], [100, -500]));
 }
 
 function main_loop() {
-    const delta_time = (performance.now() - start) / 10;
+    delta_time = (performance.now() - start) / 10;
     start = performance.now();
     renderer.run(camera);
     camera.move(delta_time);
@@ -71,7 +77,7 @@ function main_loop() {
 
     current_role.run(delta_time);
     map.foreground.forEach((obj) => {
-        obj.run(delta_time);
+        obj.loop(delta_time);
         obj.render();
     });
 

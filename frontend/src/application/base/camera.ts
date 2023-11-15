@@ -62,8 +62,7 @@ export class Camera {
             (this.focus_obj.pos.y +
                 this.focus_obj.size.y / 2 -
                 renderer.canvas.height / 2 -
-                this.pos.y -
-                this.target_zoom / this.scale) *
+                this.pos.y) *
             this.focus_multip *
             delta_time;
         if (this.focus_obj.object_tag != ObjectTag.Empty) {

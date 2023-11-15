@@ -1,86 +1,84 @@
 <!DOCTYPE html>
 <html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Document</title>
+        <link rel="stylesheet" href="style.css" />
+    </head>
 
-<head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Document</title>
-    <link rel="stylesheet" href="style.css" />
-</head>
+    <body>
+        <div style="position: absolute">
+            <input type="text" name="lobby" id="join_label" />
+            <button id="join_bt">join Lobby</button>
+            <button id="create_bt">create Lobby</button>
+            <button id="msg_bt">send Msg</button>
+            <button id="start_bt">start game</button>
+            <label id="lobby_lb"></label>
+        </div>
+        <canvas id="main_canvas"> </canvas>
+    </body>
+    <script src="index.js" type="module"></script>
+    <!-- prettier-ignore -->
+    <script type="x-shader/x-vertex" id="vertex_shader">#version 300 es
+                in vec2 a_pos;
+                in vec2 texture_coord;
+                uniform vec2 u_res;
 
-<body>
-    <div style="position: absolute;">
-        <input type="text" name="lobby" id="join_label">
-        <button id="join_bt">join Lobby</button>
-        <button id="create_bt">create Lobby</button>
-        <button id="msg_bt">send Msg</button>
-        <button id="start_bt">start game</button>
-        <label id="lobby_lb"></label>
-    </div>
-    <canvas id="main_canvas">
-    </canvas>
-</body>
-<script src="index.js" type="module"></script>
-<script type="x-shader/x-vertex" id="vertex_shader">#version 300 es
-        in vec2 a_pos;
-        in vec2 texture_coord;
-        uniform vec2 u_res;
+                uniform vec3 u_color;
+                uniform vec2 u_screen_position;
+                uniform vec2 u_scale;
+                uniform vec2 u_rotation;
+                uniform float u_z_coord;
 
-        uniform vec3 u_color;
-        uniform vec2 u_screen_position;
-        uniform vec2 u_scale;
-        uniform vec2 u_rotation;
-        uniform float u_z_coord;
+                uniform vec3 camera;
+                uniform vec2 camera_rot;
 
-        uniform vec3 camera;
-        uniform vec2 camera_rot;
+                out vec2 v_texture_coords;
+                out float shade_multip;
+                out float f_z_coord;
+                void main() {
+                    vec2 new_pos = a_pos;
+                    new_pos = vec2(new_pos.x * u_rotation.y + new_pos.y * u_rotation.x, new_pos.y * u_rotation.y - new_pos.x * u_rotation.x);
+                    
+                    vec2 camera_pos = vec2(camera.x * camera_rot.y + camera.y * camera_rot.x, camera.y * camera_rot.y - camera.x * camera_rot.x);
+                    
+                    //calculate the transformations
+                    vec2 screen_pos = new_pos * u_scale + u_screen_position;
+                    shade_multip = 1.;
+                    if (screen_pos.y > 15.) {
+                        shade_multip = 1. / screen_pos.y * 10.;
+                    }
+                    screen_pos -= camera.xy * u_z_coord + vec2(1, 1) / 2. * u_res;
+                    screen_pos = vec2(screen_pos.x * camera_rot.y + screen_pos.y * camera_rot.x, screen_pos.y * camera_rot.y - screen_pos.x * camera_rot.x);
+                    screen_pos += vec2(1, 1) / 2. * u_res;
 
-        out vec2 v_texture_coords;
-        out float shade_multip;
-        out float f_z_coord;
-        void main() {
-            vec2 new_pos = a_pos - vec2(0.5, 0.5);
-            new_pos = vec2(new_pos.x * u_rotation.y + new_pos.y * u_rotation.x, new_pos.y * u_rotation.y - new_pos.x * u_rotation.x);
-            new_pos += vec2(0.5, 0.5);
+                    // convert to clip space
+                    screen_pos = (screen_pos / u_res * 2. - vec2(1, 1)) * vec2(camera.z, camera.z) * u_z_coord;
 
-            vec2 camera_pos = vec2(camera.x * camera_rot.y + camera.y * camera_rot.x, camera.y * camera_rot.y - camera.x * camera_rot.x);
+                    // flip y axis to match with js
+                    screen_pos *= vec2(1, -1);
+                    f_z_coord = u_z_coord;
 
-            //calculate the transformations
-            vec2 screen_pos = new_pos * u_scale + u_screen_position;
-            shade_multip = 1.;
-            if (screen_pos.y > 15.) {
-                shade_multip = 1. / screen_pos.y * 10.;
-            }
-            screen_pos -= camera.xy * u_z_coord + vec2(1, 1) / 2. * u_res;
-            screen_pos = vec2(screen_pos.x * camera_rot.y + screen_pos.y * camera_rot.x, screen_pos.y * camera_rot.y - screen_pos.x * camera_rot.x);
-            screen_pos += vec2(1, 1) / 2. * u_res;
-            
-            // convert to clip space
-            screen_pos = (screen_pos / u_res * 2. - vec2(1, 1)) * vec2(camera.z, camera.z) * u_z_coord;
-            
-            // flip y axis to match with js
-            screen_pos *= vec2(1, -1);
-            f_z_coord = u_z_coord;
-
-            gl_Position = vec4(screen_pos, 0, 1);
-            vec2 text_coord = vec2(texture_coord.x, texture_coord.y);
-            v_texture_coords = text_coord;
-        }
+                    gl_Position = vec4(screen_pos, 0, 1);
+                    vec2 text_coord = vec2(texture_coord.x, texture_coord.y);
+                    v_texture_coords = text_coord;
+                }
     </script>
-<script type="x-shader/x-fragment" id="fragment_shader">#version 300 es
-        precision mediump float;
+    <!-- prettier-ignore -->
+    <script type="x-shader/x-fragment" id="fragment_shader">#version 300 es
+                precision mediump float;
 
-        in vec2 v_texture_coords;
-        in float shade_multip;
-        in float f_z_coord;
-        out vec4 fragColor;
+                in vec2 v_texture_coords;
+                in float shade_multip;
+                in float f_z_coord;
+                out vec4 fragColor;
 
-        uniform sampler2D u_sampler;
+                uniform sampler2D u_sampler;
 
-        void main() {
-            fragColor = texture(u_sampler, v_texture_coords);\
-            fragColor.xyz *= shade_multip * f_z_coord * f_z_coord;
-        }
+                void main() {
+                    fragColor = texture(u_sampler, v_texture_coords);\
+                    fragColor.xyz *= shade_multip * f_z_coord * f_z_coord;
+                }
     </script>
-
 </html>

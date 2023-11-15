@@ -14,6 +14,7 @@ export enum SpriteSheets {
     HouseFg,
     Background,
     Wire,
+    Debug,
 }
 
 export function create_textures() {
@@ -38,7 +39,7 @@ export function create_textures() {
         "./textures/map/corners.png",
         [
             [Vec2.zeros(), 1],
-            [new Vec2(1, 0), 1]
+            [new Vec2(1, 0), 1],
         ],
         new Vec2(2, 1)
     );
@@ -59,30 +60,22 @@ export function create_textures() {
     );
     renderer.create_texture(
         "./textures/map/street_lamp.png",
-        [
-            [Vec2.zeros(), 1],
-        ],
+        [[Vec2.zeros(), 1]],
         new Vec2(1, 1)
     );
     renderer.create_texture(
         "./textures/map/lamp_light.png",
-        [
-            [Vec2.zeros(), 1],
-        ],
+        [[Vec2.zeros(), 1]],
         new Vec2(1, 1)
     );
     renderer.create_texture(
         "./textures/map/bench.png",
-        [
-            [Vec2.zeros(), 1],
-        ],
+        [[Vec2.zeros(), 1]],
         new Vec2(1, 1)
     );
     renderer.create_texture(
         "./textures/map/house.png",
-        [
-            [Vec2.zeros(), 1],
-        ],
+        [[Vec2.zeros(), 1]],
         new Vec2(1, 1)
     );
     renderer.create_texture(
@@ -96,9 +89,12 @@ export function create_textures() {
     );
     renderer.create_texture(
         "./textures/map/wire.png",
-        [
-            [Vec2.zeros(), 5],
-        ],
+        [[Vec2.zeros(), 5]],
         new Vec2(5, 1)
+    );
+    renderer.create_texture(
+        "./textures/debug.png",
+        [[Vec2.zeros(), 1]],
+        new Vec2(1, 1)
     );
 }

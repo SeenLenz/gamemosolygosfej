@@ -30,7 +30,7 @@ export class PlayerRole implements Role {
     run(delta_time: number) {
         let i = 0;
         GameObject.objects.forEach((go) => {
-            go.run(delta_time);
+            go.loop(delta_time);
             go.render();
             network.outBuff_add({
                 id: network.ws_cfg?.id,

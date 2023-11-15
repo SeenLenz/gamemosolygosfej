@@ -15,6 +15,9 @@ export class Map {
                 new Vec2(64 * 6, 64 * 6),
                 new Vec2(5 * 48, 0 - 64 * 6 + 3 * 6)
             ),
+            // new Ground(new Vec2(1, 8), new Vec2(12, -8), GroundPos.Center),
+            // new Ground(new Vec2(1, 8), new Vec2(0, -8), GroundPos.Center),
+            // new Ground(new Vec2(8, 1), new Vec2(1, -14), GroundPos.Center),
             new Ground(new Vec2(40, 1), new Vec2(0, 0), GroundPos.Center),
             new Ground(new Vec2(1, 1), new Vec2(-1, 0), GroundPos.LeftCorner),
             new Ground(new Vec2(1, 1), new Vec2(40, 0), GroundPos.RightCorner),
@@ -48,11 +51,11 @@ export class Map {
 
     render(delta_time: number) {
         this.background.forEach((obj) => {
-            obj.run(delta_time);
+            obj.loop(delta_time);
             obj.render();
         });
         this.objects.forEach((obj) => {
-            obj.run(delta_time);
+            obj.loop(delta_time);
             obj.render();
         });
     }
@@ -70,7 +73,7 @@ class Background extends StaticGameObj {
         );
     }
 
-    run(delta_time: number) {
-        super.run(delta_time);
+    loop(delta_time: number) {
+        super.loop(delta_time);
     }
 }

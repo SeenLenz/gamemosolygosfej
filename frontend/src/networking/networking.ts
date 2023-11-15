@@ -63,7 +63,7 @@ export class Network {
 
     async create_lobby() {
         const response = await fetch(
-            "http://" + this.domain + "/setup/lobbycrt"
+            "https://" + this.domain + "/setup/lobbycrt"
         );
         this.ws_cfg = await response.json();
 
@@ -93,7 +93,7 @@ export class Network {
         console.log("join from ts");
 
         const response = await fetch(
-            "http://" + this.domain + "/setup/joinlobby/" + lobby_key
+            "https://" + this.domain + "/setup/joinlobby/" + lobby_key
         );
         this.ws_cfg = await response.json();
 

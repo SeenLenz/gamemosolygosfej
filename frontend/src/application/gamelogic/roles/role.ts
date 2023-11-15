@@ -96,8 +96,6 @@ export class Observer implements Role {
     run(delta_time: number) {
         const data = network.data;
 
-        console.log(data);
-
         if ("types" in data) {
             this.objects.forEach((obj) => {
                 renderer.gl.bindBuffer(
@@ -123,6 +121,7 @@ export class Observer implements Role {
                 this.base_obj?.render(renderer, obj);
             });
             data.data.forEach((e, i) => {
+                console.log(data);
                 switch (data.types[i]) {
                     case Type.camera:
                         const camerasync = e.data as CameraSync;

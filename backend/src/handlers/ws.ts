@@ -13,31 +13,28 @@ export function message(d: RawData, ws: WebSocket) {
     console.log("\n\n");
     console.log(d, data);
     const lobby = lobbies.get(data.id);
-  if (data) {
-    if (!data.type) {
-      for (let i = 1; i < lobby[0] + 1; i++) {
-            if (lobby[i] !== ws) {
-              lobby[i].send(JSON.stringify(data));
-              break;
+    if (data) {
+        if (!data.type) {
+            for (let i = 1; i < lobby[0] + 1; i++) {
+                lobby[i].send(JSON.stringify(data));
             }
-          }
-    } else {
-      switch (data.type) {
-        case Type.start:
-          start_msg(data, ws);
-          break;
-        case Type.test:
-          test_msg(data, ws);
-          break;
-        default:
-          for (let i = 1; i < lobby[0] + 1; i++) {
-            if (lobby[i] !== ws) {
-              lobby[i].send(JSON.stringify(data));
-              break;
+        } else {
+            switch (data.type) {
+                case Type.start:
+                    start_msg(data, ws);
+                    break;
+                case Type.test:
+                    test_msg(data, ws);
+                    break;
+                default:
+                    for (let i = 1; i < lobby[0] + 1; i++) {
+                        if (lobby[i] !== ws) {
+                            lobby[i].send(JSON.stringify(data));
+                            break;
+                        }
+                    }
             }
-          }
-      }
-    }
+        }
     } else {
         console.log("invalid data");
     }

@@ -10,8 +10,6 @@ export function close(d: RawData, ws: WebSocket) {
 }
 export function message(d: RawData, ws: WebSocket) {
     const data = JSON.parse(d.toString());
-    console.log("\n\n");
-    console.log(d, data);
     const lobby = lobbies.get(data.id);
     if (data) {
         if (!data.type) {

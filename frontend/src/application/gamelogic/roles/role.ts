@@ -123,12 +123,6 @@ export class Observer implements Role {
             data.data.forEach((e, i) => {
                 console.log(data);
                 switch (data.types[i]) {
-                    case Type.camera:
-                        const camerasync = e.data as CameraSync;
-                        camera.pos = camerasync.pos;
-                        camera.rotation = camerasync.rotation;
-                        camera.scale = camerasync.scale;
-                        break;
                     case Type.dynamic_game_object:
                         const render_info = e.data as NetworkRenderable;
                         if (render_info.index >= this.objects.length) {

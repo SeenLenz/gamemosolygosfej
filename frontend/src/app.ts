@@ -81,6 +81,7 @@ function main_loop() {
         obj.render();
     });
 
+    hud.run();
     event.refresh();
     requestAnimationFrame(main_loop);
 }

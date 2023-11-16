@@ -13,6 +13,7 @@ import { Effect } from "../../base/effects";
 import { GameObject } from "../../base/gameobject";
 import { Player } from "../player";
 import { Renderable } from "../../../renderer/object";
+import { CameraObj } from "./camera";
 
 export interface Role {
     run(delta_time: number): void;
@@ -70,32 +71,23 @@ export class PlayerRole implements Role {
 }
 
 export class Observer implements Role {
-    camera: {
-        pos: Vec2;
-        scale: number;
-        rotation: number;
-    };
     texture_buffer: { buffer: WebGLBuffer; attribute: number };
     texture_coords = new Float32Array(8);
     base_obj = renderer.base_quad_obj;
     objects: Renderable[] = [];
+    cam_obj = new CameraObj();
     constructor() {
-        this.camera = {
-            pos: new Vec2(0, -500),
-            scale: 1,
-            rotation: 0,
-        };
+        camera.focus_on(this.cam_obj);
         this.texture_buffer = renderer.create_buffer(
             renderer.gl.DYNAMIC_DRAW,
             this.texture_coords,
             "texture_coord"
         );
-        camera.pos.y = this.camera.pos.y;
     }
 
     run(delta_time: number) {
         const data = network.data;
-
+        this.cam_obj.loop(delta_time);
         if ("types" in data) {
             this.objects.forEach((obj) => {
                 renderer.gl.bindBuffer(
@@ -121,7 +113,6 @@ export class Observer implements Role {
                 this.base_obj?.render(renderer, obj);
             });
             data.data.forEach((e, i) => {
-                console.log(data);
                 switch (data.types[i]) {
                     case Type.dynamic_game_object:
                         const render_info = e.data as NetworkRenderable;

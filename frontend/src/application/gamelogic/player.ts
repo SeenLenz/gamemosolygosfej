@@ -42,11 +42,11 @@ export class Player extends DynamicGameObj {
     }
 
     run(delta_time: number): void {
-        this.clear();
         this.keyboard_events(delta_time);
         this.movement(delta_time);
         this.set_animations(delta_time);
         this.animate(this.frame_time);
+        this.clear();
     }
 
     clear() {
@@ -71,16 +71,19 @@ export class Player extends DynamicGameObj {
         ) {
             this.running = false;
         }
-        if (event.key_state(Keys.W, EventType.Pressed)) {
-            this.jump = true;
-        }
+
         if (event.key_state(Keys.Shift, EventType.Pressed)) {
             this.dash = true;
         }
         if (event.key_state(Keys.S, EventType.Pressed)) {
             this.platform_fall = true;
         }
+        if (event.key_state(Keys.F, EventType.Pressed)) {
+            this.pos.set(0, -200);
+        }
         if (event.key_state(Keys.Space, EventType.Pressed)) {
+            this.jump = true;
+
         }
     }
 
@@ -156,7 +159,7 @@ export class Player extends DynamicGameObj {
         this.sprite_index = 1;
         if (this.wall_slide) {
             this.sprite_index = 4;
-            this.x_direction *= -1;
+            // this.x_direction *= -1;
             return;
         } else if (!this.x_collision && Math.abs(this.velocity.x) > 7) {
             this.sprite_index = 3;
@@ -176,6 +179,9 @@ export class Player extends DynamicGameObj {
     }
 
     on_collision_x(obj: CollisionObj): void {
+        if (!this.grounded) {
+            this.wall_slide = true;
+        }
         this.running = false;
         this.x_collision = true;
 
@@ -183,6 +189,11 @@ export class Player extends DynamicGameObj {
     }
 
     on_collision_y(obj: CollisionObj): void {
+        if (obj.obj_hitbox.flags.includes(HitboxFlags.Platform) && this.platform_fall) {
+            return;
+        }
+        this.platform_fall = false;
+
         super.on_collision_y(obj);
     }
 }

@@ -44,6 +44,7 @@ export enum CollisionDir {
 
 export enum HitboxFlags {
     Platform,
+    SlideableWall,
 }
 
 export class Hitbox {
@@ -61,6 +62,13 @@ export class Hitbox {
 
     collision_dir(dir: CollisionDir): boolean {
         return this.collisions[dir];
+    }
+
+    has_flag(flag: HitboxFlags) {
+        if (this.flags.includes(flag)) {
+            return true;
+        }
+        return false;
     }
 }
 
@@ -517,6 +525,8 @@ export class DynamicGameObj extends GameObject {
                                         rayY_start_point.x - is_x.x.point.x
                                     )
                                 ) {
+                                    console.log(rayY_start_point.x - is_x.x.point.x,                                         rayY_start_point.x -
+                                        closest_itersection_point.x.point.x)
                                     closest_itersection_point.x.obj_hitbox =
                                         obj_hitbox;
                                     closest_itersection_point.x.this_hitbox =

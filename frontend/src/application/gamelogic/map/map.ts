@@ -25,13 +25,13 @@ export class Map {
 
             new StreetLamp(
                 new Vec2(12 * 6, 48 * 6),
-                new Vec2(18 * 48 - 24 * 6, 0 - 48 * 6 + 3 * 6 + 4 * 6)
+                new Vec2(18 * 48 - 24 * 6 + 300, 0 - 48 * 6 + 3 * 6 + 4 * 6)
             ),
 
-            // new Bench(
-            //     new Vec2(16 * 6, 8 * 6),
-            //     new Vec2(30 * 48, 0 - 8 * 6 + 3 * 6)
-            // ),
+            new Bench(
+                new Vec2(16 * 6, 8 * 6),
+                new Vec2(30 * 48, 0 - 8 * 6 + 3 * 6)
+            ),
         ];
     }
 

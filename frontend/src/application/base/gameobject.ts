@@ -341,6 +341,7 @@ export class DynamicGameObj extends GameObject {
 
     collision() {
         this.closest_intersection_obj = this.get_closest_interection(Axis.Y);
+        console.log("y: ", this.closest_intersection_obj);
         const y_obj = this.closest_intersection_obj?.y;
         if (y_obj) {
             if (
@@ -355,6 +356,7 @@ export class DynamicGameObj extends GameObject {
         }
 
         this.closest_intersection_obj = this.get_closest_interection(Axis.X);
+        console.log("x: ", this.closest_intersection_obj);
         const x_obj = this.closest_intersection_obj?.x;
         if (x_obj) {
             if (
@@ -364,6 +366,7 @@ export class DynamicGameObj extends GameObject {
                         x_obj.point.x
                 ) <= Math.abs(this.velocity.x * delta_time)
             ) {
+                this.points[0].set_pos(x_obj.point);
                 this.on_collision_x(x_obj);
             }
         }
@@ -496,8 +499,6 @@ export class DynamicGameObj extends GameObject {
                         }
 
                         if (x_collision && is_x.x && is_x.y) {
-                            this.points[0].set_pos(is_x.x.point);
-                            this.points[1].set_pos(is_x.y.point);
                             if (
                                 (!is_x.x.side_intersection &&
                                     !is_x.y.side_intersection &&
@@ -525,8 +526,6 @@ export class DynamicGameObj extends GameObject {
                                         rayY_start_point.x - is_x.x.point.x
                                     )
                                 ) {
-                                    console.log(rayY_start_point.x - is_x.x.point.x,                                         rayY_start_point.x -
-                                        closest_itersection_point.x.point.x)
                                     closest_itersection_point.x.obj_hitbox =
                                         obj_hitbox;
                                     closest_itersection_point.x.this_hitbox =

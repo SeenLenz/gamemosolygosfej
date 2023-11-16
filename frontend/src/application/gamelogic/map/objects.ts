@@ -83,11 +83,11 @@ export class House extends StaticGameObj {
         super(size, pos, false, true);
         this.texture_index = SpriteSheets.HouseFg;
         this.object_tag = ObjectTag.House;
-        // this.hitboxes[0].size.y = 4 * 6;
-        // this.hitboxes[0].pos.y += 40 * 6;
-        // this.hitboxes[0].size.x = 52 * 6;
-        // this.hitboxes[0].pos.x += 6 * 6;
-        // this.hitboxes[0].flags.push(HitboxFlags.Platform);
+        this.hitboxes[0].size.y = 4 * 6;
+        this.hitboxes[0].pos.y += 40 * 6;
+        this.hitboxes[0].size.x = 52 * 6;
+        this.hitboxes[0].pos.x += 6 * 6;
+        this.hitboxes[0].flags.push(HitboxFlags.Platform);
         this.sprite_index = 0;
         this.set_texture_coords(new Vec2(1, 1), new Vec2(0, 0));
     }

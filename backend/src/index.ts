@@ -15,7 +15,7 @@ wss.on("connection", connection);
 
 exp_app.use("/", routes);
 
-server.listen(3000, () => console.log(`Lisening on port :3000`));
+server.listen(3000, "10.0.23.4", () => console.log(`Lisening on port :3000`));
 
 //Request legend
 //0 : Is this a game or a setup message?

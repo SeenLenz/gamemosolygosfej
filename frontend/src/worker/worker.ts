@@ -39,7 +39,7 @@ class Self {
     init_msg(msg: WorkerMsg) {
         let setupObj = msg.data as Setup;
         this.ws = new WebSocket(
-            "wss://" + setupObj.domain + "/" + msg?.id + "/" + msg?.cid
+            "ws://" + setupObj.domain + "/" + msg?.id + "/" + msg?.cid
         );
 
         setInterval((e) => {

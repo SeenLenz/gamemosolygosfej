@@ -25,6 +25,16 @@ export class Player extends DynamicGameObj {
     x_collision = false;
     grounded_effect = false;
     platform_fall = false;
+
+    attacks = {
+        melee: {
+            pressed: false,
+            attacking: false,
+            combo_count: 0,
+            combo_timer: 0,
+        },
+        ranged: false,
+    };
     constructor(size: number[], pos: number[]) {
         super(new Vec2(size[0], size[1]), new Vec2(pos[0], pos[1]));
         this.object_tag = ObjectTag.Player;
@@ -52,6 +62,7 @@ export class Player extends DynamicGameObj {
         this.set_animations(delta_time);
         this.animate(this.frame_time);
         this.clear();
+        this.attack()
     }
 
     clear() {
@@ -83,11 +94,48 @@ export class Player extends DynamicGameObj {
         if (event.key_state(Keys.S, EventType.Pressed)) {
             this.platform_fall = true;
         }
-        if (event.key_state(Keys.F, EventType.Pressed)) {
+        if (event.key_state(Keys.R, EventType.Pressed)) {
             this.pos.set(0, -200);
         }
         if (event.key_state(Keys.W, EventType.Pressed)) {
             this.jump = true;
+        }
+        if (!this.attacks.melee.attacking && event.key_state(Keys.J, EventType.Pressed)) {
+            this.attacks.melee.pressed = true;
+        }
+    }
+
+    attack() {
+        if (this.attacks.melee.pressed) {
+            switch (this.attacks.melee.combo_count) {
+                case 0:
+                    this.velocity.x += 9 * this.x_direction;
+                    this.attacks.melee.combo_timer = performance.now();
+                    break;
+                case 1:
+                    this.velocity.x += 9 * this.x_direction;
+                    this.attacks.melee.combo_timer = performance.now();
+                    break;
+
+                case 2:
+                    this.velocity.x += 12 * this.x_direction;
+                    if (this.grounded) {
+                        this.velocity.y -= 8;
+                    }
+                    break;
+            }
+            this.attacks.melee.combo_count += 1;
+
+        }
+        this.attacks.melee.pressed = false;
+        if (performance.now() - this.attacks.melee.combo_timer > 500) {
+            this.attacks.melee.combo_count = 0;
+        }
+        if (this.velocity.x < 7) {
+            this.attacks.melee.attacking = false;
+            if (this.attacks.melee.combo_count > 2) {
+                this.attacks.melee.combo_count = 0;
+            }
         }
     }
 
@@ -98,9 +146,10 @@ export class Player extends DynamicGameObj {
             this.dash &&
             !(!this.x_collision && Math.abs(this.velocity.x) > 7)
         ) {
-            this.velocity.x = 20 * this.x_direction;
+            this.velocity.x = 25 * this.x_direction;
+            this.attacks.melee.attacking = false;
         }
-        if (this.running) {
+        if (this.running && Math.abs(this.velocity.x) < 7) {
             this.velocity.x +=
                 (6 * this.x_direction - this.velocity.x) * 0.04 * delta_time;
         } else {
@@ -136,7 +185,7 @@ export class Player extends DynamicGameObj {
             this.grounded_effect = false;
         }
 
-        if (this.dash) {
+        if (this.dash && (!this.x_collision && Math.abs(this.velocity.x) > 7)) {
             new Effect(
                 Vec2.from(this.size),
                 this.pos,

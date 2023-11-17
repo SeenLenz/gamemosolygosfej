@@ -61,6 +61,7 @@ export interface Test {
 }
 
 export interface NetworkBuffer {
+    buff_id: number;
     types: Type[];
     id?: string;
     cid?: number;

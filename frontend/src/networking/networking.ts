@@ -16,6 +16,7 @@ export class Network {
     private ws?: WebSocket;
     private Pisti?: Worker;
     private outBuff: NetworkBuffer;
+    private buff_id: number;
 
     private msg: WorkerMsg | NetworkBuffer;
 
@@ -27,8 +28,9 @@ export class Network {
         this.Pisti.onmessage = (event) => {
             this.worker_msg(event);
         };
+        this.buff_id = 0;
         this.domain = domain;
-        this.outBuff = { types: [], data: [] };
+        this.outBuff = { buff_id: this.buff_id, types: [], data: [] };
     }
 
     get data() {
@@ -44,6 +46,7 @@ export class Network {
 
     async flush() {
         this.Pisti?.postMessage(this.outBuff);
+        this.outBuff.buff_id = ++this.buff_id;
         this.outBuff.data = [];
         this.outBuff.types = [];
     }

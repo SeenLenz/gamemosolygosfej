@@ -1,6 +1,7 @@
 import { Router } from "express";
 import { lobbies } from "../index";
 import { v4 as uuid } from "uuid";
+import { Lobby } from "../components/lobby";
 
 const router = Router();
 
@@ -24,10 +25,12 @@ router.get("/joinlobby/:lobby_key", (req, res) => {
 
 router.get("/lobbycrt", (req, res) => {
     const lobby_key = uuid().slice(0, 8);
-    lobbies.set(lobby_key, [1, {}, {}, {}]);
+    let lobby = new Lobby();
+    lobbies.set(lobby_key, lobby);
+
     return res.json({
         id: lobby_key,
-        cid: 1,
+        cid: lobby.assign_cid(),
     });
 });
 

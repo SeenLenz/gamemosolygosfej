@@ -178,10 +178,11 @@ export class Renderer {
     setup() {
         const quad = new Quad();
         this.base_quad_obj = new Obj(quad.positions, quad.indicies, this);
-        this.base_line_obj = new Obj(new Float32Array(
-            [0, 0,
-            1, 1]
-        ), undefined, this);
+        this.base_line_obj = new Obj(
+            new Float32Array([0, 0, 1, 1]),
+            undefined,
+            this
+        );
         this.gl.canvas.width = this.canvas.clientWidth;
         this.gl.canvas.height = this.canvas.clientHeight;
         this.gl.viewport(0, 0, this.gl.canvas.width, this.gl.canvas.height);

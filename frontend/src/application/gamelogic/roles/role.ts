@@ -14,6 +14,7 @@ import { GameObject } from "../../base/gameobject";
 import { Player } from "../player";
 import { Renderable } from "../../../renderer/object";
 import { CameraObj } from "./camera";
+import { Pisti } from "../pisti";
 
 export interface Role {
     run(delta_time: number): void;
@@ -26,6 +27,7 @@ export class PlayerRole implements Role {
     constructor() {
         camera.focus_on(new Player([96, 96], [100, -500]));
         this.type = Roles.player;
+        new Pisti();
     }
 
     run(delta_time: number) {
@@ -88,30 +90,20 @@ export class Observer implements Role {
     run(delta_time: number) {
         const data = network.data;
         this.cam_obj.loop(delta_time);
-        if ("types" in data) {
-            this.objects.forEach((obj) => {
-                renderer.gl.bindBuffer(
-                    renderer.gl.ARRAY_BUFFER,
-                    this.texture_buffer.buffer
-                );
+        this.objects.forEach((obj) => {
+            renderer.gl.bindBuffer(
+                renderer.gl.ARRAY_BUFFER,
+                this.texture_buffer.buffer
+            );
 
-                this.texture_coords = new Float32Array([
-                    obj.texture_coords[0],
-                    obj.texture_coords[1],
-                    obj.texture_coords[2],
-                    obj.texture_coords[3],
-                    obj.texture_coords[4],
-                    obj.texture_coords[5],
-                    obj.texture_coords[6],
-                    obj.texture_coords[7],
-                ]);
-                renderer.gl.bufferSubData(
-                    renderer.gl.ARRAY_BUFFER,
-                    0,
-                    this.texture_coords
-                );
-                this.base_obj?.render(renderer, obj);
-            });
+            renderer.gl.bufferSubData(
+                renderer.gl.ARRAY_BUFFER,
+                0,
+                obj.texture_coords
+            );
+            this.base_obj?.render(renderer, obj);
+        });
+        if ("types" in data) {
             data.data.forEach((e, i) => {
                 switch (data.types[i]) {
                     case Type.dynamic_game_object:
@@ -147,30 +139,6 @@ export class Observer implements Role {
                 }
             });
         } else {
-            this.objects.forEach((obj) => {
-                renderer.gl.bindBuffer(
-                    renderer.gl.ARRAY_BUFFER,
-                    this.texture_buffer.buffer
-                );
-
-                this.texture_coords = new Float32Array([
-                    obj.texture_coords[0],
-                    obj.texture_coords[1],
-                    obj.texture_coords[2],
-                    obj.texture_coords[3],
-                    obj.texture_coords[4],
-                    obj.texture_coords[5],
-                    obj.texture_coords[6],
-                    obj.texture_coords[7],
-                ]);
-                renderer.gl.bufferSubData(
-                    renderer.gl.ARRAY_BUFFER,
-                    0,
-                    this.texture_coords
-                );
-                this.base_obj?.render(renderer, obj);
-            });
-
             switch (data.type) {
                 case Type.camera:
                     const camerasync = data.data as CameraSync;

@@ -11,6 +11,7 @@ import {
     HitboxFlags,
     ObjectTag,
 } from "../base/gameobject";
+import { float_eq, float_less_eq } from "../base/rays";
 import { SpriteSheets } from "../base/textures";
 
 export class Player extends DynamicGameObj {
@@ -62,7 +63,7 @@ export class Player extends DynamicGameObj {
         this.set_animations(delta_time);
         this.animate(this.frame_time);
         this.clear();
-        this.attack()
+        this.attack();
     }
 
     clear() {
@@ -100,7 +101,10 @@ export class Player extends DynamicGameObj {
         if (event.key_state(Keys.W, EventType.Pressed)) {
             this.jump = true;
         }
-        if (!this.attacks.melee.attacking && event.key_state(Keys.J, EventType.Pressed)) {
+        if (
+            !this.attacks.melee.attacking &&
+            event.key_state(Keys.J, EventType.Pressed)
+        ) {
             this.attacks.melee.pressed = true;
         }
     }
@@ -111,6 +115,15 @@ export class Player extends DynamicGameObj {
                 case 0:
                     this.velocity.x += 9 * this.x_direction;
                     this.attacks.melee.combo_timer = performance.now();
+                    new Effect(
+                        Vec2.from(this.size),
+                        this.pos,
+                        this.x_direction,
+                        SpriteSheets.Melee0,
+                        0,
+                        30,
+                        0
+                    );
                     break;
                 case 1:
                     this.velocity.x += 9 * this.x_direction;
@@ -124,14 +137,13 @@ export class Player extends DynamicGameObj {
                     }
                     break;
             }
-            this.attacks.melee.combo_count += 1;
-
+            this.attacks.melee.attacking = true;
         }
         this.attacks.melee.pressed = false;
         if (performance.now() - this.attacks.melee.combo_timer > 500) {
             this.attacks.melee.combo_count = 0;
         }
-        if (this.velocity.x < 7) {
+        if (performance.now() - this.attacks.melee.combo_timer > 400) {
             this.attacks.melee.attacking = false;
             if (this.attacks.melee.combo_count > 2) {
                 this.attacks.melee.combo_count = 0;
@@ -185,7 +197,7 @@ export class Player extends DynamicGameObj {
             this.grounded_effect = false;
         }
 
-        if (this.dash && (!this.x_collision && Math.abs(this.velocity.x) > 7)) {
+        if (this.dash && !this.x_collision && Math.abs(this.velocity.x) > 7) {
             new Effect(
                 Vec2.from(this.size),
                 this.pos,
@@ -198,26 +210,35 @@ export class Player extends DynamicGameObj {
         }
 
         this.frame_time = 0;
-        this.sprite_index = 1;
         if (this.wall_slide) {
-            this.sprite_index = 4;
+            this.sprite_index = 3;
             this.x_direction *= -1;
             return;
         } else if (!this.x_collision && Math.abs(this.velocity.x) > 7) {
-            this.sprite_index = 3;
+            this.sprite_index = 4;
             return;
-        } else if (!this.grounded) {
+        } else if (!this.grounded && Math.abs(this.velocity.x) > 1) {
+            this.frame_time = (1 / Math.abs(this.velocity.y)) * 400;
             this.sprite_index = 2;
             return;
         }
-        if (Math.abs(this.velocity.x) < 0.5) {
-            this.sprite_index = 1;
-        } else if (Math.abs(this.velocity.x) < 3) {
-            this.sprite_index = 5;
-        } else {
-            this.frame_time = (1 / Math.abs(this.velocity.x)) * 350;
+        if (this.running) {
+            this.frame_time = (1 / Math.abs(this.velocity.x)) * 250;
             this.sprite_index = 0;
+        } else {
+            this.sprite_index = 1;
         }
+    }
+
+    on_collision(obj: CollisionObj): void {
+        if (obj.obj_hitbox.has_flag(HitboxFlags.Enemy)) {
+            if (this.attacks.melee.pressed) {
+                (obj.obj as DynamicGameObj).velocity.y = -3;
+                (obj.obj as DynamicGameObj).velocity.x = 12 * this.x_direction;
+            }
+        }
+
+        super.on_collision(obj);
     }
 
     on_collision_x(obj: CollisionObj): void {
@@ -229,6 +250,7 @@ export class Player extends DynamicGameObj {
             this.has_jump = true;
             this.jump_dir = this.x_direction;
         }
+        this.sprite_index = 1;
         this.running = false;
         this.x_collision = true;
 

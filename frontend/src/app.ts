@@ -26,31 +26,32 @@ let start = 1;
 export let map: Map;
 
 document.addEventListener("DOMContentLoaded", () => {
-    document.querySelector("#join_bt")?.addEventListener("click", (e) => {
-        const joinLabelValue = (
-            document.querySelector("#join_label") as HTMLInputElement | null
-        )?.value;
-        if (joinLabelValue) {
-            network.join_lobby(joinLabelValue);
-        }
-    });
-    document.querySelector("#start_bt")?.addEventListener("click", (e) => {
-        network.send({
-            ...network.ws_cfg,
-            type: Type.start,
-        } as WorkerMsg);
-    });
-    document.querySelector("#create_bt")?.addEventListener("click", (e) => {
-        network.create_lobby();
-    });
-    document.querySelector("#msg_bt")?.addEventListener("click", (e) => {
-        network.send({
-            type: Type.test,
-            cid: network.ws_cfg?.cid,
-            id: network.ws_cfg?.id,
-            data: { msg: "hello from the frontend" } as Test,
-        });
-    });
+    // document.querySelector("#join_bt")?.addEventListener("click", (e) => {
+    //     const joinLabelValue = (
+    //         document.querySelector("#join_label") as HTMLInputElement | null
+    //     )?.value;
+    //     if (joinLabelValue) {
+    //         network.join_lobby(joinLabelValue);
+    //     }
+    // });
+    // document.querySelector("#start_bt")?.addEventListener("click", (e) => {
+    //     network.send({
+    //         ...network.ws_cfg,
+    //         type: Type.start,
+    //     } as WorkerMsg);
+    // });
+    // document.querySelector("#create_bt")?.addEventListener("click", (e) => {
+    //     network.create_lobby();
+    // });
+    // document.querySelector("#msg_bt")?.addEventListener("click", (e) => {
+    //     network.send({
+    //         type: Type.test,
+    //         cid: network.ws_cfg?.cid,
+    //         id: network.ws_cfg?.id,
+    //         data: { msg: "hello from the frontend" } as Test,
+    //     });
+    // });
+    main(Roles.player);
 });
 
 function setup(role: number) {
@@ -65,7 +66,6 @@ function setup(role: number) {
 
     start = performance.now();
     map = new Map();
-    camera.focus_on(new Player([96, 96], [100, -500]));
 }
 
 function main_loop() {

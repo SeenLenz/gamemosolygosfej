@@ -11,6 +11,7 @@ import {
     ray_side_intersection,
 } from "./rays";
 import { SpriteSheets } from "./textures";
+import { HaltPoint } from "./effects";
 
 export enum ObjectTag {
     Empty,
@@ -73,6 +74,13 @@ export class Hitbox {
         }
         return false;
     }
+
+    get middle() {
+        return Vec2.from({
+            x: this.pos.x + this.size.x / 2,
+            y: this.pos.y + this.size.y / 2,
+        });
+    }
 }
 
 export class GameObject {
@@ -98,9 +106,11 @@ export class GameObject {
     texture_coords: Float32Array;
     texture_index: number = 0;
     sprite_index: number = 0;
+    halt_points: HaltPoint[] = [];
     //--> animations
     current_frame = 0;
     animation_timer = 0;
+    frame_time = 0;
     constructor(
         size: Vec2,
         position: Vec2,
@@ -142,19 +152,31 @@ export class GameObject {
         return GameObject.objects.findIndex((obj) => obj == this);
     }
 
-    // get hitbox_index() {
-    //     const index = GameObject.hitboxes.findIndex((obj) => obj == this);
-    //     return index;
-    // }
+    get hitbox_index() {
+        if (this.isDynamic) {
+            const index = GameObject.dynamic_hitboxes.findIndex(
+                (obj) => obj == this
+            );
+            return index;
+        }
+        const index = GameObject.static_hitboxes.findIndex(
+            (obj) => obj == this
+        );
+        return index;
+    }
 
     get texture() {
         return renderer.textures[this.texture_index];
     }
 
-    // remove() {
-    //     GameObject.objects.splice(this.index, 1);
-    //     GameObject.hitboxes.splice(this.hitbox_index, 1);
-    // }
+    remove() {
+        GameObject.objects.splice(this.index, 1);
+        if (this.isDynamic) {
+            GameObject.dynamic_hitboxes.splice(this.hitbox_index, 1);
+        } else {
+            GameObject.static_hitboxes.splice(this.hitbox_index, 1);
+        }
+    }
 
     remove_hitbox(hitbox_index: number) {
         this.hitboxes.splice(hitbox_index, 1);
@@ -207,7 +229,6 @@ export class GameObject {
 
     animate(frame_diff: number) {
         if (performance.now() - this.animation_timer > frame_diff) {
-            this.animation_timer = performance.now();
             this.current_frame += 1;
             if (this.current_frame > this.sprite[1] - 1) {
                 this.current_frame = 0;
@@ -219,6 +240,12 @@ export class GameObject {
                     this.sprite[0].y
                 )
             );
+            this.animation_timer = performance.now();
+            for (let hp of this.halt_points) {
+                if (this.current_frame == hp.frame) {
+                    this.animation_timer = performance.now() + hp.time;
+                }
+            }
         }
     }
 
@@ -461,6 +488,59 @@ export class DynamicGameObj extends GameObject {
         }
 
         this.velocity.y = 0;
+    }
+
+    get_dynamic_objs_in_section(radius: number, dir: Vec2, angle: number) {
+        let objs = [];
+        let closest: DynamicGameObj | undefined = undefined;
+        for (let dyno of GameObject.dynamic_hitboxes) {
+            if (dyno == this) {
+                continue;
+            }
+            if (
+                this.hitboxes[0].middle.dist_squared(dyno.hitboxes[0].middle) <
+                radius * radius
+            ) {
+                const ndir = dir.normalize();
+                const min_dot = Math.cos(angle / 2);
+                const target_dot = dyno.hitboxes[0].middle
+                    .sub(this.hitboxes[0].middle)
+                    .normalize()
+                    .dot(ndir);
+
+                if (min_dot < target_dot) {
+                    if (!closest) {
+                        closest = dyno as DynamicGameObj;
+                    } else {
+                        if (
+                            this.hitboxes[0].middle.dist_squared(
+                                closest.hitboxes[0].middle
+                            ) >
+                            this.hitboxes[0].middle.dist_squared(
+                                dyno.hitboxes[0].middle
+                            )
+                        ) {
+                            closest = dyno as DynamicGameObj;
+                        }
+                    }
+                    objs.push(dyno);
+                }
+            }
+        }
+
+        return { objs: objs, closest: closest };
+    }
+
+    point_in_hitbox(hitbox: Hitbox, point: Point) {
+        if (point.x < hitbox.pos.x + hitbox.size.x && point.x > hitbox.pos.x) {
+            if (
+                point.x < hitbox.pos.y + hitbox.size.y &&
+                point.y > hitbox.pos.y
+            ) {
+                return true;
+            }
+        }
+        return false;
     }
 
     get_closest_interection(axis: Axis) {

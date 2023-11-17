@@ -5,14 +5,17 @@ import {
     DynamicGameObj,
     HitboxFlags,
     ObjectTag,
+    GameObject,
 } from "../base/gameobject";
+import { Point } from "../base/rays";
 import { SpriteSheets } from "../base/textures";
 
 export class Pisti extends DynamicGameObj {
-    damaged = false;
-    damage_dir = 0;
-    constructor() {
-        super(new Vec2(96, 96), new Vec2(100, -200));
+    dam_anim_timer = 0;
+    hp = 100;
+    damagable = true;
+    constructor(position: Point) {
+        super(new Vec2(96, 96), Vec2.from(position));
         this.texture_index = SpriteSheets.Pisti;
         this.sprite_index = 0;
         this.object_tag = ObjectTag.Pisti;
@@ -22,18 +25,35 @@ export class Pisti extends DynamicGameObj {
     }
 
     loop(delta_time: number): void {
-        this.animate(100);
+        this.set_animation();
+        this.animate(60);
         super.loop(delta_time);
     }
 
     run(delta_time: number): void {
         this.add_force(new Vec2(0, gravity * this.mass));
-        this.velocity.x = interpolate(this.velocity.x, 0, 0.01);
+        this.velocity.x = interpolate(this.velocity.x, 0, 0.1);
+    }
 
-        if (this.damaged) {
-            this.velocity.x = 10 * this.damage_dir;
+    set_animation() {
+        if (performance.now() - this.dam_anim_timer > 6 * 60) {
+            this.sprite_index = 0;
+            this.damagable = true;
+        }
+    }
+
+    hit(power: number, dir: number) {
+        if (this.damagable) {
+            this.dam_anim_timer = performance.now();
+            this.sprite_index = 1;
+            this.velocity.x = power * dir;
             this.velocity.y = -3;
-            this.damaged = false;
+            this.hp -= power;
+            this.damagable = false;
+        }
+
+        if (this.hp < 0) {
+            this.remove();
         }
     }
 

@@ -2,6 +2,11 @@ import { renderer } from "../../app";
 import { Vec2 } from "../../lin_alg";
 import { SpriteSheets } from "./textures";
 
+export type HaltPoint = {
+    frame: number;
+    time: number;
+};
+
 export class Effect {
     size: Vec2 = Vec2.zeros();
     pos: Vec2 = Vec2.zeros();
@@ -18,6 +23,7 @@ export class Effect {
     current_cycle = 0;
     rotation = 0;
     z_coord = 1;
+    offset = Vec2.zeros();
 
     constructor(
         size: Vec2,
@@ -26,7 +32,8 @@ export class Effect {
         texure_index: SpriteSheets,
         effect: number,
         speed: number,
-        repeat: number
+        repeat: number,
+        offset: Vec2 = Vec2.zeros()
     ) {
         this.x_direction = x_dir;
         this.texture_index = texure_index;
@@ -41,6 +48,7 @@ export class Effect {
         this.repeat = repeat;
         this.size = size;
         this.pos = pos;
+        this.offset = offset;
 
         Effect.effects.push(this);
     }
@@ -82,7 +90,7 @@ export class Effect {
                 )
             );
         }
-        this.object?.render(renderer, this);
+        this.object?.render(renderer, this, this.offset);
         if (
             this.repeat != -1 &&
             this.current_frame == 0 &&

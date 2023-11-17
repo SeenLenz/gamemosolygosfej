@@ -4,7 +4,7 @@ import { Effect } from "../base/effects";
 import { EventType, Keys } from "../base/event_handler";
 import {
     CollisionDir,
-    CollisionObj,
+    StaticCollisionObj,
     DynamicGameObj,
     GameObject,
     Hitbox,
@@ -13,6 +13,7 @@ import {
 } from "../base/gameobject";
 import { float_eq, float_less_eq } from "../base/rays";
 import { SpriteSheets } from "../base/textures";
+import { Pisti } from "./pisti";
 
 export class Player extends DynamicGameObj {
     public focused: boolean = false;
@@ -30,7 +31,8 @@ export class Player extends DynamicGameObj {
     attacks = {
         melee: {
             pressed: false,
-            attacking: false,
+            animation: false,
+            attack: false,
             combo_count: 0,
             combo_timer: 0,
         },
@@ -102,7 +104,7 @@ export class Player extends DynamicGameObj {
             this.jump = true;
         }
         if (
-            !this.attacks.melee.attacking &&
+            !this.attacks.melee.animation &&
             event.key_state(Keys.J, EventType.Pressed)
         ) {
             this.attacks.melee.pressed = true;
@@ -111,19 +113,12 @@ export class Player extends DynamicGameObj {
 
     attack() {
         if (this.attacks.melee.pressed) {
+            this.attacks.melee.attack = true;
             switch (this.attacks.melee.combo_count) {
                 case 0:
                     this.velocity.x += 9 * this.x_direction;
                     this.attacks.melee.combo_timer = performance.now();
-                    new Effect(
-                        Vec2.from(this.size),
-                        this.pos,
-                        this.x_direction,
-                        SpriteSheets.Melee0,
-                        0,
-                        30,
-                        0
-                    );
+
                     break;
                 case 1:
                     this.velocity.x += 9 * this.x_direction;
@@ -137,14 +132,15 @@ export class Player extends DynamicGameObj {
                     }
                     break;
             }
-            this.attacks.melee.attacking = true;
+            this.attacks.melee.animation = true;
         }
         this.attacks.melee.pressed = false;
         if (performance.now() - this.attacks.melee.combo_timer > 500) {
             this.attacks.melee.combo_count = 0;
         }
-        if (performance.now() - this.attacks.melee.combo_timer > 400) {
-            this.attacks.melee.attacking = false;
+        if (performance.now() - this.attacks.melee.combo_timer > 30 * 7) {
+            this.attacks.melee.animation = false;
+            this.attacks.melee.attack = false;
             if (this.attacks.melee.combo_count > 2) {
                 this.attacks.melee.combo_count = 0;
             }
@@ -159,7 +155,7 @@ export class Player extends DynamicGameObj {
             !(!this.x_collision && Math.abs(this.velocity.x) > 7)
         ) {
             this.velocity.x = 25 * this.x_direction;
-            this.attacks.melee.attacking = false;
+            this.attacks.melee.animation = false;
         }
         if (this.running && Math.abs(this.velocity.x) < 7) {
             this.velocity.x +=
@@ -210,6 +206,20 @@ export class Player extends DynamicGameObj {
         }
 
         this.frame_time = 0;
+        this.sprite_index = 1;
+        if (this.attacks.melee.animation) {
+            this.frame_time = 30;
+            this.sprite_index = 5;
+            new Effect(
+                Vec2.from(this.size),
+                this.pos,
+                this.x_direction,
+                SpriteSheets.Melee0,
+                0,
+                30,
+                0
+            );
+        }
         if (this.wall_slide) {
             this.sprite_index = 3;
             this.x_direction *= -1;
@@ -225,23 +235,29 @@ export class Player extends DynamicGameObj {
         if (this.running) {
             this.frame_time = (1 / Math.abs(this.velocity.x)) * 250;
             this.sprite_index = 0;
-        } else {
-            this.sprite_index = 1;
         }
     }
 
-    on_collision(obj: CollisionObj): void {
-        if (obj.obj_hitbox.has_flag(HitboxFlags.Enemy)) {
-            if (this.attacks.melee.pressed) {
-                (obj.obj as DynamicGameObj).velocity.y = -3;
-                (obj.obj as DynamicGameObj).velocity.x = 12 * this.x_direction;
-            }
+    on_dynamic_collision(obj: {
+        this_hitbox: Hitbox;
+        obj_hitbox: Hitbox;
+        obj: DynamicGameObj;
+    }): void {
+        if (!this.attacks.melee.attack) {
+            return;
         }
+        if (obj.obj.object_tag == ObjectTag.Pisti) {
+            this.attacks.melee.attack = false;
+            (obj.obj as Pisti).damaged = true;
+            (obj.obj as Pisti).damage_dir = this.x_direction;
+        }
+    }
 
+    on_collision(obj: StaticCollisionObj): void {
         super.on_collision(obj);
     }
 
-    on_collision_x(obj: CollisionObj): void {
+    on_collision_x(obj: StaticCollisionObj): void {
         if (!obj.obj_hitbox.reactive) {
             return;
         }
@@ -257,7 +273,7 @@ export class Player extends DynamicGameObj {
         super.on_collision_x(obj);
     }
 
-    on_collision_y(obj: CollisionObj): void {
+    on_collision_y(obj: StaticCollisionObj): void {
         if (
             obj.obj_hitbox.flags.includes(HitboxFlags.Platform) &&
             this.platform_fall

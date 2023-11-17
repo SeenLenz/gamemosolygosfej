@@ -28,6 +28,7 @@ export function create_textures() {
             [new Vec2(1, 1), 4],
             [new Vec2(5, 1), 1],
             [new Vec2(6, 1), 1],
+            [new Vec2(7, 1), 7],
         ],
         new Vec2(14, 2)
     );
@@ -100,8 +101,8 @@ export function create_textures() {
     );
     renderer.create_texture(
         "./textures/effects/melee0.png",
-        [[Vec2.zeros(), 12]],
-        new Vec2(12, 1)
+        [[Vec2.zeros(), 7]],
+        new Vec2(7, 1)
     );
     renderer.create_texture(
         "./textures/character/pistihanemdolgozik.png",

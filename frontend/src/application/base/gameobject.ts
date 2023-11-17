@@ -19,6 +19,7 @@ export enum ObjectTag {
     StreetLamp,
     Bench,
     House,
+    Pisti,
 }
 
 export enum Axis {
@@ -26,7 +27,7 @@ export enum Axis {
     Y,
 }
 
-export type CollisionObj = {
+export type StaticCollisionObj = {
     this_hitbox: Hitbox;
     obj: GameObject;
     obj_hitbox: Hitbox;
@@ -125,7 +126,6 @@ export class GameObject {
         if (auto_render) {
             GameObject.objects.push(this);
         }
-        GameObject.hitboxes.push(this);
     }
 
     get_opposite_collision_dir(direction: CollisionDir) {
@@ -223,7 +223,8 @@ export class GameObject {
     }
 
     static objects: GameObject[] = [];
-    static hitboxes: GameObject[] = [];
+    static static_hitboxes: GameObject[] = [];
+    static dynamic_hitboxes: GameObject[] = [];
 }
 
 export class Empty extends GameObject {
@@ -244,7 +245,7 @@ export class StaticGameObj extends GameObject {
         collidable = true
     ) {
         super(scale, position, auto_render, collidable);
-        GameObject.hitboxes.push(this);
+        GameObject.static_hitboxes.push(this);
     }
 
     loop(delta_time: number) {
@@ -264,8 +265,8 @@ export class DynamicGameObj extends GameObject {
     prev_frame_velocity_normalized: Vec2 = Vec2.zeros();
     velocity_changed = false;
     closest_intersection_obj?: {
-        x: CollisionObj | undefined;
-        y: CollisionObj | undefined;
+        x: StaticCollisionObj | undefined;
+        y: StaticCollisionObj | undefined;
     };
     components: [boolean, boolean] = [false, false];
     points: DebugPoint[] = [new DebugPoint(), new DebugPoint()];
@@ -276,9 +277,9 @@ export class DynamicGameObj extends GameObject {
 
         this.velocity = new Vec2(0, 0);
         this.force = new Vec2(0, 0);
+        GameObject.dynamic_hitboxes.push(this);
     }
 
-    start() {}
     loop(delta_time: number) {
         for (let hb of this.hitboxes) {
             for (let i = 0; i < 4; i++) {
@@ -287,6 +288,10 @@ export class DynamicGameObj extends GameObject {
         }
         super.loop(delta_time);
         this.motion();
+        if (this.velocity_changed) {
+            this.on_velocity_changed();
+        }
+        this.dynamic_collision();
         this.collision();
         this.set_positions();
         this.run(delta_time);
@@ -301,6 +306,8 @@ export class DynamicGameObj extends GameObject {
     add_force(force: Vec2) {
         this.force.add_self(force);
     }
+
+    on_velocity_changed() {}
 
     private set_hb_position() {
         for (let hitbox of this.hitboxes) {
@@ -341,6 +348,37 @@ export class DynamicGameObj extends GameObject {
         this.force.set(0, 0);
     }
 
+    dynamic_collision() {
+        for (let this_hb of this.hitboxes) {
+            for (let obj of GameObject.dynamic_hitboxes) {
+                for (let obj_hitbox of obj.hitboxes) {
+                    if (
+                        this_hb.pos.x < obj_hitbox.pos.x + obj_hitbox.size.x &&
+                        this_hb.pos.x + this_hb.size.x > obj_hitbox.pos.x
+                    ) {
+                        if (
+                            this_hb.pos.y <
+                                obj_hitbox.pos.y + obj_hitbox.size.y &&
+                            this_hb.pos.y + this_hb.size.y > obj_hitbox.pos.y
+                        ) {
+                            this.on_dynamic_collision({
+                                this_hitbox: this_hb,
+                                obj_hitbox: obj_hitbox,
+                                obj: obj as DynamicGameObj,
+                            });
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    on_dynamic_collision(obj: {
+        this_hitbox: Hitbox;
+        obj_hitbox: Hitbox;
+        obj: DynamicGameObj;
+    }) {}
+
     collision() {
         this.closest_intersection_obj = this.get_closest_interection(Axis.Y);
         const y_obj = this.closest_intersection_obj?.y;
@@ -373,7 +411,7 @@ export class DynamicGameObj extends GameObject {
         this.set_hb_position();
     }
 
-    on_collision(obj: CollisionObj) {
+    on_collision(obj: StaticCollisionObj) {
         if (obj.dir < 2) {
             this.on_collision_y(obj);
         } else {
@@ -381,7 +419,7 @@ export class DynamicGameObj extends GameObject {
         }
     }
 
-    on_collision_x(obj: CollisionObj) {
+    on_collision_x(obj: StaticCollisionObj) {
         if (!obj.this_hitbox.reactive || !obj.obj_hitbox.reactive) {
             return;
         }
@@ -403,7 +441,7 @@ export class DynamicGameObj extends GameObject {
         this.velocity.x = 0;
     }
 
-    on_collision_y(obj: CollisionObj) {
+    on_collision_y(obj: StaticCollisionObj) {
         if (!obj.this_hitbox.reactive || !obj.obj_hitbox.reactive) {
             return;
         }
@@ -427,8 +465,8 @@ export class DynamicGameObj extends GameObject {
 
     get_closest_interection(axis: Axis) {
         let closest_itersection_point: {
-            x: CollisionObj | undefined;
-            y: CollisionObj | undefined;
+            x: StaticCollisionObj | undefined;
+            y: StaticCollisionObj | undefined;
         } = { x: undefined, y: undefined };
         for (let this_hitbox of this.hitboxes) {
             let rayXSide = { x: 0, y: 1 };
@@ -461,7 +499,7 @@ export class DynamicGameObj extends GameObject {
 
             let rayX = create_line(this.velocity, rayX_start_point);
             let rayY = create_line(this.velocity, rayY_start_point);
-            for (let obj of GameObject.hitboxes) {
+            for (let obj of GameObject.static_hitboxes) {
                 for (let obj_hitbox of obj.hitboxes) {
                     let obj_side_y = create_section(
                         obj_hitbox.pos.add(

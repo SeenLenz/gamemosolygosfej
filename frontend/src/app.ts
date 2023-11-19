@@ -8,7 +8,8 @@ import { Camera } from "./application/base/camera";
 import { Player } from "./application/gamelogic/player";
 import { Map } from "./application/gamelogic/map/map";
 import { create_textures } from "./application/base/textures";
-import { Type, Test, WorkerMsg, Roles } from "../../types";
+import { Type, Test, Roles } from "../../types";
+import { WorkerMsg } from "./networking/WorkerMsg";
 import { Network } from "./networking/networking";
 import { Observer, PlayerRole, Role } from "./application/gamelogic/roles/role";
 import { GameObject } from "./application/base/gameobject";
@@ -17,8 +18,8 @@ export const renderer = new Renderer();
 export const event = new EventHandler(renderer);
 export let camera = new Camera();
 export let gravity = 0.5;
-export const network = new Network("10.0.23.4:3000");
-//export const network = new Network("127.0.0.1:3000");
+//export const network = new Network("10.0.23.4:3000");
+export const network = new Network("127.0.0.1:6969");
 //export const network = new Network("gamemosolygosfej.onrender.com");
 export let delta_time: number = 1;
 export let current_role: Role;
@@ -36,21 +37,18 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     });
     document.querySelector("#start_bt")?.addEventListener("click", (e) => {
-        network.send({
-            ...network.ws_cfg,
-            type: Type.start,
-        } as WorkerMsg);
+        console.log(new WorkerMsg(Type.start));
+        network.send(new WorkerMsg(Type.start));
     });
     document.querySelector("#create_bt")?.addEventListener("click", (e) => {
         network.create_lobby();
     });
     document.querySelector("#msg_bt")?.addEventListener("click", (e) => {
-        network.send({
-            type: Type.test,
-            cid: network.ws_cfg?.cid,
-            id: network.ws_cfg?.id,
-            data: { msg: "hello from the frontend" } as Test,
-        });
+        network.send(
+            new WorkerMsg(Type.test, {
+                msg: "This is a message from the test button",
+            })
+        );
     });
 });
 
@@ -66,7 +64,7 @@ function setup(role: number) {
 
     start = performance.now();
     map = new Map();
-    camera.focus_on(new Player([96, 96], [100, -500]));
+    camera.focus_on(new Player([96, 96], [100, -500], false));
 }
 
 function main_loop() {

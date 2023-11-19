@@ -4,7 +4,6 @@ import {
     NetworkRenderable,
     Roles,
     Type,
-    WorkerMsg,
 } from "../../../../../types";
 import { camera, network, renderer } from "../../../app";
 import { Vec2 } from "../../../lin_alg";
@@ -23,7 +22,7 @@ export class PlayerRole implements Role {
     type: Roles;
 
     constructor() {
-        camera.focus_on(new Player([96, 96], [100, -500]));
+        camera.focus_on(new Player([96, 96], [100, -500], false));
         this.type = Roles.player;
     }
 
@@ -121,7 +120,6 @@ export class Observer implements Role {
                 this.base_obj?.render(renderer, obj);
             });
             data.data.forEach((e, i) => {
-                console.log(data);
                 switch (data.types[i]) {
                     case Type.dynamic_game_object:
                         const render_info = e.data as NetworkRenderable;
@@ -139,6 +137,22 @@ export class Observer implements Role {
                                     render_info.texture_coords as Float32Array,
                             });
                         } else {
+                            if (render_info.velocity) {
+                                let dy;
+                                this.objects[render_info.index] = {
+                                    pos: render_info.pos as Vec2,
+                                    size: render_info.size as Vec2,
+                                    rotation: render_info.rotation as number,
+                                    x_direction:
+                                        render_info.x_direction as number,
+                                    texture_buffer: this.texture_buffer,
+                                    texture_index:
+                                        render_info.texture_index as number,
+                                    z_coord: render_info.z_coord as number,
+                                    texture_coords:
+                                        render_info.texture_coords as Float32Array,
+                                };
+                            }
                             this.objects[render_info.index] = {
                                 pos: render_info.pos as Vec2,
                                 size: render_info.size as Vec2,

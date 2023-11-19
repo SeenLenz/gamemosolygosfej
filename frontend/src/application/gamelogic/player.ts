@@ -1,4 +1,5 @@
-import { camera, event, gravity, renderer } from "../../app";
+import { Networkable, Type } from "../../../../types";
+import { camera, event, gravity, network, renderer } from "../../app";
 import { Vec2 } from "../../lin_alg";
 import { Effect } from "../base/effects";
 import { EventType, Keys } from "../base/event_handler";
@@ -12,8 +13,9 @@ import {
     ObjectTag,
 } from "../base/gameobject";
 import { SpriteSheets } from "../base/textures";
+import { WorkerMsg } from "../../networking/WorkerMsg";
 
-export class Player extends DynamicGameObj {
+export class Player extends DynamicGameObj implements Networkable {
     public focused: boolean = false;
     frame_time = 0;
     has_jump = false;
@@ -25,12 +27,34 @@ export class Player extends DynamicGameObj {
     x_collision = false;
     grounded_effect = false;
     platform_fall = false;
-    constructor(size: number[], pos: number[]) {
+    remote: boolean;
+
+    constructor(size: number[], pos: number[], remote: boolean) {
         super(new Vec2(size[0], size[1]), new Vec2(pos[0], pos[1]));
         this.object_tag = ObjectTag.Player;
         this.mass = 1;
+        this.velocity = new Vec2(2, 2);
+
+        //network setup
+        this.remote = remote;
+
+        // if (!remote) {
+        //     network.outBuff_add(new WorkerMsg(Type.crt, { pos, size }));
+        // }
 
         this.focused = true;
+    }
+
+    in() {
+        return false;
+    }
+
+    out() {
+        return false;
+    }
+
+    del() {
+        return false;
     }
 
     get grounded() {

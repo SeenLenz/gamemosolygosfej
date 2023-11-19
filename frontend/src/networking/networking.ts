@@ -2,21 +2,19 @@ import {
     Type,
     Setup,
     WebsocketCfg,
-    WorkerMsg,
     Lobby,
     Start,
     NetworkBuffer,
 } from "../../../types";
 import { main } from "../app";
 import { PlayerRole } from "../application/gamelogic/roles/role";
-
+import { WorkerMsg } from "./WorkerMsg";
 export class Network {
     public domain: String;
     public ws_cfg?: Lobby;
     private ws?: WebSocket;
     private Pisti?: Worker;
     private outBuff: NetworkBuffer;
-    private buff_id: number;
 
     private msg: WorkerMsg | NetworkBuffer;
 
@@ -28,9 +26,8 @@ export class Network {
         this.Pisti.onmessage = (event) => {
             this.worker_msg(event);
         };
-        this.buff_id = 0;
         this.domain = domain;
-        this.outBuff = { buff_id: this.buff_id, types: [], data: [] };
+        this.outBuff = { types: [], data: [] };
     }
 
     get data() {
@@ -40,19 +37,22 @@ export class Network {
     worker_msg(event: MessageEvent) {
         this.msg = event.data as WorkerMsg;
         if (this.msg.type == Type.start) {
+            console.log("start message recieved");
+
             main((this.msg.data as Start).role);
         }
     }
 
     async flush() {
         this.Pisti?.postMessage(this.outBuff);
-        this.outBuff.buff_id = ++this.buff_id;
         this.outBuff.data = [];
         this.outBuff.types = [];
     }
 
     async send(msg: WorkerMsg) {
         if (this.Pisti) {
+            console.log("start from network send");
+
             this.Pisti.postMessage(msg);
         } else {
             console.error("");

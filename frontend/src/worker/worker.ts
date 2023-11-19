@@ -1,4 +1,5 @@
-import { Type, WorkerMsg } from "../../../types";
+import { Type } from "../../../types";
+import { WorkerMsg } from "../networking/WorkerMsg";
 
 interface Setup {
     domain: String;
@@ -18,8 +19,6 @@ class Self {
     }
 
     async readmsg(event: MessageEvent) {
-        console.log(event.data);
-
         if (event.data.types) {
             this.ws?.send(JSON.stringify(event.data));
         } else {
@@ -28,6 +27,7 @@ class Self {
                     this.init_msg(event.data);
                     break;
                 default:
+                    console.log("start from worker readmsg");
                     const result = await this.ws?.send(
                         JSON.stringify(event.data)
                     );
@@ -65,6 +65,8 @@ class Self {
     }
 
     ws_message(event: MessageEvent) {
+        console.log("start from recieved start message worker ws_message");
+
         postMessage(JSON.parse(event.data));
     }
 

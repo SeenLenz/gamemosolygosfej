@@ -1,5 +1,5 @@
 import { Obj } from "../../renderer/object";
-import { camera, delta_time, gravity, renderer } from "../../app";
+import { camera, delta_time, gravity, network, renderer } from "../../app";
 import { Vec2 } from "../../lin_alg";
 import {
     Line,
@@ -11,6 +11,7 @@ import {
     ray_side_intersection,
 } from "./rays";
 import { SpriteSheets } from "./textures";
+import { Tag } from "../../../../types";
 
 export enum ObjectTag {
     Empty,
@@ -90,6 +91,7 @@ export class GameObject {
     //--> animations
     current_frame = 0;
     animation_timer = 0;
+
     constructor(
         size: Vec2,
         position: Vec2,
@@ -251,6 +253,7 @@ export class StaticGameObj extends GameObject {
 export class DynamicGameObj extends GameObject {
     velocity: Vec2;
     force: Vec2;
+    tag?: Tag;
     prev_frame_velocity_normalized: Vec2 = Vec2.zeros();
     velocity_changed = false;
     closest_intersection_obj?: {
@@ -267,7 +270,6 @@ export class DynamicGameObj extends GameObject {
         this.velocity = new Vec2(0, 0);
         this.force = new Vec2(0, 0);
     }
-
     start() {}
     loop(delta_time: number) {
         for (let hb of this.hitboxes) {
@@ -280,6 +282,7 @@ export class DynamicGameObj extends GameObject {
         this.collision();
         this.set_positions();
         this.run(delta_time);
+        this.velocity_change();
     }
 
     run(delta_time: number) {}
@@ -295,6 +298,11 @@ export class DynamicGameObj extends GameObject {
     private set_hb_position() {
         for (let hitbox of this.hitboxes) {
             hitbox.pos.set_vec(this.pos.add(hitbox.pos_diff));
+        }
+    }
+
+    velocity_change() {
+        if (this.velocity_changed) {
         }
     }
 

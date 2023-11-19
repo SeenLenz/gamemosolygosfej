@@ -1,27 +1,22 @@
-import { WorkerMsg, Test, Roles, Start } from "../../../types";
+import { Test, Roles, Start } from "../../../types";
+import { WorkerMsg } from "../../../frontend/src/networking/WorkerMsg";
 import { lobbies } from "..";
 import WebSocket from "ws";
 
 export function start_msg(msg: WorkerMsg, ws: WebSocket) {
-    const lobby = lobbies.get(msg.id);
+    console.log("start from msg start_msg");
+    console.log(msg);
 
-    let roles: Roles[] = [Roles.player, Roles.evil, Roles.good];
-
-    // for (let index = 0; index < 15; index++) {
-    //     let temp = roles[index % 3];
-    //     let random = Math.floor(Math.random() * 16) % 3;
-
-    //     roles[index % 3] = roles[random];
-    //     roles[random] = temp;
-    // }
-
-    for (let i = 1; i < lobby[0] + 1; i++) {
-        lobby[i].send(
-            JSON.stringify({
-                ...msg,
-                data: { role: roles[i - 1] } as Start,
-            })
-        );
+    if (msg.id) {
+        const lobby = lobbies.get(msg.id);
+        for (let i = 0; i < (lobby?.clients.length as number); i++) {
+            lobby?.clients[i].send(
+                JSON.stringify({
+                    ...msg,
+                    data: { role: lobby.assign_roles() } as Start,
+                })
+            );
+        }
     }
 }
 
@@ -32,17 +27,19 @@ export function config_msg(msg: WorkerMsg, ws: WebSocket) {}
 export function calculation_msg(msg: WorkerMsg, ws: WebSocket) {}
 
 export function test_msg(msg: WorkerMsg, ws: WebSocket) {
-    const lobby = lobbies.get(msg.id);
+    if (msg.id) {
+        const lobby = lobbies.get(msg.id);
 
-    for (let i = 1; i < lobby[0] + 1; i++) {
-        if (lobby[i] == ws) {
-            lobby[i].send(
-                JSON.stringify({
-                    ...msg,
-                    data: { msg: "hello from backend" } as Test,
-                })
-            );
-            break;
+        for (let i = 0; i < (lobby?.clients.length as number); i++) {
+            if (lobby?.clients[i] == ws) {
+                lobby?.clients[i].send(
+                    JSON.stringify({
+                        ...msg,
+                        data: { msg: "hello from backend" } as Test,
+                    })
+                );
+                break;
+            }
         }
     }
 }

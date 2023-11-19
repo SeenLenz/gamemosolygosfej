@@ -7,11 +7,13 @@ const router = Router();
 
 router.get("/joinlobby/:lobby_key", (req, res) => {
     if (lobbies.has(req.params.lobby_key)) {
-        let clientarr = lobbies.get(req.params.lobby_key);
-        if (clientarr[0] < 3) {
+        let lobby = lobbies.get(req.params.lobby_key);
+        let cid = lobby?.assign_client_id() as number;
+
+        if (cid < 3) {
             return res.json({
                 id: req.params.lobby_key,
-                cid: ++clientarr[0],
+                cid: cid,
             });
         } else {
             return res.json({ Error: "Lobby full" });
@@ -30,7 +32,7 @@ router.get("/lobbycrt", (req, res) => {
 
     return res.json({
         id: lobby_key,
-        cid: lobby.assign_cid(),
+        cid: lobby.assign_client_id(),
     });
 });
 

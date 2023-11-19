@@ -66,4 +66,12 @@ export class Pisti extends DynamicGameObj {
         super.on_collision_y(obj);
         this.velocity.y = this.velocity.y * -0.5;
     }
+
+    on_collision_x(obj: StaticCollisionObj): void {
+        let velocity = this.velocity.x;
+        super.on_collision_x(obj);
+        if (!this.damagable) {
+            this.velocity.x = -velocity;
+        }
+    }
 }

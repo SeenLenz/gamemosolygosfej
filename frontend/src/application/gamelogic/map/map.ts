@@ -2,6 +2,7 @@ import { camera } from "../../../app";
 import { Vec2 } from "../../../lin_alg";
 import { GameObject, StaticGameObj } from "../../base/gameobject";
 import { SpriteSheets } from "../../base/textures";
+import { Slime } from "../roles/player/enemies/slime";
 import { Ground, GroundPos, UnderGround } from "./ground";
 import { Bench, House, StreetLamp, Wire } from "./objects";
 

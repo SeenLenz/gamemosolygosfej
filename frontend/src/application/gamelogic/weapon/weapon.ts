@@ -2,7 +2,7 @@ import { Vec2 } from "../../../lin_alg";
 import { Effect, PlayerEffects } from "../../base/effects";
 import { DynamicGameObj } from "../../base/gameobject";
 import { SpriteSheets } from "../../base/textures";
-import { Pisti } from "../pisti";
+import { Enemy } from "../roles/player/enemy";
 
 export class Weapon {
     parent_obj: DynamicGameObj;
@@ -102,7 +102,7 @@ export class Weapon {
         closest: DynamicGameObj | undefined;
     }) {
         objs.all.forEach((obj) => {
-            (obj as Pisti).hit(
+            (obj as Enemy).hit(
                 this.power + this.crit,
                 obj.hitboxes[0].middle
                     .sub(this.parent_obj.hitboxes[0].middle)

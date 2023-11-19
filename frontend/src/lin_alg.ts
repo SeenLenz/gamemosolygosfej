@@ -58,6 +58,14 @@ export class Vec2 {
         return result;
     }
 
+    get X() {
+        return new Vec2(this.x, 0);
+    }
+
+    get Y() {
+        return new Vec2(0, this.y);
+    }
+
     sub_self(vec2: Point) {
         this.x -= vec2.x;
         this.y -= vec2.y;

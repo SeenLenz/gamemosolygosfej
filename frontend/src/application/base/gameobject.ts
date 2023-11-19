@@ -20,7 +20,7 @@ export enum ObjectTag {
     StreetLamp,
     Bench,
     House,
-    Pisti,
+    Enemy,
 }
 
 export enum Axis {
@@ -106,13 +106,17 @@ export class GameObject {
     texture_buffer: { buffer: WebGLBuffer; attribute: number };
     texture_coords: Float32Array;
     texture_index: number = 0;
-    sprite_index: number = 0;
+    _sprite_index: number = 0;
     halt_points: HaltPoint[] = [];
     //--> animations
     current_frame = 0;
     animation_timer = 0;
     frame_time = 0;
     animation_direction: number = 1;
+    animation_repeat = true;
+    animation_ended = false;
+    sprite_changed = false;
+    prev_sprite_index = 0;
     constructor(
         size: Vec2,
         position: Vec2,
@@ -144,7 +148,21 @@ export class GameObject {
         return direction + (direction % 2) * 2 - 1;
     }
 
-    loop(delta_time: number) {}
+    loop(delta_time: number) {
+        this.sprite_changed = false;
+    }
+
+    set sprite_index(index: number) {
+        this._sprite_index = index;
+        if (this._sprite_index != this.prev_sprite_index) {
+            // this.current_frame = 0;
+            this.sprite_changed = true;
+        }
+        this.prev_sprite_index = index;
+    }
+    get sprite_index() {
+        return this._sprite_index;
+    }
 
     render() {
         this.object.render(renderer, this);
@@ -230,15 +248,30 @@ export class GameObject {
     }
 
     animate(frame_diff: number) {
+        if (
+            this.animation_ended &&
+            !this.animation_repeat &&
+            !this.sprite_changed
+        ) {
+            return;
+        }
+        if (
+            this.animation_ended &&
+            (this.animation_repeat || this.sprite_changed)
+        ) {
+            this.animation_ended = false;
+        }
         if (performance.now() - this.animation_timer > frame_diff) {
             this.current_frame += 1 * this.animation_direction;
             if (this.animation_direction == 1) {
                 if (this.current_frame > this.sprite[1] - 1) {
                     this.current_frame = 0;
+                    this.animation_ended = true;
                 }
             } else {
                 if (this.current_frame < 0) {
                     this.current_frame = this.sprite[1] - 1;
+                    this.animation_ended = true;
                 }
             }
             this.set_texture_coords(
@@ -248,6 +281,7 @@ export class GameObject {
                     this.sprite[0].y
                 )
             );
+
             this.animation_timer = performance.now();
             for (let hp of this.halt_points) {
                 if (this.current_frame == hp.frame) {
@@ -321,20 +355,16 @@ export class DynamicGameObj extends GameObject {
                 hb.collisions[i] = false;
             }
         }
-        super.loop(delta_time);
         this.motion();
         if (this.velocity_changed) {
             this.on_velocity_changed();
         }
-        if (this.velocity.y < 0) {
-            this.y_direction = -1;
-        } else {
-            this.y_direction = 1;
-        }
+
         this.dynamic_collision();
         this.collision();
         this.set_positions();
         this.run(delta_time);
+        super.loop(delta_time);
     }
 
     run(delta_time: number) {}

@@ -5,7 +5,6 @@ import {
     Keys,
 } from "./application/base/event_handler";
 import { Camera } from "./application/base/camera";
-import { Player } from "./application/gamelogic/player";
 import { Map } from "./application/gamelogic/map/map";
 import { create_textures } from "./application/base/textures";
 import { Type, Test, WorkerMsg, Roles } from "../../types";

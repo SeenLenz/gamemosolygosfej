@@ -11,24 +11,28 @@ import { Vec2 } from "../../../lin_alg";
 import { Camera } from "../../base/camera";
 import { Effect } from "../../base/effects";
 import { GameObject } from "../../base/gameobject";
-import { Player } from "../player";
+import { Player } from "./player/player";
 import { Renderable } from "../../../renderer/object";
-import { CameraObj } from "./camera";
-import { Pisti } from "../pisti";
+import { CameraObj } from "./observer/camera";
+import { Pisti } from "./player/enemies/pisti";
+import { Slime } from "./player/enemies/slime";
 
 export interface Role {
     run(delta_time: number): void;
     type?: Roles;
 }
 
+export let player: Player;
+
 export class PlayerRole implements Role {
     type: Roles;
 
     constructor() {
-        new Pisti(new Vec2(100, -200));
-        new Pisti(new Vec2(300, -300));
-        new Pisti(new Vec2(600, -300));
-        camera.focus_on(new Player([96, 96], [100, -500]));
+        // new Pisti(new Vec2(100, -200));
+        // new Pisti(new Vec2(300, -300));
+        new Slime(new Vec2(100, -100));
+        player = new Player([96, 96], [100, -500]);
+        camera.focus_on(player);
         this.type = Roles.player;
     }
 

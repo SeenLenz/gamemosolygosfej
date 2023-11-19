@@ -15,6 +15,7 @@ export enum SpriteSheets {
     Debug,
     Pisti,
     PlayerEffects,
+    SlimeEnemy,
 }
 
 export function create_textures() {
@@ -110,5 +111,18 @@ export function create_textures() {
             [Vec2.Y(5), 7],
         ],
         new Vec2(7, 6)
+    );
+
+    renderer.create_texture(
+        "./textures/enemies/slime.png",
+        [
+            [Vec2.zeros(), 1],
+            [Vec2.X(1), 2],
+            [Vec2.X(3), 1],
+            [Vec2.X(4), 2],
+            [Vec2.X(6), 3],
+            [new Vec2(0, 1), 10],
+        ],
+        new Vec2(10, 2)
     );
 }

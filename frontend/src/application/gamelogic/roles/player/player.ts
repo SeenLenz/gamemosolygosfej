@@ -1,20 +1,18 @@
-import { camera, event, gravity, renderer } from "../../app";
-import { Vec2 } from "../../lin_alg";
-import { Effect, PlayerEffects } from "../base/effects";
-import { EventType, Keys } from "../base/event_handler";
+import { camera, event, gravity, renderer } from "../../../../app";
+import { Vec2 } from "../../../../lin_alg";
+import { Effect, PlayerEffects } from "../../../base/effects";
+import { EventType, Keys } from "../../../base/event_handler";
 import {
     CollisionDir,
     StaticCollisionObj,
     DynamicGameObj,
-    GameObject,
     Hitbox,
     HitboxFlags,
     ObjectTag,
-} from "../base/gameobject";
-import { float_eq, float_less_eq } from "../base/rays";
-import { SpriteSheets } from "../base/textures";
-import { Pisti } from "./pisti";
-import { Melee, Ranged, Teleport } from "./weapon/weapon";
+} from "../../../base/gameobject";
+import { float_eq, float_less_eq } from "../../../base/rays";
+import { SpriteSheets } from "../../../base/textures";
+import { Melee, Ranged, Teleport } from "../../weapon/weapon";
 
 export class Player extends DynamicGameObj {
     public focused: boolean = false;
@@ -101,7 +99,7 @@ export class Player extends DynamicGameObj {
             this.pos.set(Math.random() * 1200, -300);
             this.set_hb_position();
         }
-        if (event.key_state(Keys.W, EventType.Pressed)) {
+        if (event.key_state(Keys.Space, EventType.Pressed)) {
             this.jump = true;
         }
         if (

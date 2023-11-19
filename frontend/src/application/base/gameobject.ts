@@ -91,6 +91,7 @@ export class GameObject {
     size: Vec2;
     z_coord: number = 1;
     x_direction: number = 1;
+    y_direction: number = 1;
 
     // object props
     mass: number;
@@ -111,6 +112,7 @@ export class GameObject {
     current_frame = 0;
     animation_timer = 0;
     frame_time = 0;
+    animation_direction: number = 1;
     constructor(
         size: Vec2,
         position: Vec2,
@@ -229,9 +231,15 @@ export class GameObject {
 
     animate(frame_diff: number) {
         if (performance.now() - this.animation_timer > frame_diff) {
-            this.current_frame += 1;
-            if (this.current_frame > this.sprite[1] - 1) {
-                this.current_frame = 0;
+            this.current_frame += 1 * this.animation_direction;
+            if (this.animation_direction == 1) {
+                if (this.current_frame > this.sprite[1] - 1) {
+                    this.current_frame = 0;
+                }
+            } else {
+                if (this.current_frame < 0) {
+                    this.current_frame = this.sprite[1] - 1;
+                }
             }
             this.set_texture_coords(
                 new Vec2(this.sprite_size.x, this.sprite_size.y),
@@ -318,6 +326,11 @@ export class DynamicGameObj extends GameObject {
         if (this.velocity_changed) {
             this.on_velocity_changed();
         }
+        if (this.velocity.y < 0) {
+            this.y_direction = -1;
+        } else {
+            this.y_direction = 1;
+        }
         this.dynamic_collision();
         this.collision();
         this.set_positions();
@@ -336,7 +349,7 @@ export class DynamicGameObj extends GameObject {
 
     on_velocity_changed() {}
 
-    private set_hb_position() {
+    set_hb_position() {
         for (let hitbox of this.hitboxes) {
             hitbox.pos.set_vec(this.pos.add(hitbox.pos_diff));
         }
@@ -490,7 +503,12 @@ export class DynamicGameObj extends GameObject {
         this.velocity.y = 0;
     }
 
-    get_dynamic_objs_in_section(radius: number, dir: Vec2, angle: number) {
+    get_dynamic_objs_in_section(
+        radius: number,
+        dir: Vec2,
+        angle: number,
+        range_offset = 0
+    ) {
         let objs = [];
         let closest: DynamicGameObj | undefined = undefined;
         for (let dyno of GameObject.dynamic_hitboxes) {
@@ -499,7 +517,9 @@ export class DynamicGameObj extends GameObject {
             }
             if (
                 this.hitboxes[0].middle.dist_squared(dyno.hitboxes[0].middle) <
-                radius * radius
+                    radius * radius &&
+                this.hitboxes[0].middle.dist_squared(dyno.hitboxes[0].middle) >
+                    range_offset * range_offset
             ) {
                 const ndir = dir.normalize();
                 const min_dot = Math.cos(angle / 2);
@@ -523,12 +543,12 @@ export class DynamicGameObj extends GameObject {
                             closest = dyno as DynamicGameObj;
                         }
                     }
-                    objs.push(dyno);
+                    objs.push(dyno as DynamicGameObj);
                 }
             }
         }
 
-        return { objs: objs, closest: closest };
+        return { all: objs, closest: closest };
     }
 
     point_in_hitbox(hitbox: Hitbox, point: Point) {

@@ -1,6 +1,6 @@
 import { camera, event, gravity, renderer } from "../../app";
 import { Vec2 } from "../../lin_alg";
-import { Effect } from "../base/effects";
+import { Effect, PlayerEffects } from "../base/effects";
 import { EventType, Keys } from "../base/event_handler";
 import {
     CollisionDir,
@@ -14,7 +14,7 @@ import {
 import { float_eq, float_less_eq } from "../base/rays";
 import { SpriteSheets } from "../base/textures";
 import { Pisti } from "./pisti";
-import { Pistol } from "./weapon/weapon";
+import { Melee, Ranged, Teleport } from "./weapon/weapon";
 
 export class Player extends DynamicGameObj {
     public focused: boolean = false;
@@ -28,7 +28,9 @@ export class Player extends DynamicGameObj {
     x_collision = false;
     grounded_effect = false;
     platform_fall = false;
-    ranged_weapon: Pistol;
+    ranged_weapon: Ranged;
+    melee_weapon: Melee;
+    teleport: Teleport;
 
     constructor(size: number[], pos: number[]) {
         super(new Vec2(size[0], size[1]), new Vec2(pos[0], pos[1]));
@@ -40,7 +42,9 @@ export class Player extends DynamicGameObj {
             this.size.x / 4
         );
 
-        this.ranged_weapon = new Pistol(this, 60);
+        this.ranged_weapon = new Ranged(this, 60);
+        this.melee_weapon = new Melee(this, 30);
+        this.teleport = new Teleport(this, 0);
 
         this.focused = true;
     }
@@ -69,6 +73,7 @@ export class Player extends DynamicGameObj {
         this.has_jump = false;
         this.dash = false;
         this.wall_slide = false;
+        this.animation_direction = 1;
         this.halt_points = [];
     }
 
@@ -93,12 +98,17 @@ export class Player extends DynamicGameObj {
             this.platform_fall = true;
         }
         if (event.key_state(Keys.R, EventType.Pressed)) {
-            this.pos.set(0, -200);
+            this.pos.set(Math.random() * 1200, -300);
+            this.set_hb_position();
         }
         if (event.key_state(Keys.W, EventType.Pressed)) {
             this.jump = true;
         }
-        if (event.key_state(Keys.J, EventType.Pressed)) {
+        if (
+            !this.melee_weapon.attacking &&
+            event.key_state(Keys.J, EventType.Pressed)
+        ) {
+            this.melee_weapon.pressed = true;
         }
         if (
             !this.ranged_weapon.attacking &&
@@ -106,42 +116,19 @@ export class Player extends DynamicGameObj {
         ) {
             this.ranged_weapon.pressed = true;
         }
+
+        if (
+            !this.teleport.attacking &&
+            event.key_state(Keys.I, EventType.Pressed)
+        ) {
+            this.teleport.pressed = true;
+        }
     }
 
     set_attack() {
         this.ranged_weapon.run();
-        // if (this.attacks.melee.pressed) {
-        //     this.attacks.melee.attack = true;
-        //     this.attacks.ranged.animation = false;
-        //     switch (this.attacks.melee.combo_count) {
-        //         case 0:
-        //             this.velocity.x += 9 * this.x_direction;
-        //             this.attacks.melee.combo_timer = performance.now();
-        //             break;
-        //         case 1:
-        //             this.velocity.x += 9 * this.x_direction;
-        //             this.attacks.melee.combo_timer = performance.now();
-        //             break;
-        //         case 2:
-        //             this.velocity.x += 12 * this.x_direction;
-        //             if (this.grounded) {
-        //                 this.velocity.y -= 8;
-        //             }
-        //             break;
-        //     }
-        //     this.attacks.melee.animation = true;
-        // }
-        // this.attacks.melee.pressed = false;
-        // if (performance.now() - this.attacks.melee.combo_timer > 500) {
-        //     this.attacks.melee.combo_count = 0;
-        // }
-        // if (performance.now() - this.attacks.melee.combo_timer > 30 * 7) {
-        //     this.attacks.melee.animation = false;
-        //     this.attacks.melee.attack = false;
-        //     if (this.attacks.melee.combo_count > 2) {
-        //         this.attacks.melee.combo_count = 0;
-        //     }
-        // }
+        this.melee_weapon.run();
+        this.teleport.run();
     }
 
     movement(delta_time: number) {
@@ -178,8 +165,8 @@ export class Player extends DynamicGameObj {
                 Vec2.from(this.size),
                 Vec2.from(this.pos),
                 this.x_direction,
-                SpriteSheets.GroundedEffect,
-                0,
+                SpriteSheets.PlayerEffects,
+                PlayerEffects.Grounded,
                 100,
                 0
             );
@@ -196,8 +183,8 @@ export class Player extends DynamicGameObj {
                 Vec2.from(this.size),
                 this.pos,
                 this.x_direction,
-                SpriteSheets.DashEffect,
-                0,
+                SpriteSheets.PlayerEffects,
+                PlayerEffects.Dash,
                 50,
                 0
             );

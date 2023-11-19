@@ -26,7 +26,8 @@ export class PlayerRole implements Role {
 
     constructor() {
         new Pisti(new Vec2(100, -200));
-        new Pisti(new Vec2(150, -300));
+        new Pisti(new Vec2(300, -300));
+        new Pisti(new Vec2(600, -300));
         camera.focus_on(new Player([96, 96], [100, -500]));
         this.type = Roles.player;
     }

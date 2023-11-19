@@ -83,6 +83,7 @@ export enum Keys {
     R,
     J,
     K,
+    I,
     Space,
     Shift,
 }
@@ -132,6 +133,9 @@ class KeyboardEvent {
                 case "KeyK":
                     this.setKBEvent(Keys.K);
                     break;
+                case "KeyI":
+                    this.setKBEvent(Keys.I);
+                    break;
             }
         });
 
@@ -167,6 +171,9 @@ class KeyboardEvent {
                     break;
                 case "KeyK":
                     this.setKBEvent(Keys.K);
+                    break;
+                case "KeyI":
+                    this.setKBEvent(Keys.I);
                     break;
             }
         });

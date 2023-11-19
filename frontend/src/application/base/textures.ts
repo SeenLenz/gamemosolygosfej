@@ -6,8 +6,6 @@ export enum SpriteSheets {
     Ground,
     GroundCorners,
     UnderGround,
-    GroundedEffect,
-    DashEffect,
     SteetLamp,
     LampLightEffect,
     Bench,
@@ -15,9 +13,8 @@ export enum SpriteSheets {
     Background,
     Wire,
     Debug,
-    Melee0,
     Pisti,
-    Ranged,
+    PlayerEffects,
 }
 
 export function create_textures() {
@@ -52,16 +49,7 @@ export function create_textures() {
         [[Vec2.zeros(), 1]],
         new Vec2(1, 1)
     );
-    renderer.create_texture(
-        "./textures/effects/grounded.png",
-        [[Vec2.zeros(), 6]],
-        new Vec2(6, 1)
-    );
-    renderer.create_texture(
-        "./textures/effects/dash-sheet.png",
-        [[Vec2.zeros(), 7]],
-        new Vec2(7, 1)
-    );
+
     renderer.create_texture(
         "./textures/map/street_lamp.png",
         [[Vec2.zeros(), 1]],
@@ -101,11 +89,7 @@ export function create_textures() {
         [[Vec2.zeros(), 1]],
         new Vec2(1, 1)
     );
-    renderer.create_texture(
-        "./textures/effects/melee0.png",
-        [[Vec2.zeros(), 7]],
-        new Vec2(7, 1)
-    );
+
     renderer.create_texture(
         "./textures/character/pistihanemdolgozik.png",
         [
@@ -114,9 +98,17 @@ export function create_textures() {
         ],
         new Vec2(7, 1)
     );
+
     renderer.create_texture(
-        "./textures/effects/ranged.png",
-        [[Vec2.zeros(), 7]],
-        new Vec2(7, 1)
+        "./textures/effects/effects.png",
+        [
+            [Vec2.zeros(), 7],
+            [Vec2.Y(1), 7],
+            [Vec2.Y(2), 6],
+            [Vec2.Y(3), 7],
+            [Vec2.Y(4), 7],
+            [Vec2.Y(5), 7],
+        ],
+        new Vec2(7, 6)
     );
 }

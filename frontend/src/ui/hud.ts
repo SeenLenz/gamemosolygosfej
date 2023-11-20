@@ -18,7 +18,7 @@ export class Hud {
         this.canvas = <HTMLCanvasElement>document.createElement('canvas') as HTMLCanvasElement;
         this.ctx = this.canvas.getContext('2d') as CanvasRenderingContext2D;
         this.healthRect = {x: 0, y: 5, width: 54, height: 18};
-        this.potionRect = {x: 75, y: 75, width: 4, height: 9};
+        this.potionRect = {x: 25, y: 20, width: 4, height: 9};
         this.healthUnit = 4;
         this.potionUnit = 1;
         this.canvas.id = 'hud_canvas';
@@ -27,6 +27,8 @@ export class Hud {
     };
     
     run() {
+        this.clearHud();
+
         const healthBarMask = new Image();
         healthBarMask.src = './textures/hud/HealthBar-mask.png';
 
@@ -52,7 +54,7 @@ export class Hud {
 
                 this.ctx.drawImage(potionMask, this.potionRect.x, this.potionRect.y, potionMask.width, potionMask.height);
                     
-                this.ctx.globalCompositeOperation = "source-in";
+                this.ctx.globalCompositeOperation = "source-atop";
         
                 this.ctx.fillStyle = 'rgba(102, 0, 0, 255)';
                 this.ctx.fillRect(this.potionRect.x, this.potionRect.y, potionMask.width, potionMask.height);                    
@@ -65,6 +67,32 @@ export class Hud {
                 potion.onload = () => {
                     this.ctx.imageSmoothingEnabled = false;        
                     this.ctx.drawImage(potion, this.potionRect.x, this.potionRect.y, potion.width, potion.height);
+
+                    for (let i = 1; i <= 2; i++) {
+                        this.ctx.drawImage(potionMask, this.potionRect.x+i*7, this.potionRect.y, potionMask.width, potionMask.height);
+
+                        this.ctx.globalCompositeOperation = "source-atop";
+                        
+                        this.ctx.fillStyle = 'rgba(102, 0, 0, 255)';
+                        this.ctx.fillRect(this.potionRect.x+i*7, this.potionRect.y, potionMask.width, potionMask.height);                    
+                        
+                        this.ctx.globalCompositeOperation = "source-over";
+
+                        this.ctx.imageSmoothingEnabled = false;        
+                        this.ctx.drawImage(potion, this.potionRect.x+i*7, this.potionRect.y, potion.width, potion.height);
+
+                        this.ctx.drawImage(potionMask, this.potionRect.x+i*7, this.potionRect.y, potionMask.width, potionMask.height);
+
+                        this.ctx.globalCompositeOperation = "source-atop";
+                        
+                        this.ctx.fillStyle = 'rgba(102, 0, 0, 255)';
+                        this.ctx.fillRect(this.potionRect.x+i*7, this.potionRect.y, potionMask.width, potionMask.height);                    
+                        
+                        this.ctx.globalCompositeOperation = "source-over";
+
+                        this.ctx.imageSmoothingEnabled = false;        
+                        this.ctx.drawImage(potion, this.potionRect.x+i*7, this.potionRect.y, potion.width, potion.height);                        
+                    }
                 }
             }
         }
@@ -78,7 +106,7 @@ export class Hud {
     }
 
     clearHud() {
-        // this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);        
+        // this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
     }
 
     openShop() {

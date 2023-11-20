@@ -8,7 +8,7 @@ import { Type, Test, WorkerMsg, Roles } from "../../types";
 import { Network } from "./networking/networking";
 import { Observer, PlayerRole, Role } from "./application/gamelogic/roles/role";
 import { GameObject } from "./application/base/gameobject";
-import { Hud } from "./hud/hud";
+import { Hud } from "./ui/hud";
 
 export const renderer = new Renderer();
 export const event = new EventHandler(renderer);
@@ -80,7 +80,6 @@ function main_loop() {
         obj.run(delta_time);
         obj.render();
     });
-    hud.clearHud();
     hud.run();
     event.refresh();
     requestAnimationFrame(main_loop);

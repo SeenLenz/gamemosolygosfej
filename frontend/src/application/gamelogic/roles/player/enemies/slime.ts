@@ -123,10 +123,10 @@ export class Bela extends Enemy {
         }
     }
 
-    damage_taken(damage: number, dir: Vec2): void {
+    damage_taken(damage: number, hit_dir: number): void {
         if (this.damagable) {
             this.dam_anim_timer = performance.now();
-            this.velocity.x += (damage / 4) * dir.x;
+            this.velocity.x += (damage / 4) * hit_dir;
             this.velocity.y += -2;
             this.grounded_timer = performance.now();
             this.hp -= damage;

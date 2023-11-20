@@ -19,8 +19,8 @@ export class Pisti extends Enemy {
         }
     }
 
-    damage_taken(power: number, dir: Vec2) {
-        super.damage_taken(power, dir);
+    damage_taken(power: number, hit_dir: number) {
+        super.damage_taken(power, hit_dir);
         if (this.damagable) {
             this.sprite_index = 1;
         }

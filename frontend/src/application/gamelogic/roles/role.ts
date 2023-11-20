@@ -16,6 +16,7 @@ import { Renderable } from "../../../renderer/object";
 import { CameraObj } from "./observer/camera";
 import { Pisti } from "./player/enemies/pisti";
 import { Bela } from "./player/enemies/slime";
+import { Huba } from "./player/enemies/ranged";
 
 export interface Role {
     run(delta_time: number): void;
@@ -31,7 +32,7 @@ export class PlayerRole implements Role {
         // new Pisti(new Vec2(100, -200));
         // new Pisti(new Vec2(300, -300));
         new Bela(new Vec2(100, -100));
-        player = new Player([96, 96], [100, -500]);
+        player = new Player([96, 96], [600, -500]);
         camera.focus_on(player);
         this.type = Roles.player;
     }

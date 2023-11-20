@@ -42,7 +42,7 @@ export class Player extends DynamicGameObj {
             this.size.x / 4
         );
 
-        this.ranged_weapon = new Ranged(this, 60);
+        this.ranged_weapon = new Ranged(this, 60, 600);
         this.melee_weapon = new Melee(this, 30);
         this.teleport = new Teleport(this, 0);
 

@@ -1,7 +1,7 @@
 import { delta_time } from "../../../app";
 import { Vec2 } from "../../../lin_alg";
 import { Effect, PlayerEffects } from "../../base/effects";
-import { DynamicGameObj } from "../../base/gameobject";
+import { DynamicGameObj, ObjectTag } from "../../base/gameobject";
 import { SpriteSheets } from "../../base/textures";
 import { Enemy } from "../roles/player/enemy";
 import { player } from "../roles/role";
@@ -53,12 +53,32 @@ export class Weapon {
     }
 
     set_target_objs() {
-        this.target_objects = this.parent_obj.get_dynamic_objs_in_section(
-            this.range,
-            Vec2.X(this.parent_obj.x_direction),
-            this.angle,
-            this.range_offset
-        );
+        if (this.parent_obj.object_tag == ObjectTag.Player) {
+            this.target_objects = this.parent_obj.get_dynamic_objs_in_section(
+                this.range,
+                Vec2.X(this.parent_obj.x_direction),
+                this.angle,
+                this.range_offset
+            );
+        } else {
+            const dist = this.parent_obj.hitboxes[0].middle.dist_squared(
+                player.hitbox.middle
+            );
+            if (
+                dist < this.range * this.range &&
+                dist > this.range_offset * this.range_offset
+            ) {
+                this.target_objects = {
+                    all: [player],
+                    closest: player,
+                };
+            } else {
+                this.target_objects = {
+                    all: [],
+                    closest: undefined,
+                };
+            }
+        }
     }
 
     run() {
@@ -108,11 +128,9 @@ export class Weapon {
         closest: DynamicGameObj | undefined;
     }) {
         objs.all.forEach((obj) => {
-            (obj as Enemy).damage_taken(
+            obj.damage_taken(
                 this.power + this.crit,
-                obj.hitboxes[0].middle
-                    .sub(this.parent_obj.hitboxes[0].middle)
-                    .normalize()
+                this.parent_obj.x_direction
             );
         });
     }
@@ -123,8 +141,8 @@ export class Ranged extends Weapon {
     direction = Vec2.zeros();
     speed = 30;
     distance = 0;
-    constructor(obj: DynamicGameObj, power: number) {
-        super(obj, power, 600, Math.PI / 3);
+    constructor(obj: DynamicGameObj, power: number, range: number) {
+        super(obj, power, range, Math.PI / 3);
         this.attack_delay = 900;
         this.cast_time = 1100;
     }
@@ -185,7 +203,7 @@ export class Ranged extends Weapon {
         this.can_attack = false;
         this.projectile = new Effect(
             new Vec2(9, 6),
-            Vec2.from(this.parent_obj.hitboxes[0].middle),
+            this.parent_obj.hitboxes[0].middle.sub(Vec2.Y(24)),
             0,
             SpriteSheets.Debug,
             0,

@@ -99,11 +99,9 @@ export class Enemy extends DynamicGameObj {
 
     set_animation() {}
 
-    damage_taken(damage: number, dir: Vec2) {
+    damage_taken(damage: number, hit_dir: number) {
         if (this.damagable) {
             this.dam_anim_timer = performance.now();
-            // this.velocity.x = (damage / 5) * dir.x;
-            // this.velocity.y = (damage / 10) * dir.y;
             this.hp -= damage;
             if (this.hp < 0) {
                 this.on_death();

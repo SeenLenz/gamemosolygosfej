@@ -88,9 +88,7 @@ function main_loop() {
         obj.render();
     });
 
-    if (current_role == Roles.player) {
-        network.flush();
-    }
+    network.flush();
 
     event.refresh();
     requestAnimationFrame(main_loop);

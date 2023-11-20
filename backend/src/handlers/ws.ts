@@ -13,6 +13,7 @@ export function message(d: RawData, ws: WebSocket) {
     const lobby = lobbies.get(data.id);
     if (data) {
         if (!data.type) {
+            console.log(data.id);
             for (let i = 0; i < (lobby?.clients.length as number); i++) {
                 if (lobby?.clients[i] != ws) {
                     lobby?.clients[i].send(JSON.stringify(data));
@@ -33,7 +34,6 @@ export function message(d: RawData, ws: WebSocket) {
                         i++
                     ) {
                         if (lobby?.clients[i] != ws) {
-                            console.log(lobby?.clients[i]);
                             lobby?.clients[i].send(JSON.stringify(data));
                         }
                     }

@@ -33,6 +33,8 @@ export class Network {
     }
 
     worker_msg(event: MessageEvent) {
+        console.log(event.data);
+
         if (event.data.types) {
             event.data.data.forEach((data: WorkerMsg, index: number) => {
                 this.parse_msg({
@@ -56,7 +58,6 @@ export class Network {
                             msg.data?.pos,
                             true
                         );
-                        camera.focus_on(this.char);
                         break;
                     default:
                         break;
@@ -65,7 +66,6 @@ export class Network {
             case Type.sync:
                 switch (msg.data.type) {
                     case ObjType.player:
-                        console.log(msg.data);
                         if (this.char) {
                             this.char.velocity = new Vec2(
                                 msg.data.vel.x,
@@ -151,6 +151,9 @@ export class Network {
             "http://" + this.domain + "/setup/joinlobby/" + lobby_key
         );
         this.ws_cfg = await response.json();
+
+        this.outBuff.id = this.ws_cfg?.id;
+        this.outBuff.cid = this.ws_cfg?.cid;
 
         if (this.Pisti) {
             this.Pisti?.postMessage({

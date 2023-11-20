@@ -12,6 +12,7 @@ export class WorkerMsg {
         this.id = network.ws_cfg?.id;
         this.type = type;
 
+        console.log(this.id);
         if (!data) {
             this.data = {};
         } else {

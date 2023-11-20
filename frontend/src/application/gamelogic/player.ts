@@ -67,7 +67,6 @@ export class Player extends DynamicGameObj implements Networkable {
         //sprite index
         //framte time
         if (this.v_updated) {
-            console.log("out called");
             network.outBuff_add(
                 new WorkerMsg(Type.sync, {
                     x_dir: this.x_direction,

@@ -4,39 +4,35 @@ import { interpolate } from "../lin_alg";
 
 export class Hud {
 
-    healthBar: HTMLImageElement;
+    canvas: HTMLCanvasElement;
     ctx: CanvasRenderingContext2D;
     healthRect: {x: number, y: number, width: number, height: number};
-    healthUnit : number;    
+    potionRect: {x: number, y: number, width: number, height: number};
+    healthUnit: number;
+    potionUnit: number;
     
     constructor() {
         const body = document.body;
         const mainCanvas = document.querySelector('body canvas:nth-of-type(1)');
-        const canvas = <HTMLCanvasElement>document.createElement('canvas');
-
-        this.healthBar = new Image();
-        this.ctx = canvas.getContext('2d') as CanvasRenderingContext2D;
-        this.healthRect = {x: 0, y: 5, width: 51, height: 18};
+        
+        this.canvas = <HTMLCanvasElement>document.createElement('canvas') as HTMLCanvasElement;
+        this.ctx = this.canvas.getContext('2d') as CanvasRenderingContext2D;
+        this.healthRect = {x: 0, y: 5, width: 54, height: 18};
+        this.potionRect = {x: 75, y: 75, width: 4, height: 9};
         this.healthUnit = 4;
+        this.potionUnit = 1;
+        this.canvas.id = 'hud_canvas';
 
-        canvas.className = 'ui_canvas';
-        canvas.id = 'hud_canvas';
-
-        
-        
-        body?.insertBefore(canvas, mainCanvas);
+        body?.insertBefore(this.canvas, mainCanvas);
     };
     
     run() {
         const healthBarMask = new Image();
-
         healthBarMask.src = './textures/hud/HealthBar-mask.png';
-        this.healthBar.src = './textures/hud/HealthBar-finished.png';
-        
+
         healthBarMask.onload = () => {
 
             this.ctx.drawImage(healthBarMask, 0, 5, healthBarMask.width, healthBarMask.height);
-
             this.ctx.globalCompositeOperation = 'source-in';
             
             this.ctx.fillStyle = 'rgba(102, 0, 0, 255)';
@@ -44,10 +40,33 @@ export class Hud {
             
             this.ctx.globalCompositeOperation = "source-over";
 
-            this.ctx.imageSmoothingEnabled = false;                 
-            this.ctx.drawImage(this.healthBar, 0, 5, 54, 18);
+            const healthBar = new Image();
+            healthBar.src = './textures/hud/HealthBar-finished.png';       
 
-            this.setHealth(30);
+            healthBar.onload = () => {
+                this.ctx.imageSmoothingEnabled = false;    
+                this.ctx.drawImage(healthBar, 0, this.healthRect.y, healthBar.width, healthBar.height);
+
+                const potionMask = new Image();
+                potionMask.src = './textures/hud/potion9by9-mask.png';
+
+                this.ctx.drawImage(potionMask, this.potionRect.x, this.potionRect.y, potionMask.width, potionMask.height);
+                    
+                this.ctx.globalCompositeOperation = "source-in";
+        
+                this.ctx.fillStyle = 'rgba(102, 0, 0, 255)';
+                this.ctx.fillRect(this.potionRect.x, this.potionRect.y, potionMask.width, potionMask.height);                    
+                
+                this.ctx.globalCompositeOperation = "source-over";
+                
+                const potion = new Image();
+                potion.src = './textures/hud/potion9by9-finished.png';
+                
+                potion.onload = () => {
+                    this.ctx.imageSmoothingEnabled = false;        
+                    this.ctx.drawImage(potion, this.potionRect.x, this.potionRect.y, potion.width, potion.height);
+                }
+            }
         }
 
     }
@@ -56,6 +75,10 @@ export class Hud {
         if (this.healthRect.width > 19) {
             this.healthRect.width -= interpolate(this.healthRect.width, target, 0.1);
         }
+    }
+
+    clearHud() {
+        // this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);        
     }
 
     openShop() {

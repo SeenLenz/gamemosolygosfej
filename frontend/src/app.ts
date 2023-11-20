@@ -80,7 +80,7 @@ function main_loop() {
         obj.run(delta_time);
         obj.render();
     });
-
+    hud.clearHud();
     hud.run();
     event.refresh();
     requestAnimationFrame(main_loop);

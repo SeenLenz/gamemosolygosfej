@@ -154,4 +154,17 @@ export function create_textures() {
         ],
         new Vec2(14, 3)
     );
+    renderer.create_texture(
+        "./textures/map/map_sheet.png",
+        [
+            [Vec2.zeros(), 1],
+            [new Vec2(0, 1), 1],
+            [new Vec2(1, 1), 4],
+            [new Vec2(5, 1), 1],
+            [new Vec2(6, 1), 1],
+            [new Vec2(7, 1), 7],
+            [new Vec2(0, 2), 10],
+        ],
+        new Vec2(14, 3)
+    );
 }

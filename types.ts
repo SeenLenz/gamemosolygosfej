@@ -13,6 +13,10 @@ export enum Tag {
     player,
 }
 
+export enum ObjType {
+    player,
+}
+
 export enum Type {
     //Networkable:
     //created a networkable object and transmits this to others

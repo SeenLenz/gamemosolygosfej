@@ -1,4 +1,4 @@
-import { Networkable, Type } from "../../../../types";
+import { Networkable, ObjType, Type } from "../../../../types";
 import { camera, event, gravity, network, renderer } from "../../app";
 import { Vec2 } from "../../lin_alg";
 import { Effect } from "../base/effects";
@@ -38,9 +38,11 @@ export class Player extends DynamicGameObj implements Networkable {
         //network setup
         this.remote = remote;
 
-        // if (!remote) {
-        //     network.outBuff_add(new WorkerMsg(Type.crt, { pos, size }));
-        // }
+        if (!remote) {
+            network.send(
+                new WorkerMsg(Type.crt, { type: ObjType.player, pos, size })
+            );
+        }
 
         this.focused = true;
     }

@@ -26,8 +26,9 @@ class Self {
                 case Type.init:
                     this.init_msg(event.data);
                     break;
+                case Type.crt:
+                    console.log("create instruction recieved");
                 default:
-                    console.log("start from worker readmsg");
                     const result = await this.ws?.send(
                         JSON.stringify(event.data)
                     );
@@ -65,8 +66,6 @@ class Self {
     }
 
     ws_message(event: MessageEvent) {
-        console.log("start from recieved start message worker ws_message");
-
         postMessage(JSON.parse(event.data));
     }
 

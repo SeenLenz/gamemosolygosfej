@@ -13,6 +13,7 @@ import { WorkerMsg } from "./networking/WorkerMsg";
 import { Network } from "./networking/networking";
 import { Observer, PlayerRole, Role } from "./application/gamelogic/roles/role";
 import { GameObject } from "./application/base/gameobject";
+import { Effect } from "./application/base/effects";
 
 export const renderer = new Renderer();
 export const event = new EventHandler(renderer);
@@ -22,7 +23,7 @@ export let gravity = 0.5;
 export const network = new Network("127.0.0.1:6969");
 //export const network = new Network("gamemosolygosfej.onrender.com");
 export let delta_time: number = 1;
-export let current_role: Role;
+export let current_role: Roles;
 let start = 1;
 
 export let map: Map;
@@ -55,16 +56,14 @@ document.addEventListener("DOMContentLoaded", () => {
 function setup(role: number) {
     renderer.setup();
     create_textures();
+    current_role = role;
 
     if (role == Roles.player) {
-        current_role = new PlayerRole();
-    } else {
-        current_role = new Observer();
+        camera.focus_on(new Player([96, 96], [100, -500], false));
     }
 
     start = performance.now();
     map = new Map();
-    camera.focus_on(new Player([96, 96], [100, -500], false));
 }
 
 function main_loop() {
@@ -75,13 +74,19 @@ function main_loop() {
     camera.shake_camera(delta_time);
     map.render(delta_time);
 
-    current_role.run(delta_time);
+    GameObject.objects.forEach((go) => {
+        go.loop(delta_time);
+        go.render();
+    });
+    Effect.effects.forEach((e) => {
+        e.animate();
+    });
     map.foreground.forEach((obj) => {
         obj.loop(delta_time);
         obj.render();
     });
 
-    if (current_role.type) {
+    if (current_role == Roles.player) {
         network.flush();
     }
 

@@ -5,8 +5,10 @@ import {
     Lobby,
     Start,
     NetworkBuffer,
+    ObjType,
 } from "../../../types";
-import { main } from "../app";
+import { main, camera } from "../app";
+import { Player } from "../application/gamelogic/player";
 import { PlayerRole } from "../application/gamelogic/roles/role";
 import { WorkerMsg } from "./WorkerMsg";
 export class Network {
@@ -36,6 +38,23 @@ export class Network {
 
     worker_msg(event: MessageEvent) {
         this.msg = event.data as WorkerMsg;
+        if (this.msg.type == Type.crt) {
+            switch (this.msg.data?.type) {
+                case ObjType.player:
+                    camera.focus_on(
+                        new Player(
+                            this.msg.data?.size,
+                            this.msg.data?.pos,
+                            true
+                        )
+                    );
+                    break;
+
+                default:
+                    break;
+            }
+        }
+
         if (this.msg.type == Type.start) {
             console.log("start message recieved");
 
@@ -43,7 +62,7 @@ export class Network {
         }
     }
 
-    async flush() {
+    flush() {
         this.Pisti?.postMessage(this.outBuff);
         this.outBuff.data = [];
         this.outBuff.types = [];

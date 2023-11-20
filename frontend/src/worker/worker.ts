@@ -26,8 +26,6 @@ class Self {
                 case Type.init:
                     this.init_msg(event.data);
                     break;
-                case Type.crt:
-                    console.log("create instruction recieved");
                 default:
                     const result = await this.ws?.send(
                         JSON.stringify(event.data)
@@ -43,7 +41,7 @@ class Self {
             "ws://" + setupObj.domain + "/" + msg?.id + "/" + msg?.cid
         );
 
-        setInterval((e) => {
+        setInterval((e: any) => {
             this.ws_keepalive();
         }, this.keepalive_time);
 

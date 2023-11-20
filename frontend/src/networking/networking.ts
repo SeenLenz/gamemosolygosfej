@@ -18,13 +18,10 @@ export class Network {
     private Pisti?: Worker;
     private outBuff: NetworkBuffer;
 
-    private msg: WorkerMsg | NetworkBuffer;
-
     constructor(domain: String) {
         this.Pisti = new Worker(
             new URL("../worker/worker.ts", import.meta.url)
         );
-        this.msg = {} as WorkerMsg;
         this.Pisti.onmessage = (event) => {
             this.worker_msg(event);
         };
@@ -32,40 +29,52 @@ export class Network {
         this.outBuff = { types: [], data: [] };
     }
 
-    get data() {
-        return this.msg;
+    worker_msg(event: MessageEvent) {
+        if (event.data.types) {
+            event.data.data.forEach((data: WorkerMsg, index: number) => {
+                switch (event.data.types[index]) {
+                    case Type.sync:
+                        break;
+                    default:
+                        break;
+                }
+            });
+        } else {
+            this.parse_msg(event.data);
+        }
     }
 
-    worker_msg(event: MessageEvent) {
-        this.msg = event.data as WorkerMsg;
-        if (this.msg.type == Type.crt) {
-            switch (this.msg.data?.type) {
-                case ObjType.player:
-                    camera.focus_on(
-                        new Player(
-                            this.msg.data?.size,
-                            this.msg.data?.pos,
-                            true
-                        )
-                    );
-                    break;
-
-                default:
-                    break;
-            }
-        }
-
-        if (this.msg.type == Type.start) {
-            console.log("start message recieved");
-
-            main((this.msg.data as Start).role);
+    private parse_msg(msg: any) {
+        switch (msg.type) {
+            case Type.crt:
+                switch (msg.data?.type) {
+                    case ObjType.player:
+                        console.log("REMOTE CREATED");
+                        camera.focus_on(
+                            new Player(msg.data?.size, msg.data?.pos, true)
+                        );
+                        break;
+                    default:
+                        break;
+                }
+                break;
+            case Type.sync:
+                console.log("sync received");
+                break;
+            case Type.start:
+                main((msg.data as Start).role);
+                break;
+            default:
+                break;
         }
     }
 
     flush() {
-        this.Pisti?.postMessage(this.outBuff);
-        this.outBuff.data = [];
-        this.outBuff.types = [];
+        if (this.outBuff.data.length > 0) {
+            this.Pisti?.postMessage(this.outBuff);
+            this.outBuff.data = [];
+            this.outBuff.types = [];
+        }
     }
 
     async send(msg: WorkerMsg) {
@@ -80,7 +89,7 @@ export class Network {
 
     outBuff_add(msg: any) {
         this.outBuff?.types.push(msg.type);
-        this.outBuff?.data.push(msg);
+        this.outBuff?.data.push(msg.data);
     }
 
     async create_lobby() {

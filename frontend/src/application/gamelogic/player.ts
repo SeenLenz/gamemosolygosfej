@@ -28,12 +28,15 @@ export class Player extends DynamicGameObj implements Networkable {
     grounded_effect = false;
     platform_fall = false;
     remote: boolean;
+    v_updated = false;
+    bt_held = false;
 
     constructor(size: number[], pos: number[], remote: boolean) {
         super(new Vec2(size[0], size[1]), new Vec2(pos[0], pos[1]));
         this.object_tag = ObjectTag.Player;
         this.mass = 1;
-        this.velocity = new Vec2(2, 2);
+        this.velocity = new Vec2(0, 0);
+
 
         //network setup
         this.remote = remote;
@@ -42,7 +45,17 @@ export class Player extends DynamicGameObj implements Networkable {
             network.send(
                 new WorkerMsg(Type.crt, { type: ObjType.player, pos, size })
             );
-        }
+       }
+       else{
+
+            this.run = (delta_time: number) => {
+                this.add_force(new Vec2(0, gravity * this.mass));
+                this.clear();
+                this.set_animations(delta_time);
+                this.animate(this.frame_time);
+            };
+ 
+       }
 
         this.focused = true;
     }
@@ -52,6 +65,22 @@ export class Player extends DynamicGameObj implements Networkable {
     }
 
     out() {
+        //velocity
+        //position
+        //sprite index
+        //framte time
+        if (this.v_updated) {
+            console.log("out fired");
+            network.outBuff_add(
+                new WorkerMsg(Type.sync, {
+                    type: ObjType.player,
+                    pos: this.velocity,
+                    vel: this.velocity,
+                    frame_time: this.frame_time,
+                    sprt_i: this.sprite_index,
+                })
+            );
+        }
         return false;
     }
 
@@ -68,15 +97,20 @@ export class Player extends DynamicGameObj implements Networkable {
     }
 
     run(delta_time: number): void {
+       
+        this.add_force(new Vec2(0, gravity * this.mass));
         this.clear();
         this.keyboard_events(delta_time);
         this.movement(delta_time);
         this.set_animations(delta_time);
         this.animate(this.frame_time);
+        this.out();
+       
     }
 
     clear() {
         this.jump_dir = 0;
+        this.v_updated = false;
         this.jump = false;
         this.x_collision = false;
         this.has_jump = false;
@@ -88,9 +122,11 @@ export class Player extends DynamicGameObj implements Networkable {
         if (event.key_state(Keys.A, EventType.Down)) {
             this.running = true;
             this.x_direction = -1;
+            this.v_updated = true;
         } else if (event.key_state(Keys.D, EventType.Down)) {
             this.running = true;
             this.x_direction = 1;
+            this.v_updated = true;
         } else if (
             event.key_state(Keys.A, EventType.Up) ||
             event.key_state(Keys.A, EventType.Up)
@@ -99,19 +135,22 @@ export class Player extends DynamicGameObj implements Networkable {
         }
         if (event.key_state(Keys.W, EventType.Pressed)) {
             this.jump = true;
+            this.v_updated = true;
         }
         if (event.key_state(Keys.Shift, EventType.Pressed)) {
             this.dash = true;
+            this.v_updated = true;
         }
         if (event.key_state(Keys.S, EventType.Pressed)) {
             this.platform_fall = true;
+            this.v_updated = true;
         }
         if (event.key_state(Keys.Space, EventType.Pressed)) {
+            this.v_updated = true;
         }
     }
 
     movement(delta_time: number) {
-        this.add_force(new Vec2(0, gravity * this.mass));
 
         if (
             this.dash &&

@@ -93,7 +93,7 @@ export class Observer implements Role {
     }
 
     run(delta_time: number) {
-        const data = network.data;
+//        const data = network.data;
 
         // if ("types" in data) {
         //     this.objects.forEach((obj) => {

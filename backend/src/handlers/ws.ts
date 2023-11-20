@@ -14,7 +14,9 @@ export function message(d: RawData, ws: WebSocket) {
     if (data) {
         if (!data.type) {
             for (let i = 0; i < (lobby?.clients.length as number); i++) {
-                lobby?.clients[i].send(JSON.stringify(data));
+                if (lobby?.clients[i] != ws) {
+                    lobby?.clients[i].send(JSON.stringify(data));
+                }
             }
         } else {
             switch (data.type) {
@@ -31,6 +33,7 @@ export function message(d: RawData, ws: WebSocket) {
                         i++
                     ) {
                         if (lobby?.clients[i] != ws) {
+                            console.log(lobby?.clients[i]);
                             lobby?.clients[i].send(JSON.stringify(data));
                         }
                     }

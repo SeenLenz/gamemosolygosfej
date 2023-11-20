@@ -3,7 +3,7 @@
     height: 100vh;
 }
 
-#hud_canvas {
+.ui_canvas {
     position: absolute;
     margin: 0;
     padding: 0;

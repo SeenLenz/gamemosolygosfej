@@ -1,5 +1,3 @@
-import { event } from "../app";
-import { Keys, EventType } from "../application/base/event_handler";
 import { interpolate } from "../lin_alg";
 
 export class Hud {
@@ -21,6 +19,7 @@ export class Hud {
         this.potionRect = {x: 25, y: 20, width: 4, height: 9};
         this.healthUnit = 4;
         this.potionUnit = 1;
+        this.canvas.className = 'ui_canvas';
         this.canvas.id = 'hud_canvas';
 
         body?.insertBefore(this.canvas, mainCanvas);
@@ -101,7 +100,7 @@ export class Hud {
 
     setHealth(target:number) {
         if (this.healthRect.width > 19) {
-            this.healthRect.width -= interpolate(this.healthRect.width, target, 0.1);
+            this.healthRect.width = interpolate(this.healthRect.width, target, 0.1);
         }
     }
 

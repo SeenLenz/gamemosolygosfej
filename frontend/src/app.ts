@@ -9,6 +9,7 @@ import { Network } from "./networking/networking";
 import { Observer, PlayerRole, Role } from "./application/gamelogic/roles/role";
 import { GameObject } from "./application/base/gameobject";
 import { Hud } from "./ui/hud";
+import { Start } from "./ui/start";
 
 export const renderer = new Renderer();
 export const event = new EventHandler(renderer);
@@ -20,6 +21,8 @@ let start = 1;
 
 export let map: Map;
 let hud : Hud;
+let canvas_start: Start;
+
 
 document.addEventListener("DOMContentLoaded", () => {
     document.querySelector("#join_bt")?.addEventListener("click", (e) => {
@@ -65,6 +68,7 @@ function setup(role: number) {
     start = performance.now();
     map = new Map();
     hud = new Hud();
+    canvas_start = new Start();
 }
 
 function main_loop() {
@@ -80,7 +84,8 @@ function main_loop() {
         obj.run(delta_time);
         obj.render();
     });
-    hud.run();
+    canvas_start.run();
+    // hud.run();
     event.refresh();
     requestAnimationFrame(main_loop);
 }

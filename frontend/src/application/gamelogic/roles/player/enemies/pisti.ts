@@ -1,14 +1,9 @@
-import { event, gravity } from "../../../../../app";
 import { Vec2, interpolate } from "../../../../../lin_alg";
-import { EventType, Keys } from "../../../../base/event_handler";
 import {
     StaticCollisionObj,
-    DynamicGameObj,
-    HitboxFlags,
-    ObjectTag,
+
 } from "../../../../base/gameobject";
 import { Point } from "../../../../base/rays";
-import { SpriteSheets } from "../../../../base/textures";
 import { Enemy } from "../enemy";
 
 export class Pisti extends Enemy {

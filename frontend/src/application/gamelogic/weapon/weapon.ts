@@ -3,6 +3,13 @@ import { Effect, PlayerEffects } from "../../base/effects";
 import { DynamicGameObj } from "../../base/gameobject";
 import { SpriteSheets } from "../../base/textures";
 import { Enemy } from "../roles/player/enemy";
+import { player } from "../roles/role";
+
+
+export enum WeaponOwner {
+    Player,
+    Enemy,
+}
 
 export class Weapon {
     parent_obj: DynamicGameObj;
@@ -44,6 +51,15 @@ export class Weapon {
         this.target_objects = { all: [], closest: undefined };
     }
 
+    set_target_objs() {
+        this.target_objects = this.parent_obj.get_dynamic_objs_in_section(
+            this.range,
+            Vec2.X(this.parent_obj.x_direction),
+            this.angle,
+            this.range_offset
+        );
+    }
+
     run() {
         const now = performance.now();
         if (this.pressed) {
@@ -52,12 +68,6 @@ export class Weapon {
             this.parent_obj.current_frame = 0;
             this.can_attack = true;
             this._attack_lock = true;
-            this.target_objects = this.parent_obj.get_dynamic_objs_in_section(
-                this.range,
-                Vec2.X(this.parent_obj.x_direction),
-                this.angle,
-                this.range_offset
-            );
         }
         this.attacked = false;
 
@@ -66,11 +76,13 @@ export class Weapon {
         }
         if (this.attacking && now - this.base_timer > this.attack_delay) {
             if (this.can_attack) {
+
                 if (this._attack_lock) {
                     this.attacked = true;
                     this._attack_lock = false;
                 }
                 if (!this.multi_target) {
+                    this.set_target_objs();
                     if (this.target_objects.closest) {
                         this.on_hit({
                             all: [this.target_objects.closest],
@@ -79,13 +91,7 @@ export class Weapon {
                     }
                 } else {
                     this.on_hit(this.target_objects);
-                    this.target_objects =
-                        this.parent_obj.get_dynamic_objs_in_section(
-                            this.range,
-                            Vec2.X(this.parent_obj.x_direction),
-                            this.angle,
-                            this.range_offset
-                        );
+                    this.set_target_objs();
                 }
             }
         }
@@ -95,8 +101,8 @@ export class Weapon {
         this.pressed = false;
     }
 
-    weapon_logic() {}
-    set_animation() {}
+    weapon_logic() { }
+    set_animation() { }
     on_hit(objs: {
         all: DynamicGameObj[];
         closest: DynamicGameObj | undefined;
@@ -115,8 +121,8 @@ export class Weapon {
 export class Ranged extends Weapon {
     constructor(obj: DynamicGameObj, power: number) {
         super(obj, power, 500, Math.PI / 3);
-        this.attack_delay = 800;
-        this.cast_time = 1000;
+        this.attack_delay = 900;
+        this.cast_time = 1100;
     }
 
     set_animation(): void {
@@ -124,9 +130,9 @@ export class Ranged extends Weapon {
             this.parent_obj.frame_time = 40;
             this.parent_obj.sprite_index = 6;
             this.parent_obj.halt_points = [
-                { frame: 3, time: 200 },
+                { frame: 4, time: 200 },
                 { frame: 8, time: 300 },
-                { frame: 9, time: 100 },
+                { frame: 9, time: 300 },
             ];
         }
 
@@ -144,7 +150,7 @@ export class Ranged extends Weapon {
         }
     }
 
-    weapon_logic(): void {}
+    weapon_logic(): void { }
 
     on_hit(objs: {
         all: DynamicGameObj[];

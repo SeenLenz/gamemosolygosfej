@@ -10,6 +10,7 @@ import {
 } from "../../../base/gameobject";
 import { Point } from "../../../base/rays";
 import { SpriteSheets } from "../../../base/textures";
+import { player } from "../role";
 
 export class Enemy extends DynamicGameObj {
     dam_anim_timer = 0;
@@ -17,6 +18,8 @@ export class Enemy extends DynamicGameObj {
     damagable = true;
     ground_hit = false;
     ground_hit_lock = false;
+    attacked = false;
+    attacking = false;
     constructor(position: Point) {
         super(new Vec2(96, 96), Vec2.from(position));
         this.texture_index = SpriteSheets.Pisti;
@@ -33,6 +36,33 @@ export class Enemy extends DynamicGameObj {
 
     get main_hitbox() {
         return this.hitboxes[0];
+    }
+
+
+    get_player_in_section(
+        radius: number,
+        dir: Vec2,
+        angle: number,
+        range_offset = 0
+    ) {
+        let dyno = player;
+        if (
+            this.hitboxes[0].middle.dist_squared(dyno.hitboxes[0].middle) <
+            radius * radius &&
+            this.hitboxes[0].middle.dist_squared(dyno.hitboxes[0].middle) >
+            range_offset * range_offset
+        ) {
+            const ndir = dir.normalize();
+            const min_dot = Math.cos(angle / 2);
+            const target_dot = dyno.hitboxes[0].middle
+                .sub(this.hitboxes[0].middle)
+                .normalize()
+                .dot(ndir);
+
+            if (min_dot < target_dot) {
+                return true;
+            }
+        }
     }
 
     loop(delta_time: number): void {
@@ -65,7 +95,9 @@ export class Enemy extends DynamicGameObj {
         }
     }
 
-    set_animation() {}
+    set_animation() { }
+
+
 
     hit(damage: number, dir: Vec2) {
         if (this.damagable) {

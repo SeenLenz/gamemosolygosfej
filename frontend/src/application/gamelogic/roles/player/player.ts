@@ -16,7 +16,6 @@ import { Melee, Ranged, Teleport } from "../../weapon/weapon";
 
 export class Player extends DynamicGameObj {
     public focused: boolean = false;
-    frame_time = 0;
     has_jump = false;
     dash = false;
     wall_slide = false;
@@ -219,7 +218,7 @@ export class Player extends DynamicGameObj {
         this_hitbox: Hitbox;
         obj_hitbox: Hitbox;
         obj: DynamicGameObj;
-    }): void {}
+    }): void { }
 
     on_collision(obj: StaticCollisionObj): void {
         super.on_collision(obj);

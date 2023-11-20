@@ -189,7 +189,10 @@ export class Ranged extends Weapon {
         ) {
             this.projectile.remove();
             this.projectile = undefined;
-            super.on_hit(this.target_objects);
+            super.on_hit({
+                all: [this.target_objects.closest],
+                closest: this.target_objects.closest,
+            });
         }
     }
 

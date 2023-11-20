@@ -1,10 +1,6 @@
 import { delta_time } from "../../../../../app";
 import { Vec2, interpolate } from "../../../../../lin_alg";
-import {
-    CollisionDir,
-    DynamicGameObj,
-    StaticCollisionObj,
-} from "../../../../base/gameobject";
+import { StaticCollisionObj } from "../../../../base/gameobject";
 import { Point, float_eq } from "../../../../base/rays";
 import { SpriteSheets } from "../../../../base/textures";
 import { player } from "../../role";

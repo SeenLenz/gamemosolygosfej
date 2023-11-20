@@ -311,6 +311,8 @@ export class DynamicGameObj extends GameObject {
         this.velocity.y += this.force.y * delta_time;
         this.velocity.x -= this.force.x * delta_time;
 
+        console.log(this);
+
         const normalized_velocity = this.velocity.normalize();
 
         if (

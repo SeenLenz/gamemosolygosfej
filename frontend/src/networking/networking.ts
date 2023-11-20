@@ -10,13 +10,16 @@ import {
 import { main, camera } from "../app";
 import { Player } from "../application/gamelogic/player";
 import { PlayerRole } from "../application/gamelogic/roles/role";
+import { Vec2 } from "../lin_alg";
 import { WorkerMsg } from "./WorkerMsg";
+
 export class Network {
     public domain: String;
     public ws_cfg?: Lobby;
     private ws?: WebSocket;
     private Pisti?: Worker;
     private outBuff: NetworkBuffer;
+    private char?: Player;
 
     constructor(domain: String) {
         this.Pisti = new Worker(
@@ -32,12 +35,10 @@ export class Network {
     worker_msg(event: MessageEvent) {
         if (event.data.types) {
             event.data.data.forEach((data: WorkerMsg, index: number) => {
-                switch (event.data.types[index]) {
-                    case Type.sync:
-                        break;
-                    default:
-                        break;
-                }
+                this.parse_msg({
+                    type: event.data.types[index],
+                    data: data,
+                });
             });
         } else {
             this.parse_msg(event.data);
@@ -50,16 +51,28 @@ export class Network {
                 switch (msg.data?.type) {
                     case ObjType.player:
                         console.log("REMOTE CREATED");
-                        camera.focus_on(
-                            new Player(msg.data?.size, msg.data?.pos, true)
+                        this.char = new Player(
+                            msg.data?.size,
+                            msg.data?.pos,
+                            true
                         );
+                        camera.focus_on(this.char);
                         break;
                     default:
                         break;
                 }
                 break;
             case Type.sync:
-                console.log("sync received");
+                switch (msg.data.type) {
+                    case ObjType.player:
+                        if (this.char) {
+                            this.char = msg.data.player;
+                        }
+                        break;
+
+                    default:
+                        break;
+                }
                 break;
             case Type.start:
                 main((msg.data as Start).role);

@@ -37,7 +37,6 @@ export class Player extends DynamicGameObj implements Networkable {
         this.mass = 1;
         this.velocity = new Vec2(0, 0);
 
-
         //network setup
         this.remote = remote;
 
@@ -45,17 +44,15 @@ export class Player extends DynamicGameObj implements Networkable {
             network.send(
                 new WorkerMsg(Type.crt, { type: ObjType.player, pos, size })
             );
-       }
-       else{
-
+        } else {
             this.run = (delta_time: number) => {
                 this.add_force(new Vec2(0, gravity * this.mass));
                 this.clear();
+                this.movement(delta_time);
                 this.set_animations(delta_time);
                 this.animate(this.frame_time);
             };
- 
-       }
+        }
 
         this.focused = true;
     }
@@ -70,14 +67,10 @@ export class Player extends DynamicGameObj implements Networkable {
         //sprite index
         //framte time
         if (this.v_updated) {
-            console.log("out fired");
             network.outBuff_add(
                 new WorkerMsg(Type.sync, {
                     type: ObjType.player,
-                    pos: this.velocity,
-                    vel: this.velocity,
-                    frame_time: this.frame_time,
-                    sprt_i: this.sprite_index,
+                    player: this,
                 })
             );
         }
@@ -97,7 +90,6 @@ export class Player extends DynamicGameObj implements Networkable {
     }
 
     run(delta_time: number): void {
-       
         this.add_force(new Vec2(0, gravity * this.mass));
         this.clear();
         this.keyboard_events(delta_time);
@@ -105,7 +97,6 @@ export class Player extends DynamicGameObj implements Networkable {
         this.set_animations(delta_time);
         this.animate(this.frame_time);
         this.out();
-       
     }
 
     clear() {
@@ -151,7 +142,6 @@ export class Player extends DynamicGameObj implements Networkable {
     }
 
     movement(delta_time: number) {
-
         if (
             this.dash &&
             !(!this.x_collision && Math.abs(this.velocity.x) > 7)

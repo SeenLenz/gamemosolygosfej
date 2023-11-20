@@ -65,8 +65,19 @@ export class Network {
             case Type.sync:
                 switch (msg.data.type) {
                     case ObjType.player:
+                        console.log(msg.data);
                         if (this.char) {
-                            this.char = msg.data.player;
+                            this.char.velocity = new Vec2(
+                                msg.data.vel.x,
+                                msg.data.vel.y
+                            );
+                            this.char.pos = new Vec2(
+                                msg.data.pos.x,
+                                msg.data.pos.y
+                            );
+                            this.char.frame_time = msg.data.frame_time;
+                            this.char.sprite_index = msg.data.sprite_index;
+                            this.char.x_direction = msg.data.x_dir;
                         }
                         break;
 

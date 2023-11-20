@@ -60,6 +60,8 @@ function setup(role: number) {
 
     if (role == Roles.player) {
         camera.focus_on(new Player([96, 96], [100, -500], false));
+    } else {
+        camera.focus_on(new Player([96, 96], [200, -500], false));
     }
 
     start = performance.now();

@@ -2,11 +2,11 @@ import { Vec2 } from "./frontend/src/lin_alg";
 
 //any class which implements this can be synced over the network
 export interface Networkable {
-    index: Number;
+    remote_id: String;
 
-    out(): boolean;
-    in(): boolean;
-    del(): boolean;
+    out(): void;
+    in(data: any): void;
+    del(): void;
 }
 
 export enum Tag {

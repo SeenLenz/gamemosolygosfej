@@ -6,15 +6,16 @@ import {
 } from "./application/base/event_handler";
 import { Camera } from "./application/base/camera";
 import { Player } from "./application/gamelogic/player";
-import { Map } from "./application/gamelogic/map/map";
+import { Map_ } from "./application/gamelogic/map/map";
 import { create_textures } from "./application/base/textures";
-import { Type, Test, Roles } from "../../types";
+import { Type, Test, Roles, Networkable } from "../../types";
 import { WorkerMsg } from "./networking/WorkerMsg";
 import { Network } from "./networking/networking";
 import { Observer, PlayerRole, Role } from "./application/gamelogic/roles/role";
 import { GameObject } from "./application/base/gameobject";
 import { Effect } from "./application/base/effects";
 
+export const RemoteBuff = new Map<String, Networkable>();
 export const renderer = new Renderer();
 export const event = new EventHandler(renderer);
 export let camera = new Camera();
@@ -26,7 +27,7 @@ export let delta_time: number = 1;
 export let current_role: Roles;
 let start = 1;
 
-export let map: Map;
+export let map: Map_;
 
 document.addEventListener("DOMContentLoaded", () => {
     document.querySelector("#join_bt")?.addEventListener("click", (e) => {
@@ -57,14 +58,10 @@ function setup(role: number) {
     create_textures();
     current_role = role;
 
-    if (role == Roles.player) {
-        camera.focus_on(new Player([96, 96], [100, -500], false));
-    } else {
-        camera.focus_on(new Player([96, 96], [200, -500], false));
-    }
+    camera.focus_on(new Player([96, 96], [100, -500], false, undefined));
 
     start = performance.now();
-    map = new Map();
+    map = new Map_();
 }
 
 function main_loop() {

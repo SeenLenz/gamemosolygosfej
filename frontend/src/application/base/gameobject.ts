@@ -88,6 +88,7 @@ export class GameObject {
     texture_coords: Float32Array;
     texture_index: number = 0;
     sprite_index: number = 0;
+
     //--> animations
     current_frame = 0;
     animation_timer = 0;

@@ -7,7 +7,7 @@ import {
     NetworkBuffer,
     ObjType,
 } from "../../../types";
-import { main, camera } from "../app";
+import { main, camera, RemoteBuff } from "../app";
 import { Player } from "../application/gamelogic/player";
 import { PlayerRole } from "../application/gamelogic/roles/role";
 import { Vec2 } from "../lin_alg";
@@ -19,7 +19,6 @@ export class Network {
     private ws?: WebSocket;
     private Pisti?: Worker;
     private outBuff: NetworkBuffer;
-    private char?: Player;
 
     constructor(domain: String) {
         this.Pisti = new Worker(
@@ -50,10 +49,15 @@ export class Network {
             case Type.crt:
                 switch (msg.data?.type) {
                     case ObjType.player:
-                        this.char = new Player(
-                            msg.data?.size,
-                            msg.data?.pos,
-                            true
+                        console.log(msg.data);
+                        RemoteBuff.set(
+                            msg.data?.remote_id,
+                            new Player(
+                                msg.data?.size,
+                                msg.data?.pos,
+                                true,
+                                msg.data?.remote_id
+                            )
                         );
                         break;
                     default:
@@ -61,26 +65,7 @@ export class Network {
                 }
                 break;
             case Type.sync:
-                switch (msg.data.type) {
-                    case ObjType.player:
-                        if (this.char) {
-                            this.char.velocity = new Vec2(
-                                msg.data.vel.x,
-                                msg.data.vel.y
-                            );
-                            this.char.pos = new Vec2(
-                                msg.data.pos.x,
-                                msg.data.pos.y
-                            );
-                            this.char.frame_time = msg.data.frame_time;
-                            this.char.sprite_index = msg.data.sprite_index;
-                            this.char.x_direction = msg.data.x_dir;
-                        }
-                        break;
-
-                    default:
-                        break;
-                }
+                RemoteBuff.get(msg.data.remote_id)?.in(msg.data);
                 break;
             case Type.start:
                 main((msg.data as Start).role);

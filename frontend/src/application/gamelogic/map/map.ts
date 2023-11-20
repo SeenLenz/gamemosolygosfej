@@ -5,7 +5,7 @@ import { SpriteSheets } from "../../base/textures";
 import { Ground, GroundPos, UnderGround } from "./ground";
 import { Bench, House, StreetLamp, Wire } from "./objects";
 
-export class Map {
+export class Map_ {
     background: GameObject[] = [];
     objects: GameObject[] = [];
     foreground: GameObject[] = [];

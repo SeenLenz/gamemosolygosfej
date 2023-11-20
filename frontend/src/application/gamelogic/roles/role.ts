@@ -22,7 +22,7 @@ export class PlayerRole implements Role {
     type: Roles;
 
     constructor() {
-        camera.focus_on(new Player([96, 96], [100, -500], false));
+        //        camera.focus_on(new Player([96, 96], [100, -500], false));
         this.type = Roles.player;
     }
 
@@ -93,15 +93,13 @@ export class Observer implements Role {
     }
 
     run(delta_time: number) {
-//        const data = network.data;
-
+        //        const data = network.data;
         // if ("types" in data) {
         //     this.objects.forEach((obj) => {
         //         renderer.gl.bindBuffer(
         //             renderer.gl.ARRAY_BUFFER,
         //             this.texture_buffer.buffer
         //         );
-
         //         this.texture_coords = new Float32Array([
         //             obj.texture_coords[0],
         //             obj.texture_coords[1],
@@ -175,7 +173,6 @@ export class Observer implements Role {
         //             renderer.gl.ARRAY_BUFFER,
         //             this.texture_buffer.buffer
         //         );
-
         //         this.texture_coords = new Float32Array([
         //             obj.texture_coords[0],
         //             obj.texture_coords[1],
@@ -193,7 +190,6 @@ export class Observer implements Role {
         //         );
         //         this.base_obj?.render(renderer, obj);
         //     });
-
         //     switch (data.type) {
         //         case Type.camera:
         //             const camerasync = data.data as CameraSync;

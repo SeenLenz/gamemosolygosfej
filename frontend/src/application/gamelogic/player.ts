@@ -1,5 +1,12 @@
 import { Networkable, ObjType, Type } from "../../../../types";
-import { camera, event, gravity, network, renderer } from "../../app";
+import {
+    camera,
+    event,
+    gravity,
+    network,
+    renderer,
+    RemoteBuff,
+} from "../../app";
 import { Vec2 } from "../../lin_alg";
 import { Effect } from "../base/effects";
 import { EventType, Keys } from "../base/event_handler";
@@ -14,6 +21,7 @@ import {
 } from "../base/gameobject";
 import { SpriteSheets } from "../base/textures";
 import { WorkerMsg } from "../../networking/WorkerMsg";
+import { v4 as uuid } from "uuid";
 
 export class Player extends DynamicGameObj implements Networkable {
     public focused: boolean = false;
@@ -30,21 +38,36 @@ export class Player extends DynamicGameObj implements Networkable {
     remote: boolean;
     v_updated = false;
     bt_held = false;
+    remote_id: String;
 
-    constructor(size: number[], pos: number[], remote: boolean) {
+    constructor(
+        size: number[],
+        pos: number[],
+        remote: boolean,
+        remote_id: String | undefined
+    ) {
         super(new Vec2(size[0], size[1]), new Vec2(pos[0], pos[1]));
         this.object_tag = ObjectTag.Player;
         this.mass = 1;
         this.velocity = new Vec2(0, 0);
-
         //network setup
         this.remote = remote;
 
         if (!remote) {
+            this.remote_id = uuid();
+
+            console.log(this.remote_id);
+
             network.send(
-                new WorkerMsg(Type.crt, { type: ObjType.player, pos, size })
+                new WorkerMsg(Type.crt, {
+                    type: ObjType.player,
+                    pos,
+                    size,
+                    remote_id: this.remote_id,
+                })
             );
         } else {
+            this.remote_id = remote_id as String;
             this.run = (delta_time: number) => {
                 this.add_force(new Vec2(0, gravity * this.mass));
                 this.clear();
@@ -57,8 +80,12 @@ export class Player extends DynamicGameObj implements Networkable {
         this.focused = true;
     }
 
-    in() {
-        return false;
+    in(data: any) {
+        this.x_direction = data.x_dir;
+        this.velocity = new Vec2(data.vel.x, data.vel.y);
+        this.pos = new Vec2(data.pos.x, data.pos.y);
+        this.frame_time = data.frame_time;
+        this.sprite_index = data.frame_time;
     }
 
     out() {
@@ -75,10 +102,10 @@ export class Player extends DynamicGameObj implements Networkable {
                     pos: this.pos,
                     frame_time: this.frame_time,
                     sprite_index: this.sprite_index,
+                    remote_id: this.remote_id,
                 })
             );
         }
-        return false;
     }
 
     del() {

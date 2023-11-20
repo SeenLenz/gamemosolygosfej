@@ -2,7 +2,7 @@ import { camera } from "../../../app";
 import { Vec2 } from "../../../lin_alg";
 import { GameObject, StaticGameObj } from "../../base/gameobject";
 import { SpriteSheets } from "../../base/textures";
-import { Slime } from "../roles/player/enemies/slime";
+import { Bela } from "../roles/player/enemies/slime";
 import { Ground, GroundPos, UnderGround } from "./ground";
 import { Bench, House, StreetLamp, Wire } from "./objects";
 
@@ -12,10 +12,10 @@ export class Map {
     foreground: GameObject[] = [];
     constructor() {
         this.objects = [
-            new House(
-                new Vec2(64 * 6, 64 * 6),
-                new Vec2(5 * 48, 0 - 64 * 6 + 3 * 6)
-            ),
+            // new House(
+            //     new Vec2(64 * 6, 64 * 6),
+            //     new Vec2(5 * 48, 0 - 64 * 6 + 3 * 6)
+            // ),
             // new Ground(new Vec2(1, 8), new Vec2(12, -8), GroundPos.Center),
             // new Ground(new Vec2(1, 8), new Vec2(0, -8), GroundPos.Center),
             // new Ground(new Vec2(8, 1), new Vec2(1, -14), GroundPos.Center),

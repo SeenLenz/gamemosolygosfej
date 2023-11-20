@@ -1,17 +1,21 @@
 import { delta_time } from "../../../../../app";
 import { Vec2, interpolate } from "../../../../../lin_alg";
-import { CollisionDir, DynamicGameObj, StaticCollisionObj } from "../../../../base/gameobject";
+import {
+    CollisionDir,
+    DynamicGameObj,
+    StaticCollisionObj,
+} from "../../../../base/gameobject";
 import { Point, float_eq } from "../../../../base/rays";
 import { SpriteSheets } from "../../../../base/textures";
 import { player } from "../../role";
 import { Enemy } from "../enemy";
 
-
-export class Slime extends Enemy {
+export class Bela extends Enemy {
     player_rec = false;
-    grounded_timer = 0;
-    attack_timer = 0;
+    grounded_timer = performance.now();
+    attack_timer = performance.now();
     back = false;
+    damage = 10;
     constructor(pos: Point) {
         super(pos);
         this.texture_index = SpriteSheets.SlimeEnemy;
@@ -20,6 +24,7 @@ export class Slime extends Enemy {
         this.main_hitbox.pos_diff.set(this.size.x / 4, this.size.y / 2);
         this.frame_time = 100;
         this.animation_repeat = false;
+        this.hp = 100;
     }
 
     run(delta_time: number): void {
@@ -32,47 +37,61 @@ export class Slime extends Enemy {
         super.run(delta_time);
     }
 
-
-    damage_player(dist: number) {
-        if (!this.attacked && dist < 40 * 40) {
-            this.velocity.x *= -1;
-            this.velocity.y *= -1;
-            this.attack_timer = performance.now();
-            this.attacked = true;
+    damage_player() {
+        if (this.damagable) {
+            player.damage_taken(this.damage, this.x_direction);
         }
     }
 
+    on_death(): void {
+        this.remove();
+        let belacska1 = new Bleacska(this.pos.sub(Vec2.X(-30)));
+        belacska1.velocity.y = -3;
+        belacska1.velocity.x = -10;
+        let belacska2 = new Bleacska(this.pos.sub(Vec2.X(30)));
+        belacska2.velocity.y = -3;
+        belacska2.velocity.x = 10;
+    }
+
     attack(dist: number) {
-        if (this.grounded && !this.attacking && dist < 200 * 200) {
+        if (!this.can_attack && dist < 200 * 200) {
+            this.can_attack = true;
+        }
+
+        if (!this.attacking && this.can_attack && dist < 40 * 40) {
+            this.velocity.x *= -1;
+            this.velocity.y *= -1;
             this.attacking = true;
+            this.attacked = true;
+            this.can_attack = false;
+            this.attack_timer = performance.now();
+            this.damage_player();
+            return;
         }
 
-        if (this.attacking) {
-            this.damage_player(dist);
-        }
-
-        if (performance.now() - this.attack_timer > 100) {
-            this.attacked = false;
+        if (performance.now() - this.attack_timer > 1000) {
             this.attacking = false;
+            this.can_attack = false;
         }
     }
 
     movement() {
         this.back = false;
         const dist = player.hitbox.middle.dist_squared(this.main_hitbox.middle);
-        if (dist < 100 * 100) {
+        if (dist < 80 * 80) {
             this.back = true;
         }
         this.attack(dist);
+        this.detect_player(dist);
         if (!this.attacking) {
             if (
                 this.player_rec &&
                 this.grounded &&
                 performance.now() - this.grounded_timer > 800
             ) {
-                this.velocity.y = -8;
+                this.velocity.y = -6;
                 this.grounded_timer = performance.now();
-                this.follow_player(dist);
+                this.follow_player();
             }
         }
     }
@@ -104,7 +123,7 @@ export class Slime extends Enemy {
         }
     }
 
-    hit(damage: number, dir: Vec2): void {
+    damage_taken(damage: number, dir: Vec2): void {
         if (this.damagable) {
             this.dam_anim_timer = performance.now();
             this.velocity.x += (damage / 4) * dir.x;
@@ -113,27 +132,30 @@ export class Slime extends Enemy {
             this.hp -= damage;
             this.frame_time = 70;
             this.sprite_index = 5;
-            // if (this.hp < 0) {
-            //     this.remove();
-            // }
             this.player_rec = true;
             this.damagable = false;
+            this.can_attack = false;
             this.attacking = false;
-            this.attacked = false;
+
+            if (this.hp < 0) {
+                this.on_death();
+            }
         }
     }
 
-    follow_player(dist: number) {
-        if (
-            !this.player_rec &&
-            dist >
-            300 * 300
-        ) {
+    detect_player(dist: number) {
+        if ((!this.player_rec && dist > 300 * 300) || this.player_rec) {
             return;
         }
 
-        this.player_rec = true;
+        if (!this.damagable) {
+            this.player_rec = true;
+        }
 
+        this.player_rec = true;
+    }
+
+    follow_player() {
         const follow_dir_x = player.hitbox.middle
             .sub(this.main_hitbox.middle)
             .X.normalize().x;
@@ -141,8 +163,7 @@ export class Slime extends Enemy {
         if (this.damagable && this.grounded) {
             if (this.back) {
                 this.velocity.x = -3 * follow_dir_x;
-            }
-            else {
+            } else {
                 this.velocity.x = 5 * follow_dir_x;
             }
         }
@@ -150,5 +171,18 @@ export class Slime extends Enemy {
 
     on_collision_y(obj: StaticCollisionObj): void {
         super.on_collision_y(obj);
+    }
+}
+
+export class Bleacska extends Bela {
+    constructor(pos: Point) {
+        super(pos);
+        this.damage = 5;
+        this.hp = 20;
+        this.texture_index = SpriteSheets.SmallSlimeEnemy;
+    }
+
+    on_death(): void {
+        this.remove();
     }
 }

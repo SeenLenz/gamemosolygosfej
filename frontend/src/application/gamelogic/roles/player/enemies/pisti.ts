@@ -1,8 +1,5 @@
 import { Vec2, interpolate } from "../../../../../lin_alg";
-import {
-    StaticCollisionObj,
-
-} from "../../../../base/gameobject";
+import { StaticCollisionObj } from "../../../../base/gameobject";
 import { Point } from "../../../../base/rays";
 import { Enemy } from "../enemy";
 
@@ -22,8 +19,8 @@ export class Pisti extends Enemy {
         }
     }
 
-    hit(power: number, dir: Vec2) {
-        super.hit(power, dir);
+    damage_taken(power: number, dir: Vec2) {
+        super.damage_taken(power, dir);
         if (this.damagable) {
             this.sprite_index = 1;
         }

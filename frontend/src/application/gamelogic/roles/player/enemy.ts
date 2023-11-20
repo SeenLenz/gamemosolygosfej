@@ -13,13 +13,14 @@ import { SpriteSheets } from "../../../base/textures";
 import { player } from "../role";
 
 export class Enemy extends DynamicGameObj {
-    dam_anim_timer = 0;
+    dam_anim_timer = performance.now();
     hp = 100;
-    damagable = true;
+    damagable = false;
     ground_hit = false;
     ground_hit_lock = false;
-    attacked = false;
     attacking = false;
+    can_attack = false;
+    attacked = false;
     constructor(position: Point) {
         super(new Vec2(96, 96), Vec2.from(position));
         this.texture_index = SpriteSheets.Pisti;
@@ -38,6 +39,7 @@ export class Enemy extends DynamicGameObj {
         return this.hitboxes[0];
     }
 
+    on_death() {}
 
     get_player_in_section(
         radius: number,
@@ -48,9 +50,9 @@ export class Enemy extends DynamicGameObj {
         let dyno = player;
         if (
             this.hitboxes[0].middle.dist_squared(dyno.hitboxes[0].middle) <
-            radius * radius &&
+                radius * radius &&
             this.hitboxes[0].middle.dist_squared(dyno.hitboxes[0].middle) >
-            range_offset * range_offset
+                range_offset * range_offset
         ) {
             const ndir = dir.normalize();
             const min_dot = Math.cos(angle / 2);
@@ -95,19 +97,17 @@ export class Enemy extends DynamicGameObj {
         }
     }
 
-    set_animation() { }
+    set_animation() {}
 
-
-
-    hit(damage: number, dir: Vec2) {
+    damage_taken(damage: number, dir: Vec2) {
         if (this.damagable) {
             this.dam_anim_timer = performance.now();
             // this.velocity.x = (damage / 5) * dir.x;
             // this.velocity.y = (damage / 10) * dir.y;
             this.hp -= damage;
-            // if (this.hp < 0) {
-            //     this.remove();
-            // }
+            if (this.hp < 0) {
+                this.on_death();
+            }
             this.damagable = false;
         }
     }

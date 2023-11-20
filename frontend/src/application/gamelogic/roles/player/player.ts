@@ -28,6 +28,9 @@ export class Player extends DynamicGameObj {
     ranged_weapon: Ranged;
     melee_weapon: Melee;
     teleport: Teleport;
+    damagable = true;
+    damaged_timer = performance.now();
+    health = 100;
 
     constructor(size: number[], pos: number[]) {
         super(new Vec2(size[0], size[1]), new Vec2(pos[0], pos[1]));
@@ -60,6 +63,9 @@ export class Player extends DynamicGameObj {
         this.set_animations(delta_time);
         this.set_attack();
         this.animate(this.frame_time);
+        if (performance.now() - this.damaged_timer > 100) {
+            this.damagable = true;
+        }
         this.clear();
     }
 
@@ -122,6 +128,20 @@ export class Player extends DynamicGameObj {
         }
     }
 
+    damage_taken(damage: number, hit_dir: number) {
+        if (this.damagable) {
+            this.damagable = false;
+            this.health -= damage;
+            this.damaged_timer = performance.now();
+            this.velocity.x += (damage / 5) * hit_dir;
+            this.velocity.y -= 2;
+
+            if (this.health <= 0) {
+                console.log("died");
+            }
+        }
+    }
+
     set_attack() {
         this.ranged_weapon.run();
         this.melee_weapon.run();
@@ -130,6 +150,12 @@ export class Player extends DynamicGameObj {
 
     movement(delta_time: number) {
         this.add_force(new Vec2(0, gravity * this.mass));
+
+        if (!this.damagable) {
+            this.running = false;
+            this.jump = false;
+            this.wall_slide = false;
+        }
 
         if (
             this.dash &&
@@ -218,7 +244,7 @@ export class Player extends DynamicGameObj {
         this_hitbox: Hitbox;
         obj_hitbox: Hitbox;
         obj: DynamicGameObj;
-    }): void { }
+    }): void {}
 
     on_collision(obj: StaticCollisionObj): void {
         super.on_collision(obj);

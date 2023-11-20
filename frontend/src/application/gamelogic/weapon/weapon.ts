@@ -1,10 +1,10 @@
+import { delta_time } from "../../../app";
 import { Vec2 } from "../../../lin_alg";
 import { Effect, PlayerEffects } from "../../base/effects";
 import { DynamicGameObj } from "../../base/gameobject";
 import { SpriteSheets } from "../../base/textures";
 import { Enemy } from "../roles/player/enemy";
 import { player } from "../roles/role";
-
 
 export enum WeaponOwner {
     Player,
@@ -36,6 +36,7 @@ export class Weapon {
     range: number;
     range_offset: number;
     angle: number;
+    hit_timer = 0;
     constructor(
         obj: DynamicGameObj,
         power: number,
@@ -76,7 +77,6 @@ export class Weapon {
         }
         if (this.attacking && now - this.base_timer > this.attack_delay) {
             if (this.can_attack) {
-
                 if (this._attack_lock) {
                     this.attacked = true;
                     this._attack_lock = false;
@@ -101,14 +101,14 @@ export class Weapon {
         this.pressed = false;
     }
 
-    weapon_logic() { }
-    set_animation() { }
+    weapon_logic() {}
+    set_animation() {}
     on_hit(objs: {
         all: DynamicGameObj[];
         closest: DynamicGameObj | undefined;
     }) {
         objs.all.forEach((obj) => {
-            (obj as Enemy).hit(
+            (obj as Enemy).damage_taken(
                 this.power + this.crit,
                 obj.hitboxes[0].middle
                     .sub(this.parent_obj.hitboxes[0].middle)
@@ -119,8 +119,12 @@ export class Weapon {
 }
 
 export class Ranged extends Weapon {
+    projectile: Effect | undefined;
+    direction = Vec2.zeros();
+    speed = 30;
+    distance = 0;
     constructor(obj: DynamicGameObj, power: number) {
-        super(obj, power, 500, Math.PI / 3);
+        super(obj, power, 600, Math.PI / 3);
         this.attack_delay = 900;
         this.cast_time = 1100;
     }
@@ -150,14 +154,51 @@ export class Ranged extends Weapon {
         }
     }
 
-    weapon_logic(): void { }
+    weapon_logic(): void {
+        if (!this.target_objects.closest || !this.projectile) {
+            return;
+        }
+        this.projectile.pos.add_self(
+            this.direction.mul(Vec2.uniform(this.speed * delta_time))
+        );
+
+        if (
+            Math.abs(
+                this.projectile.pos.x -
+                    this.target_objects.closest.hitboxes[0].middle.x
+            ) <=
+            this.speed * delta_time
+        ) {
+            this.projectile.remove();
+            this.projectile = undefined;
+            super.on_hit(this.target_objects);
+        }
+    }
 
     on_hit(objs: {
         all: DynamicGameObj[];
         closest: DynamicGameObj | undefined;
     }): void {
+        if (!objs.closest) {
+            return;
+        }
         this.can_attack = false;
-        super.on_hit(objs);
+        this.projectile = new Effect(
+            new Vec2(9, 6),
+            Vec2.from(this.parent_obj.hitboxes[0].middle),
+            0,
+            SpriteSheets.Debug,
+            0,
+            0,
+            -1,
+            Vec2.X(5 * 6 * this.parent_obj.x_direction)
+        );
+
+        this.direction = objs.closest.hitboxes[0].middle
+            .sub(this.parent_obj.hitboxes[0].middle)
+            .normalize();
+
+        this.hit_timer = performance.now();
     }
 }
 

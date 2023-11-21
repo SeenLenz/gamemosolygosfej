@@ -2,6 +2,20 @@ import { renderer } from "../../app";
 import { Vec2 } from "../../lin_alg";
 import { SpriteSheets } from "./textures";
 
+export type HaltPoint = {
+    frame: number;
+    time: number;
+};
+
+export enum PlayerEffects {
+    Dash,
+    MeleeC0,
+    Grounded,
+    Ranged,
+    Teleport,
+    MeleeC1,
+}
+
 export class Effect {
     size: Vec2 = Vec2.zeros();
     pos: Vec2 = Vec2.zeros();
@@ -18,6 +32,8 @@ export class Effect {
     current_cycle = 0;
     rotation = 0;
     z_coord = 1;
+    reverse = 0;
+    offset = Vec2.zeros();
 
     constructor(
         size: Vec2,
@@ -26,7 +42,9 @@ export class Effect {
         texure_index: SpriteSheets,
         effect: number,
         speed: number,
-        repeat: number
+        repeat: number,
+        offset: Vec2 = Vec2.zeros(),
+        reverse = false
     ) {
         this.x_direction = x_dir;
         this.texture_index = texure_index;
@@ -41,6 +59,7 @@ export class Effect {
         this.repeat = repeat;
         this.size = size;
         this.pos = pos;
+        this.offset = offset;
 
         Effect.effects.push(this);
     }
@@ -69,20 +88,21 @@ export class Effect {
 
     animate() {
         if (performance.now() - this.animation_timer > this.speed) {
-            this.animation_timer = performance.now();
-            this.current_frame += 1;
-            if (this.current_frame > this.sprite[1] - 1) {
-                this.current_frame = 0;
-            }
             this.set_texture_coords(
-                new Vec2(this.sprite_size.x, this.sprite_size.y),
+                Vec2.from(this.sprite_size),
                 new Vec2(
                     this.sprite[0].x + this.current_frame,
                     this.sprite[0].y
                 )
             );
+
+            this.animation_timer = performance.now();
+            this.current_frame += 1;
+            if (this.current_frame > this.sprite[1] - 1) {
+                this.current_frame = 0;
+            }
         }
-        this.object?.render(renderer, this);
+        this.object?.render(renderer, this, this.offset);
         if (
             this.repeat != -1 &&
             this.current_frame == 0 &&

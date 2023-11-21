@@ -12,11 +12,17 @@ import { Effect } from "../../base/effects";
 import { GameObject } from "../../base/gameobject";
 import { Player } from "../player";
 import { Renderable } from "../../../renderer/object";
+import { CameraObj } from "./observer/camera";
+import { Pisti } from "./player/enemies/pisti";
+import { Bela } from "./player/enemies/slime";
+import { Huba } from "./player/enemies/ranged";
 
 export interface Role {
     run(delta_time: number): void;
     type?: Roles;
 }
+
+export let player: Player;
 
 export class PlayerRole implements Role {
     type: Roles;
@@ -69,27 +75,18 @@ export class PlayerRole implements Role {
 }
 
 export class Observer implements Role {
-    camera: {
-        pos: Vec2;
-        scale: number;
-        rotation: number;
-    };
     texture_buffer: { buffer: WebGLBuffer; attribute: number };
     texture_coords = new Float32Array(8);
     base_obj = renderer.base_quad_obj;
     objects: Renderable[] = [];
+    cam_obj = new CameraObj();
     constructor() {
-        this.camera = {
-            pos: new Vec2(0, -500),
-            scale: 1,
-            rotation: 0,
-        };
+        camera.focus_on(this.cam_obj);
         this.texture_buffer = renderer.create_buffer(
             renderer.gl.DYNAMIC_DRAW,
             this.texture_coords,
             "texture_coord"
         );
-        camera.pos.y = this.camera.pos.y;
     }
 
     run(delta_time: number) {

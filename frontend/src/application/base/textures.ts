@@ -6,6 +6,7 @@ export enum SpriteSheets {
     Ground,
     GroundCorners,
     UnderGround,
+    UnderGroundCorners,
     SteetLamp,
     LampLightEffect,
     Bench,
@@ -50,7 +51,15 @@ export function create_textures() {
     renderer.create_texture(
         "./textures/map/underground.png",
         [[Vec2.zeros(), 1]],
-        new Vec2(1, 1)
+        new Vec2(4, 3)
+    );
+    renderer.create_texture(
+        "./textures/map/underground_corners.png",
+        [
+            [Vec2.zeros(), 1],
+            [new Vec2(1, 0), 1],
+        ],
+        new Vec2(2, 3)
     );
     renderer.create_texture(
         "./textures/map/street_lamp.png",

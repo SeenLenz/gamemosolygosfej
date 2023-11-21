@@ -8,10 +8,9 @@ import { Camera } from "./application/base/camera";
 import { Player } from "./application/gamelogic/player";
 import { Map_ } from "./application/gamelogic/map/map";
 import { create_textures } from "./application/base/textures";
-import { Type, Test, Roles, Networkable } from "../../types";
+import { Type, Roles, Networkable } from "../../types";
 import { WorkerMsg } from "./networking/WorkerMsg";
 import { Network } from "./networking/networking";
-import { Observer, PlayerRole, Role } from "./application/gamelogic/roles/role";
 import { GameObject } from "./application/base/gameobject";
 import { Effect } from "./application/base/effects";
 

@@ -60,8 +60,6 @@ export class Player extends DynamicGameObj implements Networkable {
 
         if (!remote) {
             this.remote_id = uuid();
-            this.texture_index = SpriteSheets.Huba;
-            console.log(this.remote_id);
 
             network.send(
                 new WorkerMsg(Type.crt, {
@@ -72,6 +70,7 @@ export class Player extends DynamicGameObj implements Networkable {
                 })
             );
         } else {
+            this.texture_index = SpriteSheets.Huba;
             this.remote_id = remote_id as String;
             this.run = (delta_time: number) => {
                 this.add_force(new Vec2(0, gravity * this.mass));
@@ -189,6 +188,8 @@ export class Player extends DynamicGameObj implements Networkable {
         ) {
             this.melee_weapon.pressed = true;
             this.network_sync = true;
+            this.ranged_weapon.can_attack = false;
+            this.ranged_weapon.attacking = false;
         }
         if (
             !this.ranged_weapon.attacking &&

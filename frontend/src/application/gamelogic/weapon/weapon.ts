@@ -5,6 +5,7 @@ import { WorkerMsg } from "../../../networking/WorkerMsg";
 import { Effect, PlayerEffects } from "../../base/effects";
 import { DynamicGameObj, ObjectTag } from "../../base/gameobject";
 import { SpriteSheets } from "../../base/textures";
+import { Player } from "../player";
 import { player } from "../roles/role";
 
 export enum WeaponOwner {
@@ -201,9 +202,32 @@ export class Ranged extends Weapon {
         if (!this.projectile) {
             return;
         }
+
         this.projectile.pos.add_self(
             this.direction.mul(Vec2.uniform(this.speed * delta_time))
         );
+
+        if (
+            Math.abs(
+                this.projectile.pos.x -
+                    this.target_objects.closest.hitboxes[0].middle.x
+            ) <=
+            this.speed * 5 * delta_time
+        ) {
+            if (this.target_objects.closest.object_tag == ObjectTag.Player) {
+                let player = this.target_objects.closest as Player;
+                if (
+                    player.melee_weapon.attacking ||
+                    player.ranged_weapon.attacked ||
+                    player.teleport.attacking ||
+                    player.dash
+                ) {
+                    this.projectile.remove();
+                    this.projectile = undefined;
+                    return;
+                }
+            }
+        }
 
         if (
             Math.abs(

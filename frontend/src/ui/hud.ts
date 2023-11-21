@@ -12,7 +12,6 @@ export class Hud {
     constructor() {
         const body = document.body;
         const mainCanvas = document.querySelector('body canvas:nth-of-type(1)');
-        
         this.canvas = <HTMLCanvasElement>document.createElement('canvas') as HTMLCanvasElement;
         this.ctx = this.canvas.getContext('2d') as CanvasRenderingContext2D;
         this.healthRect = {x: 0, y: 5, width: 51, height: 18};
@@ -26,12 +25,12 @@ export class Hud {
     };
     
     run() {
-        this.clearHud();
-
+        
         const healthBarMask = new Image();
         healthBarMask.src = './textures/hud/HealthBar-maskVer2.png';        
-
+        
         healthBarMask.onload = () => {
+            this.clearHud();
 
             this.ctx.drawImage(healthBarMask, 0, 5, healthBarMask.width, healthBarMask.height);
             this.ctx.globalCompositeOperation = 'source-in';
@@ -40,7 +39,6 @@ export class Hud {
             this.ctx.fillRect(this.healthRect.x, this.healthRect.y, this.healthRect.width, this.healthRect.height);
             
             this.ctx.globalCompositeOperation = "source-over";
-            console.log(`HI - ${healthBarMask.width}\nHR - ${this.healthRect.width}`);
 
             const healthBar = new Image();
             healthBar.src = './textures/hud/HealthBar-finished.png';       
@@ -106,7 +104,7 @@ export class Hud {
     }
 
     clearHud() {
-        // this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
     }
 
     openShop() {

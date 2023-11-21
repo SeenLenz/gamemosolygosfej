@@ -313,7 +313,9 @@ export class StaticGameObj extends GameObject {
         collidable = true
     ) {
         super(scale, position, auto_render, collidable);
-        GameObject.static_hitboxes.push(this);
+        if (this.collidable) {
+            GameObject.static_hitboxes.push(this);
+        }
     }
 
     loop(delta_time: number) {

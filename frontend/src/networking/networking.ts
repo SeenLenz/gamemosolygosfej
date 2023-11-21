@@ -93,6 +93,16 @@ export class Network {
                     ).damage_taken(msg.data.damage, msg.data.hit_dir);
                     break;
                 }
+
+                if (msg.data.death) {
+                    (
+                        GameObject.objects.find((v) => {
+                            return (
+                                (v as DynamicGameObj).remote_id == msg.data.this
+                            );
+                        }) as DynamicGameObj
+                    ).remove();
+                }
                 RemoteBuff.get(msg.data.remote_id)?.in(msg.data);
                 break;
             case Type.start:
@@ -126,7 +136,7 @@ export class Network {
 
     async create_lobby() {
         const response = await fetch(
-            "https://" + this.domain + "/setup/lobbycrt"
+            "http://" + this.domain + "/setup/lobbycrt"
         );
         this.ws_cfg = await response.json();
 
@@ -154,7 +164,7 @@ export class Network {
 
     async join_lobby(lobby_key: String) {
         const response = await fetch(
-            "https://" + this.domain + "/setup/joinlobby/" + lobby_key
+            "http://" + this.domain + "/setup/joinlobby/" + lobby_key
         );
         this.ws_cfg = await response.json();
 

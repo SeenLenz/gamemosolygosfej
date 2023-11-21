@@ -16,7 +16,7 @@ export class Huba extends Enemy {
     constructor(pos: Point) {
         super(pos);
         this.ranged_weapon = new Ranged(this, 20, 500);
-        this.texture_index = SpriteSheets.RangedEnemy;
+        this.texture_index = SpriteSheets.Huba;
         this.sprite_index = 1;
     }
 

@@ -17,7 +17,7 @@ export enum SpriteSheets {
     PlayerEffects,
     SlimeEnemy,
     SmallSlimeEnemy,
-    RangedEnemy,
+    Huba,
 }
 
 export function create_textures() {

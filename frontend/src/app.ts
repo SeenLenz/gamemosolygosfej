@@ -21,8 +21,8 @@ export const event = new EventHandler(renderer);
 export let camera = new Camera();
 export let gravity = 0.5;
 //export const network = new Network("10.0.23.4:3000");
-//export const network = new Network("127.0.0.1:6969");
-export const network = new Network("gamemosolygosfej.onrender.com");
+export const network = new Network("127.0.0.1:6969");
+// export const network = new Network("gamemosolygosfej.onrender.com");
 export let delta_time: number = 1;
 export let current_role: Roles;
 let start = 1;
@@ -40,6 +40,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
     document.querySelector("#start_bt")?.addEventListener("click", (e) => {
         network.send(new WorkerMsg(Type.start));
+        document.querySelector("#start_bt")?.remove();
     });
     document.querySelector("#create_bt")?.addEventListener("click", (e) => {
         network.create_lobby();
@@ -54,6 +55,10 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 function setup(role: number) {
+    document.querySelector("#start_bt")?.remove();
+    document.querySelector("#msg_bt")?.remove();
+    document.querySelector("#create_bt")?.remove();
+    document.querySelector("#join_bt")?.remove();
     renderer.setup();
     create_textures();
     current_role = role;

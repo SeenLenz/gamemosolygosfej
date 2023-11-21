@@ -5,12 +5,17 @@ import { WorkerMsg } from "../../../networking/WorkerMsg";
 import { Effect, PlayerEffects } from "../../base/effects";
 import { DynamicGameObj, ObjectTag } from "../../base/gameobject";
 import { SpriteSheets } from "../../base/textures";
-import { Enemy } from "../roles/player/enemy";
 import { player } from "../roles/role";
 
 export enum WeaponOwner {
     Player,
     Enemy,
+}
+
+export enum WeaponType {
+    ranged,
+    melee,
+    teleport,
 }
 
 export class Weapon {
@@ -23,6 +28,8 @@ export class Weapon {
     _attack_lock = false;
     base_timer = 0;
     combo_count = 0;
+
+    weapon_type: WeaponType;
 
     cast_time = 0;
     attack_delay = 0;
@@ -46,6 +53,7 @@ export class Weapon {
         angle: number,
         range_offset = 0
     ) {
+        this.weapon_type = WeaponType.melee;
         this.parent_obj = obj;
         this.power = power;
         this.angle = angle;
@@ -98,6 +106,7 @@ export class Weapon {
         if (now - this.base_timer > this.cast_time) {
             this.attacking = false;
         }
+
         if (this.attacking && now - this.base_timer > this.attack_delay) {
             if (this.can_attack) {
                 if (this._attack_lock) {
@@ -120,8 +129,9 @@ export class Weapon {
         }
 
         this.weapon_logic();
-        this.set_animation();
-        this.pressed = false;
+        if (!(this.parent_obj as DynamicGameObj).remote) {
+            this.set_animation();
+        }
     }
 
     weapon_logic() {}
@@ -152,6 +162,7 @@ export class Ranged extends Weapon {
         super(obj, power, range, Math.PI / 3);
         this.attack_delay = 900;
         this.cast_time = 1100;
+        this.weapon_type = WeaponType.ranged;
     }
 
     set_animation(): void {
@@ -183,7 +194,11 @@ export class Ranged extends Weapon {
     }
 
     weapon_logic(): void {
-        if (!this.target_objects.closest || !this.projectile) {
+        if (!this.target_objects.closest) {
+            return;
+        }
+
+        if (!this.projectile) {
             return;
         }
         this.projectile.pos.add_self(
@@ -199,21 +214,16 @@ export class Ranged extends Weapon {
         ) {
             this.projectile.remove();
             this.projectile = undefined;
-            super.on_hit({
-                all: [this.target_objects.closest],
-                closest: this.target_objects.closest,
-            });
+            if (!this.parent_obj.remote) {
+                super.on_hit({
+                    all: [this.target_objects.closest],
+                    closest: this.target_objects.closest,
+                });
+            }
         }
     }
 
-    on_hit(objs: {
-        all: DynamicGameObj[];
-        closest: DynamicGameObj | undefined;
-    }): void {
-        if (!objs.closest) {
-            return;
-        }
-        this.can_attack = false;
+    start_bullet(obj: DynamicGameObj) {
         this.projectile = new Effect(
             new Vec2(9, 6),
             this.parent_obj.hitboxes[0].middle.sub(Vec2.Y(24)),
@@ -229,10 +239,21 @@ export class Ranged extends Weapon {
             false
         );
 
-        this.direction = objs.closest.hitboxes[0].middle
+        this.direction = obj.hitboxes[0].middle
             .sub(this.parent_obj.hitboxes[0].middle)
             .normalize();
+    }
 
+    on_hit(objs: {
+        all: DynamicGameObj[];
+        closest: DynamicGameObj | undefined;
+    }): void {
+        if (!objs.closest) {
+            return;
+        }
+
+        this.start_bullet(objs.closest);
+        this.can_attack = false;
         this.hit_timer = performance.now();
     }
 }
@@ -306,6 +327,7 @@ export class Teleport extends Weapon {
         this.cast_time = 1000;
         this.range_offset = 100;
         this.attack_delay = 100;
+        this.weapon_type = WeaponType.teleport;
     }
 
     set_animation(): void {

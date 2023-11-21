@@ -346,6 +346,7 @@ export class DynamicGameObj extends GameObject {
     components: [boolean, boolean] = [false, false];
     points: DebugPoint[] = [new DebugPoint(), new DebugPoint()];
     remote_id: String;
+    remote: boolean = false;
     constructor(scale: Vec2, position: Vec2) {
         super(scale, position);
 

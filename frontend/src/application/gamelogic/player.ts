@@ -1,12 +1,5 @@
 import { Networkable, ObjType, Type } from "../../../../types";
-import {
-    camera,
-    event,
-    gravity,
-    network,
-    renderer,
-    RemoteBuff,
-} from "../../app";
+import { event, gravity, network } from "../../app";
 import { Vec2 } from "../../lin_alg";
 import { Effect, PlayerEffects } from "../base/effects";
 import { EventType, Keys } from "../base/event_handler";
@@ -18,7 +11,7 @@ import {
     HitboxFlags,
     ObjectTag,
 } from "../base/gameobject";
-import { float_eq, float_less_eq } from "../base/rays";
+import { float_eq } from "../base/rays";
 import { SpriteSheets } from "../base/textures";
 import { WorkerMsg } from "../../networking/WorkerMsg";
 import { v4 as uuid } from "uuid";
@@ -35,7 +28,6 @@ export class Player extends DynamicGameObj implements Networkable {
     x_collision = false;
     grounded_effect = false;
     platform_fall = false;
-    remote: boolean;
     bt_held = false;
     ranged_weapon: Ranged;
     melee_weapon: Melee;
@@ -68,7 +60,7 @@ export class Player extends DynamicGameObj implements Networkable {
 
         if (!remote) {
             this.remote_id = uuid();
-
+            this.texture_index = SpriteSheets.Huba;
             console.log(this.remote_id);
 
             network.send(
@@ -83,10 +75,10 @@ export class Player extends DynamicGameObj implements Networkable {
             this.remote_id = remote_id as String;
             this.run = (delta_time: number) => {
                 this.add_force(new Vec2(0, gravity * this.mass));
-                this.clear();
                 this.movement(delta_time);
-                // this.set_animations(delta_time);
+                this.set_attack();
                 this.animate(this.frame_time);
+                this.clear();
             };
         }
     }
@@ -98,6 +90,7 @@ export class Player extends DynamicGameObj implements Networkable {
         this.frame_time = data.frame_time;
         this.sprite_index = data.sprite_index;
         this.halt_points = data.halt_points;
+        this.ranged_weapon.pressed = data.ranged_press;
     }
 
     out() {
@@ -116,6 +109,7 @@ export class Player extends DynamicGameObj implements Networkable {
                     sprite_index: this.sprite_index,
                     remote_id: this.remote_id,
                     halt_points: this.halt_points,
+                    ranged_press: this.ranged_weapon.pressed,
                 })
             );
         }
@@ -153,6 +147,9 @@ export class Player extends DynamicGameObj implements Networkable {
         this.dash = false;
         this.wall_slide = false;
         this.animation_direction = 1;
+        this.ranged_weapon.pressed = false;
+        this.melee_weapon.pressed = false;
+        this.teleport.pressed = false;
         if (!this.remote) {
             this.halt_points = [];
         }
@@ -173,10 +170,7 @@ export class Player extends DynamicGameObj implements Networkable {
         ) {
             this.running = false;
         }
-        if (event.key_state(Keys.W, EventType.Pressed)) {
-            this.jump = true;
-            this.network_sync = true;
-        }
+
         if (event.key_state(Keys.Shift, EventType.Pressed)) {
             this.dash = true;
             this.network_sync = true;
@@ -187,8 +181,6 @@ export class Player extends DynamicGameObj implements Networkable {
         }
         if (event.key_state(Keys.Space, EventType.Pressed)) {
             this.network_sync = true;
-        }
-        if (event.key_state(Keys.Space, EventType.Pressed)) {
             this.jump = true;
         }
         if (
@@ -196,11 +188,13 @@ export class Player extends DynamicGameObj implements Networkable {
             event.key_state(Keys.J, EventType.Pressed)
         ) {
             this.melee_weapon.pressed = true;
+            this.network_sync = true;
         }
         if (
             !this.ranged_weapon.attacking &&
             event.key_state(Keys.K, EventType.Pressed)
         ) {
+            this.network_sync = true;
             this.ranged_weapon.pressed = true;
         }
 
@@ -208,6 +202,7 @@ export class Player extends DynamicGameObj implements Networkable {
             !this.teleport.attacking &&
             event.key_state(Keys.I, EventType.Pressed)
         ) {
+            this.network_sync = true;
             this.teleport.pressed = true;
         }
     }
@@ -221,6 +216,12 @@ export class Player extends DynamicGameObj implements Networkable {
             this.velocity.y -= 2;
 
             if (this.health <= 0) {
+                network.outBuff_add(
+                    new WorkerMsg(Type.sync, {
+                        death: true,
+                        this: this.remote_id,
+                    })
+                );
                 this.remove();
             }
         }
@@ -234,7 +235,7 @@ export class Player extends DynamicGameObj implements Networkable {
     }
 
     movement(delta_time: number) {
-        if (performance.now() - this.damaged_timer > 600) {
+        if (performance.now() - this.damaged_timer > 300) {
             this.damagable = true;
         }
         if (!this.damagable) {
@@ -295,7 +296,11 @@ export class Player extends DynamicGameObj implements Networkable {
                 SpriteSheets.PlayerEffects,
                 PlayerEffects.Dash,
                 50,
-                0
+                0,
+                Vec2.zeros(),
+                false,
+                false,
+                this.remote_id
             );
         }
 

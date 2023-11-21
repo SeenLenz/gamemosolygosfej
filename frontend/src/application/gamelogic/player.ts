@@ -135,13 +135,13 @@ export class Player extends DynamicGameObj implements Networkable {
 
     run(delta_time: number): void {
         this.add_force(new Vec2(0, gravity * this.mass));
-        this.clear();
         this.keyboard_events(delta_time);
         this.movement(delta_time);
         this.set_animations(delta_time);
         this.set_attack();
         this.animate(this.frame_time);
         this.out();
+        this.clear();
     }
 
     clear() {
@@ -234,15 +234,18 @@ export class Player extends DynamicGameObj implements Networkable {
     }
 
     movement(delta_time: number) {
-        if (performance.now() - this.damaged_timer > 600) {
-            this.damagable = true;
+        if (!this.damagable) {
+            this.running = false;
+            this.jump = false;
+            this.wall_slide = false;
         }
+
         if (
             this.dash &&
             !(!this.x_collision && Math.abs(this.velocity.x) > 7)
         ) {
             this.velocity.x = 25 * this.x_direction;
-            // this.ranged_weapon.attacking = false;
+            this.ranged_weapon.attacking = false;
         }
         if (this.running && Math.abs(this.velocity.x) < 7) {
             this.velocity.x +=
@@ -264,7 +267,6 @@ export class Player extends DynamicGameObj implements Networkable {
 
     set_animations(delta_time: number) {
         if (this.grounded && !this.grounded_effect) {
-            console.log(this.remote_id);
             new Effect(
                 Vec2.from(this.size),
                 Vec2.from(this.pos),
@@ -290,11 +292,7 @@ export class Player extends DynamicGameObj implements Networkable {
                 SpriteSheets.PlayerEffects,
                 PlayerEffects.Dash,
                 50,
-                0,
-                Vec2.zeros(),
-                false,
-                false,
-                this.remote_id
+                0
             );
         }
 

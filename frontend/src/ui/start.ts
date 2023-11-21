@@ -1,4 +1,5 @@
 import { interpolate } from "../lin_alg";
+import { Hud, clearHud } from "./hud";
 
 export class Start {
 
@@ -21,6 +22,7 @@ export class Start {
     }
 
     run() {
+        clearHud(this.ctx, this.canvas);
         let opacity = 0;
 
         this.ctx.fillStyle = 'blue';
@@ -34,13 +36,7 @@ export class Start {
         this.ctx.globalAlpha = interpolate(opacity, 1.0, 0.1);
 
         this.canvas.addEventListener('click', () => {
-           close(); 
+           console.log('click');
         });
     }
-
-    close() {
-        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);        
-    }
-
-
 }

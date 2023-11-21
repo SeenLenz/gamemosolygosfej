@@ -30,7 +30,7 @@ export class Hud {
         healthBarMask.src = './textures/hud/HealthBar-maskVer2.png';        
         
         healthBarMask.onload = () => {
-            this.clearHud();
+            clearHud(this.ctx, this.canvas);
 
             this.ctx.drawImage(healthBarMask, 0, 5, healthBarMask.width, healthBarMask.height);
             this.ctx.globalCompositeOperation = 'source-in';
@@ -103,9 +103,7 @@ export class Hud {
         }
     }
 
-    clearHud() {
-        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-    }
+    
 
     openShop() {
         this.ctx.fillStyle = 'blue';
@@ -115,4 +113,8 @@ export class Hud {
     closeShop() {
 
     }
+}
+
+export function clearHud(ctx:CanvasRenderingContext2D, canvas:HTMLCanvasElement) {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
 }

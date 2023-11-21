@@ -42,7 +42,7 @@ export class Player extends DynamicGameObj implements Networkable {
     teleport: Teleport;
     damagable = true;
     damaged_timer = performance.now();
-    health = 100;
+    health = 400;
 
     constructor(
         size: number[],
@@ -221,7 +221,7 @@ export class Player extends DynamicGameObj implements Networkable {
             this.velocity.y -= 2;
 
             if (this.health <= 0) {
-                console.log("died");
+                this.remove();
             }
         }
         super.damage_taken(damage, hit_dir);
@@ -234,6 +234,9 @@ export class Player extends DynamicGameObj implements Networkable {
     }
 
     movement(delta_time: number) {
+        if (performance.now() - this.damaged_timer > 600) {
+            this.damagable = true;
+        }
         if (!this.damagable) {
             this.running = false;
             this.jump = false;

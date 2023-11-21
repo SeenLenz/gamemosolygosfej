@@ -1,7 +1,7 @@
-import { camera, event, gravity, renderer } from "../../../../app";
-import { Vec2 } from "../../../../lin_alg";
-import { Effect, PlayerEffects } from "../../../base/effects";
-import { EventType, Keys } from "../../../base/event_handler";
+import { camera, event, gravity, renderer } from "../../app";
+import { Vec2 } from "../../lin_alg";
+import { Effect, PlayerEffects } from "../base/effects";
+import { EventType, Keys } from "../base/event_handler";
 import {
     CollisionDir,
     StaticCollisionObj,
@@ -9,10 +9,10 @@ import {
     Hitbox,
     HitboxFlags,
     ObjectTag,
-} from "../../../base/gameobject";
-import { float_eq, float_less_eq } from "../../../base/rays";
-import { SpriteSheets } from "../../../base/textures";
-import { Melee, Ranged, Teleport } from "../../weapon/weapon";
+} from "../base/gameobject";
+import { float_eq, float_less_eq } from "../base/rays";
+import { SpriteSheets } from "../base/textures";
+import { Melee, Ranged, Teleport } from "./weapon/weapon";
 
 export class Player extends DynamicGameObj {
     public focused: boolean = false;

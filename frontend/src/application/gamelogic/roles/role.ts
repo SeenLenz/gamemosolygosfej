@@ -11,7 +11,7 @@ import { Vec2 } from "../../../lin_alg";
 import { Camera } from "../../base/camera";
 import { Effect } from "../../base/effects";
 import { GameObject } from "../../base/gameobject";
-import { Player } from "./player/player";
+import { Player } from "../player";
 import { Renderable } from "../../../renderer/object";
 import { CameraObj } from "./observer/camera";
 import { Pisti } from "./player/enemies/pisti";

@@ -11,8 +11,9 @@ import {
     ray_side_intersection,
 } from "./rays";
 import { SpriteSheets } from "./textures";
-import { Tag } from "../../../../types";
+import { Tag, Type } from "../../../../types";
 import { HaltPoint } from "./effects";
+import { WorkerMsg } from "../../networking/WorkerMsg";
 
 export enum ObjectTag {
     Empty,
@@ -94,6 +95,9 @@ export class GameObject {
     x_direction: number = 1;
     y_direction: number = 1;
 
+    // network
+    network_sync = false;
+
     // object props
     mass: number;
     collidable: boolean;
@@ -158,6 +162,7 @@ export class GameObject {
         if (this._sprite_index != this.prev_sprite_index) {
             // this.current_frame = 0;
             this.sprite_changed = true;
+            this.network_sync = true;
         }
         this.prev_sprite_index = index;
     }
@@ -340,10 +345,12 @@ export class DynamicGameObj extends GameObject {
     };
     components: [boolean, boolean] = [false, false];
     points: DebugPoint[] = [new DebugPoint(), new DebugPoint()];
+    remote_id: String;
     constructor(scale: Vec2, position: Vec2) {
         super(scale, position);
 
         this.isDynamic = true;
+        this.remote_id = "";
 
         this.velocity = new Vec2(0, 0);
         this.force = new Vec2(0, 0);

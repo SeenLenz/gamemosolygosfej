@@ -1,6 +1,10 @@
-import { renderer } from "../../app";
+import { Networkable, Type } from "../../../../types";
+import { RemoteBuff, network, renderer } from "../../app";
 import { Vec2 } from "../../lin_alg";
+import { WorkerMsg } from "../../networking/WorkerMsg";
+import { GameObject } from "./gameobject";
 import { SpriteSheets } from "./textures";
+import { v4 as uuid } from "uuid";
 
 export type HaltPoint = {
     frame: number;
@@ -34,7 +38,9 @@ export class Effect {
     z_coord = 1;
     reverse = 0;
     offset = Vec2.zeros();
-
+    remote = false;
+    parent_obj: String | undefined = undefined;
+    velocity: Vec2 | undefined;
     constructor(
         size: Vec2,
         pos: Vec2,
@@ -44,7 +50,10 @@ export class Effect {
         speed: number,
         repeat: number,
         offset: Vec2 = Vec2.zeros(),
-        reverse = false
+        reverse = false,
+        remote = false,
+        parent_obj: String | undefined = undefined,
+        sync = true
     ) {
         this.x_direction = x_dir;
         this.texture_index = texure_index;
@@ -60,6 +69,25 @@ export class Effect {
         this.size = size;
         this.pos = pos;
         this.offset = offset;
+        this.remote = remote;
+        this.parent_obj = parent_obj;
+
+        if (!this.remote && sync) {
+            let msg = new WorkerMsg(Type.crt, {
+                effect: this.sprite_index,
+                size: this.size,
+                pos: this.pos,
+                x_dir: this.x_direction,
+                texure_index: this.texture_index,
+                speed: this.speed,
+                repeat: this.repeat,
+                offset: this.offset,
+                reverse: this.reverse,
+                parent_obj: this.parent_obj,
+            });
+
+            network.outBuff_add(msg);
+        }
 
         Effect.effects.push(this);
     }
@@ -87,6 +115,13 @@ export class Effect {
     static effects: Effect[] = [];
 
     animate() {
+        if (this.remote) {
+            if (this.parent_obj) {
+                this.pos = (
+                    RemoteBuff.get(this.parent_obj) as any as GameObject
+                ).pos;
+            }
+        }
         if (performance.now() - this.animation_timer > this.speed) {
             this.set_texture_coords(
                 Vec2.from(this.sprite_size),

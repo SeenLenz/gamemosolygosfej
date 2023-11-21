@@ -36,9 +36,13 @@ export class Player extends DynamicGameObj implements Networkable {
     grounded_effect = false;
     platform_fall = false;
     remote: boolean;
-    v_updated = false;
     bt_held = false;
-    remote_id: String;
+    ranged_weapon: Ranged;
+    melee_weapon: Melee;
+    teleport: Teleport;
+    damagable = true;
+    damaged_timer = performance.now();
+    health = 100;
 
     constructor(
         size: number[],
@@ -52,6 +56,15 @@ export class Player extends DynamicGameObj implements Networkable {
         this.velocity = new Vec2(0, 0);
         //network setup
         this.remote = remote;
+        this.hitboxes[0].size = this.size.div(new Vec2(4, 4 / 3));
+        this.hitboxes[0].pos_diff = new Vec2(
+            (this.size.x / 4) * 1.5,
+            this.size.x / 4
+        );
+
+        this.ranged_weapon = new Ranged(this, 60, 600);
+        this.melee_weapon = new Melee(this, 30);
+        this.teleport = new Teleport(this, 0);
 
         if (!remote) {
             this.remote_id = uuid();
@@ -72,41 +85,19 @@ export class Player extends DynamicGameObj implements Networkable {
                 this.add_force(new Vec2(0, gravity * this.mass));
                 this.clear();
                 this.movement(delta_time);
-                this.set_animations(delta_time);
+                // this.set_animations(delta_time);
                 this.animate(this.frame_time);
             };
         }
     }
-    // ranged_weapon: Ranged;
-    // melee_weapon: Melee;
-    // teleport: Teleport;
-    // damagable = true;
-    // damaged_timer = performance.now();
-    // health = 100;
-
-    // constructor(size: number[], pos: number[]) {
-    //     super(new Vec2(size[0], size[1]), new Vec2(pos[0], pos[1]));
-    //     this.object_tag = ObjectTag.Player;
-    //     this.mass = 1;
-    //     this.hitboxes[0].size = this.size.div(new Vec2(4, 4 / 3));
-    //     this.hitboxes[0].pos_diff = new Vec2(
-    //         (this.size.x / 4) * 1.5,
-    //         this.size.x / 4
-    //     );
-
-    //     this.ranged_weapon = new Ranged(this, 60, 600);
-    //     this.melee_weapon = new Melee(this, 30);
-    //     this.teleport = new Teleport(this, 0);
-
-    //     this.focused = true;
-    // }
 
     in(data: any) {
         this.x_direction = data.x_dir;
         this.velocity = new Vec2(data.vel.x, data.vel.y);
         this.pos = new Vec2(data.pos.x, data.pos.y);
         this.frame_time = data.frame_time;
-        this.sprite_index = data.frame_time;
+        this.sprite_index = data.sprite_index;
+        this.halt_points = data.halt_points;
     }
 
     out() {
@@ -114,7 +105,7 @@ export class Player extends DynamicGameObj implements Networkable {
         //position
         //sprite index
         //framte time
-        if (this.v_updated) {
+        if (this.network_sync) {
             network.outBuff_add(
                 new WorkerMsg(Type.sync, {
                     x_dir: this.x_direction,
@@ -124,6 +115,7 @@ export class Player extends DynamicGameObj implements Networkable {
                     frame_time: this.frame_time,
                     sprite_index: this.sprite_index,
                     remote_id: this.remote_id,
+                    halt_points: this.halt_points,
                 })
             );
         }
@@ -147,32 +139,34 @@ export class Player extends DynamicGameObj implements Networkable {
         this.keyboard_events(delta_time);
         this.movement(delta_time);
         this.set_animations(delta_time);
-        // this.set_attack();
+        this.set_attack();
         this.animate(this.frame_time);
         this.out();
     }
 
     clear() {
         this.jump_dir = 0;
-        this.v_updated = false;
+        this.network_sync = false;
         this.jump = false;
         this.x_collision = false;
         this.has_jump = false;
         this.dash = false;
         this.wall_slide = false;
         this.animation_direction = 1;
-        this.halt_points = [];
+        if (!this.remote) {
+            this.halt_points = [];
+        }
     }
 
     keyboard_events(delta_time: number) {
         if (event.key_state(Keys.A, EventType.Down)) {
             this.running = true;
             this.x_direction = -1;
-            this.v_updated = true;
+            this.network_sync = true;
         } else if (event.key_state(Keys.D, EventType.Down)) {
             this.running = true;
             this.x_direction = 1;
-            this.v_updated = true;
+            this.network_sync = true;
         } else if (
             event.key_state(Keys.A, EventType.Up) ||
             event.key_state(Keys.A, EventType.Up)
@@ -181,62 +175,63 @@ export class Player extends DynamicGameObj implements Networkable {
         }
         if (event.key_state(Keys.W, EventType.Pressed)) {
             this.jump = true;
-            this.v_updated = true;
+            this.network_sync = true;
         }
         if (event.key_state(Keys.Shift, EventType.Pressed)) {
             this.dash = true;
-            this.v_updated = true;
+            this.network_sync = true;
         }
         if (event.key_state(Keys.S, EventType.Pressed)) {
             this.platform_fall = true;
-            this.v_updated = true;
+            this.network_sync = true;
         }
         if (event.key_state(Keys.Space, EventType.Pressed)) {
-            this.v_updated = true;
+            this.network_sync = true;
         }
         if (event.key_state(Keys.Space, EventType.Pressed)) {
             this.jump = true;
         }
-        // if (
-        //     !this.melee_weapon.attacking &&
-        //     event.key_state(Keys.J, EventType.Pressed)
-        // ) {
-        //     this.melee_weapon.pressed = true;
-        // }
-        // if (
-        //     !this.ranged_weapon.attacking &&
-        //     event.key_state(Keys.K, EventType.Pressed)
-        // ) {
-        //     this.ranged_weapon.pressed = true;
-        // }
+        if (
+            !this.melee_weapon.attacking &&
+            event.key_state(Keys.J, EventType.Pressed)
+        ) {
+            this.melee_weapon.pressed = true;
+        }
+        if (
+            !this.ranged_weapon.attacking &&
+            event.key_state(Keys.K, EventType.Pressed)
+        ) {
+            this.ranged_weapon.pressed = true;
+        }
 
-        // if (
-        //     !this.teleport.attacking &&
-        //     event.key_state(Keys.I, EventType.Pressed)
-        // ) {
-        //     this.teleport.pressed = true;
-        // }
+        if (
+            !this.teleport.attacking &&
+            event.key_state(Keys.I, EventType.Pressed)
+        ) {
+            this.teleport.pressed = true;
+        }
     }
 
-    // damage_taken(damage: number, hit_dir: number) {
-    //     if (this.damagable) {
-    //         this.damagable = false;
-    //         this.health -= damage;
-    //         this.damaged_timer = performance.now();
-    //         this.velocity.x += (damage / 5) * hit_dir;
-    //         this.velocity.y -= 2;
+    damage_taken(damage: number, hit_dir: number) {
+        if (this.damagable) {
+            this.damagable = false;
+            this.health -= damage;
+            this.damaged_timer = performance.now();
+            this.velocity.x += (damage / 5) * hit_dir;
+            this.velocity.y -= 2;
 
-    //         if (this.health <= 0) {
-    //             console.log("died");
-    //         }
-    //     }
-    // }
+            if (this.health <= 0) {
+                console.log("died");
+            }
+        }
+        super.damage_taken(damage, hit_dir);
+    }
 
-    // set_attack() {
-    //     this.ranged_weapon.run();
-    //     this.melee_weapon.run();
-    //     this.teleport.run();
-    // }
+    set_attack() {
+        this.ranged_weapon.run();
+        this.melee_weapon.run();
+        this.teleport.run();
+    }
 
     movement(delta_time: number) {
         if (
@@ -266,6 +261,7 @@ export class Player extends DynamicGameObj implements Networkable {
 
     set_animations(delta_time: number) {
         if (this.grounded && !this.grounded_effect) {
+            console.log(this.remote_id);
             new Effect(
                 Vec2.from(this.size),
                 Vec2.from(this.pos),
@@ -280,7 +276,7 @@ export class Player extends DynamicGameObj implements Networkable {
 
         if (!this.grounded) {
             this.grounded_effect = false;
-            // this.ranged_weapon.attacking = false;
+            this.ranged_weapon.attacking = false;
         }
 
         if (this.dash && !this.x_collision && Math.abs(this.velocity.x) > 7) {
@@ -291,7 +287,11 @@ export class Player extends DynamicGameObj implements Networkable {
                 SpriteSheets.PlayerEffects,
                 PlayerEffects.Dash,
                 50,
-                0
+                0,
+                Vec2.zeros(),
+                false,
+                false,
+                this.remote_id
             );
         }
 
@@ -315,7 +315,7 @@ export class Player extends DynamicGameObj implements Networkable {
                 !float_eq(this.velocity.y, 0) ||
                 Math.abs(this.velocity.x) > 3
             ) {
-                // this.ranged_weapon.attacking = false;
+                this.ranged_weapon.attacking = false;
             }
             this.frame_time = (1 / Math.abs(this.velocity.x)) * 250;
             this.sprite_index = 0;

@@ -1,5 +1,7 @@
-import { delta_time } from "../../../app";
+import { Type } from "../../../../../types";
+import { delta_time, network } from "../../../app";
 import { Vec2 } from "../../../lin_alg";
+import { WorkerMsg } from "../../../networking/WorkerMsg";
 import { Effect, PlayerEffects } from "../../base/effects";
 import { DynamicGameObj, ObjectTag } from "../../base/gameobject";
 import { SpriteSheets } from "../../base/textures";
@@ -89,6 +91,7 @@ export class Weapon {
             this.parent_obj.current_frame = 0;
             this.can_attack = true;
             this._attack_lock = true;
+            this.parent_obj.network_sync = true;
         }
         this.attacked = false;
 
@@ -167,7 +170,10 @@ export class Ranged extends Weapon {
                 PlayerEffects.Ranged,
                 50,
                 0,
-                Vec2.X(5 * 6 * this.parent_obj.x_direction)
+                Vec2.X(5 * 6 * this.parent_obj.x_direction),
+                false,
+                false,
+                this.parent_obj.remote_id
             );
         }
     }
@@ -212,7 +218,11 @@ export class Ranged extends Weapon {
             0,
             0,
             -1,
-            Vec2.X(5 * 6 * this.parent_obj.x_direction)
+            Vec2.X(5 * 6 * this.parent_obj.x_direction),
+            false,
+            false,
+            undefined,
+            false
         );
 
         this.direction = objs.closest.hitboxes[0].middle
@@ -255,7 +265,9 @@ export class Melee extends Weapon {
                 40,
                 0,
                 Vec2.zeros(),
-                false
+                false,
+                false,
+                this.parent_obj.remote_id
             );
         }
     }
@@ -306,6 +318,7 @@ export class Teleport extends Weapon {
         }
 
         if (this.attacked && this.target_objects.closest != undefined) {
+            this.parent_obj.network_sync = true;
             new Effect(
                 this.parent_obj.size,
                 Vec2.from(this.parent_obj.pos),

@@ -8,8 +8,9 @@ import {
     ObjType,
 } from "../../../types";
 import { main, camera, RemoteBuff } from "../app";
+import { Effect, PlayerEffects } from "../application/base/effects";
+import { DynamicGameObj } from "../application/base/gameobject";
 import { Player } from "../application/gamelogic/player";
-import { PlayerRole } from "../application/gamelogic/roles/role";
 import { Vec2 } from "../lin_alg";
 import { WorkerMsg } from "./WorkerMsg";
 
@@ -47,9 +48,25 @@ export class Network {
     private parse_msg(msg: any) {
         switch (msg.type) {
             case Type.crt:
+                if (msg.data?.effect != undefined) {
+                    let pos: Vec2 = msg.data?.pos;
+                    new Effect(
+                        msg.data?.size,
+                        pos,
+                        msg.data?.x_dir,
+                        msg.data?.texure_index,
+                        msg.data?.effect,
+                        msg.data?.speed,
+                        msg.data?.repeat,
+                        msg.data?.offset,
+                        msg.data?.reverse,
+                        true,
+                        msg.data?.parent_obj
+                    );
+                    break;
+                }
                 switch (msg.data?.type) {
                     case ObjType.player:
-                        console.log(msg.data);
                         RemoteBuff.set(
                             msg.data?.remote_id,
                             new Player(

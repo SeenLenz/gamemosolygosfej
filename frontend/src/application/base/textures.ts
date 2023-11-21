@@ -52,7 +52,6 @@ export function create_textures() {
         [[Vec2.zeros(), 1]],
         new Vec2(1, 1)
     );
-
     renderer.create_texture(
         "./textures/map/street_lamp.png",
         [[Vec2.zeros(), 1]],

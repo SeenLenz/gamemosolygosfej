@@ -84,7 +84,8 @@ function main_loop() {
         obj.run(delta_time);
         obj.render();
     });
-    hud.run();
+    // hud.run();
+    canvas_start.run();
     event.refresh();
     requestAnimationFrame(main_loop);
 }

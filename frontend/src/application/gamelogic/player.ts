@@ -234,6 +234,9 @@ export class Player extends DynamicGameObj implements Networkable {
     }
 
     movement(delta_time: number) {
+        if (performance.now() - this.damaged_timer > 600) {
+            this.damagable = true;
+        }
         if (
             this.dash &&
             !(!this.x_collision && Math.abs(this.velocity.x) > 7)

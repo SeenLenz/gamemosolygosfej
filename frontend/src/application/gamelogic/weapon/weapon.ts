@@ -1,5 +1,5 @@
 import { Type } from "../../../../../types";
-import { delta_time, network } from "../../../app";
+import { RemoteBuff, delta_time, network } from "../../../app";
 import { Vec2 } from "../../../lin_alg";
 import { WorkerMsg } from "../../../networking/WorkerMsg";
 import { Effect, PlayerEffects } from "../../base/effects";
@@ -131,9 +131,13 @@ export class Weapon {
         closest: DynamicGameObj | undefined;
     }) {
         objs.all.forEach((obj) => {
-            obj.damage_taken(
-                this.power + this.crit,
-                this.parent_obj.x_direction
+            network.outBuff_add(
+                new WorkerMsg(Type.sync, {
+                    hit: true,
+                    remote_id: obj.remote_id,
+                    damage: this.power + this.crit,
+                    hit_dir: this.parent_obj.x_direction,
+                })
             );
         });
     }

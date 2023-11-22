@@ -13,6 +13,7 @@ import { WorkerMsg } from "./networking/WorkerMsg";
 import { Network } from "./networking/networking";
 import { GameObject } from "./application/base/gameobject";
 import { Effect } from "./application/base/effects";
+import { Start } from "./ui/start";
 
 export const RemoteBuff = new Map<String, Networkable>();
 export const renderer = new Renderer();
@@ -27,6 +28,7 @@ export let current_role: Roles;
 let start = 1;
 
 export let map: Map_;
+let canvas_start: Start;
 
 document.addEventListener("DOMContentLoaded", () => {
     document.querySelector("#join_bt")?.addEventListener("click", (e) => {
@@ -66,6 +68,8 @@ function setup(role: number) {
 
     start = performance.now();
     map = new Map_();
+    canvas_start = new Start();
+    
 }
 
 function main_loop() {
@@ -87,9 +91,10 @@ function main_loop() {
         obj.loop(delta_time);
         obj.render();
     });
-
+    
     network.flush();
-
+    
+    canvas_start.run();
     event.refresh();
     requestAnimationFrame(main_loop);
 }

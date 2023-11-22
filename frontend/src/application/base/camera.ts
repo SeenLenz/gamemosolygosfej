@@ -6,7 +6,7 @@ import { DynamicGameObj, GameObject, ObjectTag } from "./gameobject";
 export class Camera {
     pos: Vec2;
     scale: number;
-    focus_multip: number = 0.03;
+    focus_multip: number = 0.06;
     focus_obj?: GameObject;
     rotation: number;
     target_zoom = 275;

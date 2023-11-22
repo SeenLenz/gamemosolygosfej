@@ -9,6 +9,14 @@ export class Vec2 {
         this.y = y;
     }
 
+    static X(x: number) {
+        return new Vec2(x, 0);
+    }
+
+    static Y(y: number) {
+        return new Vec2(0, y);
+    }
+
     static uniform(value: number) {
         return new Vec2(value, value);
     }
@@ -48,6 +56,14 @@ export class Vec2 {
         result.x = this.x - vec2.x;
         result.y = this.y - vec2.y;
         return result;
+    }
+
+    get X() {
+        return new Vec2(this.x, 0);
+    }
+
+    get Y() {
+        return new Vec2(0, this.y);
     }
 
     sub_self(vec2: Point) {
@@ -114,6 +130,10 @@ export class Vec2 {
         let distx = this.x - point.x;
         let disty = this.y - point.y;
         return distx * distx + disty * disty;
+    }
+
+    dot(vec: Vec2) {
+        return this.x * vec.x + this.y * vec.y;
     }
 }
 

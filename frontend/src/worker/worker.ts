@@ -1,4 +1,5 @@
-import { Type, WorkerMsg } from "../../../types";
+import { Type } from "../../../types";
+import { WorkerMsg } from "../networking/WorkerMsg";
 
 interface Setup {
     domain: String;
@@ -18,8 +19,6 @@ class Self {
     }
 
     async readmsg(event: MessageEvent) {
-        console.log(event.data);
-
         if (event.data.types) {
             this.ws?.send(JSON.stringify(event.data));
         } else {
@@ -39,10 +38,10 @@ class Self {
     init_msg(msg: WorkerMsg) {
         let setupObj = msg.data as Setup;
         this.ws = new WebSocket(
-            "wss://" + setupObj.domain + "/" + msg?.id + "/" + msg?.cid
+            "ws://" + setupObj.domain + "/" + msg?.id + "/" + msg?.cid
         );
 
-        setInterval((e) => {
+        setInterval((e: any) => {
             this.ws_keepalive();
         }, this.keepalive_time);
 

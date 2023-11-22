@@ -6,7 +6,7 @@ export function connection(ws: WebSocket, req: Request) {
     const wss_cfg = req.url.split("/");
     console.log(wss_cfg);
 
-    lobbies.get(wss_cfg[1])[Number(wss_cfg[2])] = ws;
+    lobbies.get(wss_cfg[1])?.add_ws_connection(ws, Number(wss_cfg[2]));
 
     ws.on("close", (d: RawData) => {
         close(d, ws);

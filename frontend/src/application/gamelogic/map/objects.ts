@@ -19,7 +19,9 @@ export class StreetLamp extends StaticGameObj {
         super(size, pos, false, true);
         this.texture_index = SpriteSheets.SteetLamp;
         this.object_tag = ObjectTag.StreetLamp;
-        this.hitboxes[0].reactive = false;
+        this.hitboxes[0].flags.push(HitboxFlags.SlideableWall);
+        this.hitbox_point.pos = this.hitboxes[0].pos;
+        this.hitbox_point.size = this.hitboxes[0].size;
         this.set_texture_coords(new Vec2(1, 1), new Vec2(0, 0));
     }
 

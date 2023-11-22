@@ -13,8 +13,10 @@ export function message(d: RawData, ws: WebSocket) {
     const lobby = lobbies.get(data.id);
     if (data) {
         if (!data.type) {
-            for (let i = 1; i < lobby[0] + 1; i++) {
-                lobby[i].send(JSON.stringify(data));
+            for (let i = 0; i < (lobby?.clients.length as number); i++) {
+                if (lobby?.clients[i] != ws) {
+                    lobby?.clients[i].send(JSON.stringify(data));
+                }
             }
         } else {
             switch (data.type) {
@@ -25,10 +27,13 @@ export function message(d: RawData, ws: WebSocket) {
                     test_msg(data, ws);
                     break;
                 default:
-                    for (let i = 1; i < lobby[0] + 1; i++) {
-                        if (lobby[i] !== ws) {
-                            lobby[i].send(JSON.stringify(data));
-                            break;
+                    for (
+                        let i = 1;
+                        i < (lobby?.clients.length as number);
+                        i++
+                    ) {
+                        if (lobby?.clients[i] != ws) {
+                            lobby?.clients[i].send(JSON.stringify(data));
                         }
                     }
             }

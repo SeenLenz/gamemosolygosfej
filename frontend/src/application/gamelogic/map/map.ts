@@ -2,51 +2,59 @@ import { camera } from "../../../app";
 import { Vec2 } from "../../../lin_alg";
 import { GameObject, StaticGameObj } from "../../base/gameobject";
 import { SpriteSheets } from "../../base/textures";
+import { Bela } from "../roles/player/enemies/slime";
 import { Ground, GroundPos, UnderGround } from "./ground";
 import { Bench, House, StreetLamp, Wire } from "./objects";
 
-export class Map {
+export class Map_ {
     background: GameObject[] = [];
     objects: GameObject[] = [];
     foreground: GameObject[] = [];
     constructor() {
-        this.objects = [
-            new House(
-                new Vec2(64 * 6, 64 * 6),
-                new Vec2(5 * 48, 0 - 64 * 6 + 3 * 6)
+        this.create_house(new Vec2(3, 0), new Vec2(21, 30), 1);
+        this.create_house(new Vec2(3 + 26, -1), new Vec2(13, 30 + 1), 0.9);
+        this.create_house(new Vec2(3 - 13, -3), new Vec2(13, 30 + 2), 0.7);
+    }
+
+    create_house(pos: Vec2, size: Vec2, z: number) {
+        this.objects = this.objects.concat(
+            new Ground(
+                new Vec2(size.x, 1),
+                new Vec2(0 + pos.x, 0 + pos.y),
+                GroundPos.Center,
+                z
             ),
-            // new Ground(new Vec2(1, 8), new Vec2(12, -8), GroundPos.Center),
-            // new Ground(new Vec2(1, 8), new Vec2(0, -8), GroundPos.Center),
-            // new Ground(new Vec2(8, 1), new Vec2(1, -14), GroundPos.Center),
-            new Ground(new Vec2(40, 1), new Vec2(0, 0), GroundPos.Center),
-            new Ground(new Vec2(1, 1), new Vec2(-1, 0), GroundPos.LeftCorner),
-            new Ground(new Vec2(1, 1), new Vec2(40, 0), GroundPos.RightCorner),
-            new UnderGround(new Vec2(42, 20), new Vec2(-1, 1)),
-            new Wire(
-                new Vec2(24 * 6, 8 * 6),
-                new Vec2(18 * 48 + 5 * 6, 0 - 48 * 6 + 3 * 6 + 4 * 6)
+            new Ground(
+                new Vec2(1, 1),
+                new Vec2(-1 + pos.x, 0 + pos.y),
+                GroundPos.LeftCorner,
+                z
             ),
-            new Wire(
-                new Vec2(24 * 6, 8 * 6),
-                new Vec2(18 * 48 + 5 * 6 - 24 * 6, 0 - 48 * 6 + 3 * 6 + 4 * 6)
+            new Ground(
+                new Vec2(1, 1),
+                new Vec2(size.x + pos.x, 0 + pos.y),
+                GroundPos.RightCorner,
+                z
             ),
-            new StreetLamp(
-                new Vec2(12 * 6, 48 * 6),
-                new Vec2(18 * 48 - 24 * 6, 0 - 48 * 6 + 3 * 6 + 4 * 6)
+            new UnderGround(
+                new Vec2(size.x, size.y),
+                new Vec2(0 + pos.x, 1 + pos.y),
+                GroundPos.Center,
+                z
             ),
-            new StreetLamp(
-                new Vec2(12 * 6, 48 * 6),
-                new Vec2(18 * 48, 0 - 48 * 6 + 3 * 6 + 4 * 6)
+            new UnderGround(
+                new Vec2(1, size.y),
+                new Vec2(-1 + pos.x, 1 + pos.y),
+                GroundPos.LeftCorner,
+                z
             ),
-            new StreetLamp(
-                new Vec2(12 * 6, 48 * 6),
-                new Vec2(18 * 48 + 24 * 6, 0 - 48 * 6 + 3 * 6 + 4 * 6)
-            ),
-            new Bench(
-                new Vec2(16 * 6, 8 * 6),
-                new Vec2(30 * 48, 0 - 8 * 6 + 3 * 6)
-            ),
-        ];
+            new UnderGround(
+                new Vec2(1, size.y),
+                new Vec2(size.x + pos.x, 1 + pos.y),
+                GroundPos.RightCorner,
+                z
+            )
+        );
     }
 
     render(delta_time: number) {

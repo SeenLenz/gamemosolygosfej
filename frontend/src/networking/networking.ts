@@ -2,13 +2,17 @@ import {
     Type,
     Setup,
     WebsocketCfg,
-    WorkerMsg,
     Lobby,
     Start,
     NetworkBuffer,
+    ObjType,
 } from "../../../types";
-import { main } from "../app";
-import { PlayerRole } from "../application/gamelogic/roles/role";
+import { main, camera, RemoteBuff } from "../app";
+import { Effect, PlayerEffects } from "../application/base/effects";
+import { DynamicGameObj, GameObject } from "../application/base/gameobject";
+import { Player } from "../application/gamelogic/player";
+import { Vec2 } from "../lin_alg";
+import { WorkerMsg } from "./WorkerMsg";
 
 export class Network {
     public domain: String;
@@ -17,13 +21,10 @@ export class Network {
     private Pisti?: Worker;
     private outBuff: NetworkBuffer;
 
-    private msg: WorkerMsg | NetworkBuffer;
-
     constructor(domain: String) {
         this.Pisti = new Worker(
             new URL("../worker/worker.ts", import.meta.url)
         );
-        this.msg = {} as WorkerMsg;
         this.Pisti.onmessage = (event) => {
             this.worker_msg(event);
         };
@@ -31,21 +32,93 @@ export class Network {
         this.outBuff = { types: [], data: [] };
     }
 
-    get data() {
-        return this.msg;
-    }
-
     worker_msg(event: MessageEvent) {
-        this.msg = event.data as WorkerMsg;
-        if (this.msg.type == Type.start) {
-            main((this.msg.data as Start).role);
+        if (event.data.types) {
+            event.data.data.forEach((data: WorkerMsg, index: number) => {
+                this.parse_msg({
+                    type: event.data.types[index],
+                    data: data,
+                });
+            });
+        } else {
+            this.parse_msg(event.data);
         }
     }
 
-    async flush() {
-        this.Pisti?.postMessage(this.outBuff);
-        this.outBuff.data = [];
-        this.outBuff.types = [];
+    private parse_msg(msg: any) {
+        switch (msg.type) {
+            case Type.crt:
+                if (msg.data?.effect != undefined) {
+                    let pos: Vec2 = msg.data?.pos;
+                    new Effect(
+                        msg.data?.size,
+                        pos,
+                        msg.data?.x_dir,
+                        msg.data?.texure_index,
+                        msg.data?.effect,
+                        msg.data?.speed,
+                        msg.data?.repeat,
+                        msg.data?.offset,
+                        msg.data?.reverse,
+                        true,
+                        msg.data?.parent_obj
+                    );
+                    break;
+                }
+                switch (msg.data?.type) {
+                    case ObjType.player:
+                        RemoteBuff.set(
+                            msg.data?.remote_id,
+                            new Player(
+                                msg.data?.size,
+                                msg.data?.pos,
+                                true,
+                                msg.data?.remote_id
+                            )
+                        );
+                        break;
+                    default:
+                        break;
+                }
+                break;
+            case Type.sync:
+                if (msg.data.hit) {
+                    (
+                        GameObject.objects.find((v) => {
+                            return (
+                                (v as DynamicGameObj).remote_id ==
+                                msg.data.remote_id
+                            );
+                        }) as DynamicGameObj
+                    ).damage_taken(msg.data.damage, msg.data.hit_dir);
+                    break;
+                }
+
+                if (msg.data.death) {
+                    (
+                        GameObject.objects.find((v) => {
+                            return (
+                                (v as DynamicGameObj).remote_id == msg.data.this
+                            );
+                        }) as DynamicGameObj
+                    ).remove();
+                }
+                RemoteBuff.get(msg.data.remote_id)?.in(msg.data);
+                break;
+            case Type.start:
+                main((msg.data as Start).role);
+                break;
+            default:
+                break;
+        }
+    }
+
+    flush() {
+        if (this.outBuff.data.length > 0) {
+            this.Pisti?.postMessage(this.outBuff);
+            this.outBuff.data = [];
+            this.outBuff.types = [];
+        }
     }
 
     async send(msg: WorkerMsg) {
@@ -58,12 +131,12 @@ export class Network {
 
     outBuff_add(msg: any) {
         this.outBuff?.types.push(msg.type);
-        this.outBuff?.data.push(msg);
+        this.outBuff?.data.push(msg.data);
     }
 
     async create_lobby() {
         const response = await fetch(
-            "https://" + this.domain + "/setup/lobbycrt"
+            "http://" + this.domain + "/setup/lobbycrt"
         );
         this.ws_cfg = await response.json();
 
@@ -90,12 +163,13 @@ export class Network {
     }
 
     async join_lobby(lobby_key: String) {
-        console.log("join from ts");
-
         const response = await fetch(
-            "https://" + this.domain + "/setup/joinlobby/" + lobby_key
+            "http://" + this.domain + "/setup/joinlobby/" + lobby_key
         );
         this.ws_cfg = await response.json();
+
+        this.outBuff.id = this.ws_cfg?.id;
+        this.outBuff.cid = this.ws_cfg?.cid;
 
         if (this.Pisti) {
             this.Pisti?.postMessage({

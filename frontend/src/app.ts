@@ -6,24 +6,27 @@ import {
 } from "./application/base/event_handler";
 import { Camera } from "./application/base/camera";
 import { Player } from "./application/gamelogic/player";
-import { Map } from "./application/gamelogic/map/map";
+import { Map_ } from "./application/gamelogic/map/map";
 import { create_textures } from "./application/base/textures";
-import { Type, Test, WorkerMsg, Roles } from "../../types";
+import { Type, Roles, Networkable } from "../../types";
+import { WorkerMsg } from "./networking/WorkerMsg";
 import { Network } from "./networking/networking";
-import { Observer, PlayerRole, Role } from "./application/gamelogic/roles/role";
 import { GameObject } from "./application/base/gameobject";
+import { Effect } from "./application/base/effects";
 
+export const RemoteBuff = new Map<String, Networkable>();
 export const renderer = new Renderer();
 export const event = new EventHandler(renderer);
 export let camera = new Camera();
 export let gravity = 0.5;
-//export const network = new Network("127.0.0.1:3000");
-export const network = new Network("gamemosolygosfej.onrender.com");
+//export const network = new Network("10.0.23.4:3000");
+export const network = new Network("127.0.0.1:6969");
+// export const network = new Network("gamemosolygosfej.onrender.com");
 export let delta_time: number = 1;
-export let current_role: Role;
+export let current_role: Roles;
 let start = 1;
 
-export let map: Map;
+export let map: Map_;
 
 document.addEventListener("DOMContentLoaded", () => {
     document.querySelector("#join_bt")?.addEventListener("click", (e) => {
@@ -35,37 +38,34 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     });
     document.querySelector("#start_bt")?.addEventListener("click", (e) => {
-        network.send({
-            ...network.ws_cfg,
-            type: Type.start,
-        } as WorkerMsg);
+        network.send(new WorkerMsg(Type.start));
+        document.querySelector("#start_bt")?.remove();
     });
     document.querySelector("#create_bt")?.addEventListener("click", (e) => {
         network.create_lobby();
     });
     document.querySelector("#msg_bt")?.addEventListener("click", (e) => {
-        network.send({
-            type: Type.test,
-            cid: network.ws_cfg?.cid,
-            id: network.ws_cfg?.id,
-            data: { msg: "hello from the frontend" } as Test,
-        });
+        network.send(
+            new WorkerMsg(Type.test, {
+                msg: "This is a message from the test button",
+            })
+        );
     });
 });
 
 function setup(role: number) {
+    document.querySelector("#start_bt")?.remove();
+    document.querySelector("#msg_bt")?.remove();
+    document.querySelector("#create_bt")?.remove();
+    document.querySelector("#join_bt")?.remove();
     renderer.setup();
     create_textures();
+    current_role = role;
 
-    if (role == Roles.player) {
-        current_role = new PlayerRole();
-    } else {
-        current_role = new Observer();
-    }
+    camera.focus_on(new Player([96, 96], [100, -500], false, undefined));
 
     start = performance.now();
-    map = new Map();
-    camera.focus_on(new Player([96, 96], [100, -500]));
+    map = new Map_();
 }
 
 function main_loop() {
@@ -76,15 +76,19 @@ function main_loop() {
     camera.shake_camera(delta_time);
     map.render(delta_time);
 
-    current_role.run(delta_time);
+    GameObject.objects.forEach((go) => {
+        go.loop(delta_time);
+        go.render();
+    });
+    Effect.effects.forEach((e) => {
+        e.animate();
+    });
     map.foreground.forEach((obj) => {
         obj.loop(delta_time);
         obj.render();
     });
 
-    if (current_role.type) {
-        network.flush();
-    }
+    network.flush();
 
     event.refresh();
     requestAnimationFrame(main_loop);

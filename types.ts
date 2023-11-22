@@ -1,6 +1,27 @@
 import { Vec2 } from "./frontend/src/lin_alg";
 
+//any class which implements this can be synced over the network
+export interface Networkable {
+    remote_id: String;
+
+    out(): void;
+    in(data: any): void;
+    del(): void;
+}
+
+export enum Tag {
+    player,
+}
+
+export enum ObjType {
+    player,
+}
+
 export enum Type {
+    //Networkable:
+    //created a networkable object and transmits this to others
+    crt,
+
     //setup requests with the server and other cliendsa
     setup,
     //the initial request to the worker
@@ -43,6 +64,7 @@ export interface NetworkRenderable {
     index: number;
     pos: Vec2;
     size: Vec2;
+    velocity: Vec2;
     rotation: number;
     x_direction: number;
     texture_index: number;
@@ -67,19 +89,19 @@ export interface NetworkBuffer {
     data: any[];
 }
 
-export interface WorkerMsg {
-    type: Type;
-    id?: string;
-    cid?: number;
-    data:
-        | Setup
-        | Start
-        | Error
-        | Config
-        | Test
-        | NetworkRenderable
-        | CameraSync;
-}
+// export interface WorkerMsg {
+//     type: Type;
+//     id?: string;
+//     cid?: number;
+//     data:
+//         | Setup
+//         | Start
+//         | Error
+//         | Config
+//         | Test
+//         | NetworkRenderable
+//         | CameraSync;
+// }
 
 export interface Lobby {
     cid: number;

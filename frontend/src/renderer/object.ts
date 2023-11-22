@@ -17,7 +17,11 @@ export class Obj {
     public vertex_buffer: { buffer: WebGLBuffer; attribute: number };
     public index_buffer: WebGLBuffer | undefined;
 
-    constructor(positions: Float32Array, indicies: Int16Array | undefined, renderer: Renderer) {
+    constructor(
+        positions: Float32Array,
+        indicies: Int16Array | undefined,
+        renderer: Renderer
+    ) {
         this.vertex_buffer = renderer.create_buffer(
             renderer.gl.STATIC_DRAW,
             positions,
@@ -38,18 +42,22 @@ export class Obj {
         );
     }
 
-    render(renderer: Renderer, obj: Renderable) {
+    render(renderer: Renderer, obj: Renderable, offset = Vec2.zeros()) {
         if (
             obj.pos.x + obj.size.x - camera.pos.x < 0 ||
             obj.pos.y + obj.size.y - camera.pos.y < 0 ||
             obj.pos.x - camera.pos.x > camera.width * camera.scale ||
-            obj.pos.y - camera.pos.y > camera.height * camera.scale || 
+            obj.pos.y - camera.pos.y > camera.height * camera.scale ||
             !this.index_buffer
         ) {
             return;
         }
 
-        renderer.gl.uniform2f(renderer.uniform_position, obj.pos.x, obj.pos.y);
+        renderer.gl.uniform2f(
+            renderer.uniform_position,
+            obj.pos.x + offset.x,
+            obj.pos.y + offset.y
+        );
         renderer.gl.uniform2f(renderer.uniform_scale, obj.size.x, obj.size.y);
         renderer.gl.uniform2f(
             renderer.uniform_rotation,
@@ -92,7 +100,7 @@ export class Obj {
             renderer.textures[obj.texture_index].texture
         );
         renderer.gl.uniform1i(renderer.sampler, 0);
-            
+
         renderer.gl.bindBuffer(
             renderer.gl.ELEMENT_ARRAY_BUFFER,
             this.index_buffer

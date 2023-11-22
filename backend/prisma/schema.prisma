@@ -9,3 +9,14 @@ datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
+
+model Highscore {
+  id String @id @unique
+ 
+  Score Int
+
+  User1 String
+  User2 String
+  User3 String
+}
+

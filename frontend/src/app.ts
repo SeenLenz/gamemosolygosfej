@@ -13,7 +13,12 @@ import { WorkerMsg } from "./networking/WorkerMsg";
 import { Network } from "./networking/networking";
 import { GameObject } from "./application/base/gameobject";
 import { Effect } from "./application/base/effects";
+import {
+    GamepadButtons,
+    GamepadEvent,
+} from "./application/base/gamepad_handler";
 
+export const Gameped = new GamepadEvent();
 export const RemoteBuff = new Map<String, Networkable>();
 export const renderer = new Renderer();
 export const event = new EventHandler(renderer);

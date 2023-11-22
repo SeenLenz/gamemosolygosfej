@@ -16,6 +16,8 @@ import { SpriteSheets } from "../base/textures";
 import { WorkerMsg } from "../../networking/WorkerMsg";
 import { v4 as uuid } from "uuid";
 import { Melee, Ranged, Teleport } from "./weapon/weapon";
+import { Gameped } from "../../app";
+import { GamepadButtons } from "../base/gamepad_handler";
 
 export class Player extends DynamicGameObj implements Networkable {
     public focused: boolean = false;
@@ -155,11 +157,17 @@ export class Player extends DynamicGameObj implements Networkable {
     }
 
     keyboard_events(delta_time: number) {
-        if (event.key_state(Keys.A, EventType.Down)) {
+        if (
+            event.key_state(Keys.A, EventType.Down) ||
+            Gameped.isPressed(GamepadButtons.Left)
+        ) {
             this.running = true;
             this.x_direction = -1;
             this.network_sync = true;
-        } else if (event.key_state(Keys.D, EventType.Down)) {
+        } else if (
+            event.key_state(Keys.D, EventType.Down) ||
+            Gameped.isPressed(GamepadButtons.Right)
+        ) {
             this.running = true;
             this.x_direction = 1;
             this.network_sync = true;
@@ -170,21 +178,32 @@ export class Player extends DynamicGameObj implements Networkable {
             this.running = false;
         }
 
-        if (event.key_state(Keys.Shift, EventType.Pressed)) {
+        if (
+            event.key_state(Keys.Shift, EventType.Pressed) ||
+            Gameped.isPressed(GamepadButtons.X)
+        ) {
             this.dash = true;
             this.network_sync = true;
         }
-        if (event.key_state(Keys.S, EventType.Pressed)) {
+        if (
+            event.key_state(Keys.S, EventType.Pressed) ||
+            Gameped.isPressed(GamepadButtons.Down)
+        ) {
             this.platform_fall = true;
             this.network_sync = true;
         }
-        if (event.key_state(Keys.Space, EventType.Pressed)) {
+        if (
+            event.key_state(Keys.Space, EventType.Pressed) ||
+            Gameped.isPressed(GamepadButtons.A)
+        ) {
             this.network_sync = true;
             this.jump = true;
         }
         if (
-            !this.melee_weapon.attacking &&
-            event.key_state(Keys.J, EventType.Pressed)
+            (!this.melee_weapon.attacking &&
+                event.key_state(Keys.J, EventType.Pressed)) ||
+            (!this.melee_weapon.attacking &&
+                Gameped.isPressed(GamepadButtons.RT))
         ) {
             this.melee_weapon.pressed = true;
             this.network_sync = true;
@@ -192,16 +211,20 @@ export class Player extends DynamicGameObj implements Networkable {
             this.ranged_weapon.attacking = false;
         }
         if (
-            !this.ranged_weapon.attacking &&
-            event.key_state(Keys.K, EventType.Pressed)
+            (!this.ranged_weapon.attacking &&
+                event.key_state(Keys.K, EventType.Pressed)) ||
+            (!this.melee_weapon.attacking &&
+                Gameped.isPressed(GamepadButtons.LT))
         ) {
             this.network_sync = true;
             this.ranged_weapon.pressed = true;
         }
 
         if (
-            !this.teleport.attacking &&
-            event.key_state(Keys.I, EventType.Pressed)
+            (!this.teleport.attacking &&
+                event.key_state(Keys.I, EventType.Pressed)) ||
+            (!this.melee_weapon.attacking &&
+                Gameped.isPressed(GamepadButtons.B))
         ) {
             this.network_sync = true;
             this.teleport.pressed = true;

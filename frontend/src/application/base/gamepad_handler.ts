@@ -17,10 +17,12 @@ export class GamepadEvent {
     constructor() {}
 
     isPressed(button: GamepadButtons): boolean | undefined {
-        if (navigator.getGamepads()[1]) {
-            return navigator.getGamepads()[1]?.buttons[button].pressed;
-        } else {
-            return false;
+        for (const controller in navigator.getGamepads()) {
+            if (controller) {
+                return navigator.getGamepads()[1]?.buttons[button].pressed;
+            } else {
+                return false;
+            }
         }
     }
 }

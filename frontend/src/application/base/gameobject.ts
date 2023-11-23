@@ -403,7 +403,7 @@ export class DynamicGameObj extends GameObject {
         this.force.add_self(force);
     }
 
-    damage_taken(damage: number, hit_dir: number) {
+    damage_taken(damage: number, hit_dir: number, from: DynamicGameObj) {
         this.network_sync = true;
     }
 

@@ -8,11 +8,13 @@ import { Camera } from "./application/base/camera";
 import { Player } from "./application/gamelogic/player";
 import { Map_ } from "./application/gamelogic/map/map";
 import { create_textures } from "./application/base/textures";
-import { Type, Roles, Networkable } from "../../types";
+import { Type, Roles, Networkable, Start } from "../../types";
 import { WorkerMsg } from "./networking/WorkerMsg";
 import { Network } from "./networking/networking";
 import { GameObject } from "./application/base/gameobject";
 import { Effect } from "./application/base/effects";
+import { Hud } from "./ui/hud";
+import { StartScreen } from "./ui/start";
 
 export const RemoteBuff = new Map<String, Networkable>();
 export const renderer = new Renderer();
@@ -25,32 +27,14 @@ export const network = new Network("127.0.0.1:6969");
 export let delta_time: number = 1;
 export let current_role: Roles;
 let start = 1;
+let hud: Hud;
+let canvas_start: StartScreen;
 
 export let map: Map_;
 
 document.addEventListener("DOMContentLoaded", () => {
-    document.querySelector("#join_bt")?.addEventListener("click", (e) => {
-        const joinLabelValue = (
-            document.querySelector("#join_label") as HTMLInputElement | null
-        )?.value;
-        if (joinLabelValue) {
-            network.join_lobby(joinLabelValue);
-        }
-    });
-    document.querySelector("#start_bt")?.addEventListener("click", (e) => {
-        network.send(new WorkerMsg(Type.start));
-        document.querySelector("#start_bt")?.remove();
-    });
-    document.querySelector("#create_bt")?.addEventListener("click", (e) => {
-        network.create_lobby();
-    });
-    document.querySelector("#msg_bt")?.addEventListener("click", (e) => {
-        network.send(
-            new WorkerMsg(Type.test, {
-                msg: "This is a message from the test button",
-            })
-        );
-    });
+    canvas_start = new StartScreen();
+    canvas_start.run();    
 });
 
 function setup(role: number) {
@@ -66,6 +50,7 @@ function setup(role: number) {
 
     start = performance.now();
     map = new Map_();
+    hud = new Hud();
 }
 
 function main_loop() {
@@ -89,7 +74,7 @@ function main_loop() {
     });
 
     network.flush();
-
+    hud.run();
     event.refresh();
     requestAnimationFrame(main_loop);
 }

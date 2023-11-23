@@ -1,26 +1,27 @@
 <!DOCTYPE html>
 <html lang="en">
-    <head>
-        <meta charset="UTF-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <title>Document</title>
-        <link rel="stylesheet" href="style.css" />
-    </head>
 
-    <body>
-        <div style="position: absolute">
-            <input type="text" name="lobby" id="join_label" />
-            <button id="join_bt">join Lobby</button>
-            <button id="create_bt">create Lobby</button>
-            <button id="msg_bt">send Msg</button>
-            <button id="start_bt">start game</button>
-            <label id="lobby_lb"></label>
-        </div>
-        <canvas id="main_canvas"> </canvas>
-    </body>
-    <script src="index.js" type="module"></script>
-    <!-- prettier-ignore -->
-    <script type="x-shader/x-vertex" id="vertex_shader">#version 300 es
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <link rel="stylesheet" href="style.css" />
+</head>
+
+<body>
+    <div style="position: absolute">
+        <input type="text" name="lobby" id="join_label" />
+        <button id="join_bt">join Lobby</button>
+        <button id="create_bt">create Lobby</button>
+        <button id="msg_bt">send Msg</button>
+        <button id="start_bt">start game</button>
+        <label id="lobby_lb"></label>
+    </div>
+    <canvas id="main_canvas"> </canvas>
+</body>
+<script src="index.js" type="module"></script>
+<!-- prettier-ignore -->
+<script type="x-shader/x-vertex" id="vertex_shader">#version 300 es
                 in vec2 a_pos;
                 in vec2 texture_coord;
                 uniform vec2 u_res;
@@ -65,8 +66,8 @@
                     v_texture_coords = text_coord;
                 }
     </script>
-    <!-- prettier-ignore -->
-    <script type="x-shader/x-fragment" id="fragment_shader">#version 300 es
+<!-- prettier-ignore -->
+<script type="x-shader/x-fragment" id="fragment_shader">#version 300 es
                 precision mediump float;
 
                 in vec2 v_texture_coords;
@@ -81,4 +82,5 @@
                     fragColor.xyz *= shade_multip * f_z_coord * f_z_coord;
                 }
     </script>
+
 </html>

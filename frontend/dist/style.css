@@ -3,6 +3,15 @@
     height: 100vh;
 }
 
+.ui_canvas {
+    position: absolute;
+    margin: 0;
+    padding: 0;
+    width: 100vw;
+    height: 100vh;
+    image-rendering: pixelated;
+}
+
 body {
     overflow-y: hidden;
     padding: 0px;

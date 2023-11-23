@@ -9,7 +9,11 @@ import {
 } from "../../../types";
 import { main, camera, RemoteBuff } from "../app";
 import { Effect, PlayerEffects } from "../application/base/effects";
-import { DynamicGameObj, GameObject } from "../application/base/gameobject";
+import {
+    DynamicGameObj,
+    Empty,
+    GameObject,
+} from "../application/base/gameobject";
 import { Player } from "../application/gamelogic/player";
 import { Vec2 } from "../lin_alg";
 import { WorkerMsg } from "./WorkerMsg";
@@ -83,14 +87,15 @@ export class Network {
                 break;
             case Type.sync:
                 if (msg.data.hit) {
-                    (
-                        GameObject.objects.find((v) => {
-                            return (
-                                (v as DynamicGameObj).remote_id ==
-                                msg.data.remote_id
-                            );
-                        }) as DynamicGameObj
-                    ).damage_taken(msg.data.damage, msg.data.hit_dir);
+                    let thing = GameObject.objects.find((v) => {
+                        return (
+                            (v as DynamicGameObj).remote_id ==
+                            msg.data.remote_id
+                        );
+                    }) as DynamicGameObj;
+                    if (thing) {
+                        thing.damage_taken(msg.data.damage, msg.data.hit_dir);
+                    }
                     break;
                 }
 

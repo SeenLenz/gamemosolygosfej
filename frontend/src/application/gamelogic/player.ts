@@ -1,5 +1,5 @@
 import { Networkable, ObjType, Type } from "../../../../types";
-import { event, gravity, network } from "../../app";
+import { camera, event, gravity, huuud, network } from "../../app";
 import { Vec2 } from "../../lin_alg";
 import { Effect, PlayerEffects } from "../base/effects";
 import { EventType, Keys } from "../base/event_handler";
@@ -10,6 +10,7 @@ import {
     Hitbox,
     HitboxFlags,
     ObjectTag,
+    Empty,
 } from "../base/gameobject";
 import { float_eq } from "../base/rays";
 import { SpriteSheets } from "../base/textures";
@@ -36,7 +37,7 @@ export class Player extends DynamicGameObj implements Networkable {
     teleport: Teleport;
     damagable = true;
     damaged_timer = performance.now();
-    health = 400;
+    health = 900;
 
     constructor(
         size: number[],
@@ -230,7 +231,6 @@ export class Player extends DynamicGameObj implements Networkable {
             this.teleport.pressed = true;
         }
     }
-
     damage_taken(damage: number, hit_dir: number) {
         if (this.damagable) {
             this.damagable = false;
@@ -238,8 +238,13 @@ export class Player extends DynamicGameObj implements Networkable {
             this.damaged_timer = performance.now();
             this.velocity.x += (damage / 5) * hit_dir;
             this.velocity.y -= 2;
+            huuud.setHealth(damage);
 
             if (this.health <= 0) {
+                console.log(this.remote);
+                if (this.remote == false) {
+                    camera.focus_on(new Empty(this.pos));
+                }
                 network.outBuff_add(
                     new WorkerMsg(Type.sync, {
                         death: true,
@@ -251,7 +256,6 @@ export class Player extends DynamicGameObj implements Networkable {
         }
         super.damage_taken(damage, hit_dir);
     }
-
     set_attack() {
         this.ranged_weapon.run();
         this.melee_weapon.run();

@@ -17,6 +17,7 @@ export class GamepadEvent {
     constructor() {}
 
     isPressed(button: GamepadButtons): boolean | undefined {
+        console.log(navigator.getGamepads());
         for (const controller in navigator.getGamepads()) {
             if (controller) {
                 return navigator.getGamepads()[1]?.buttons[button].pressed;

@@ -17,6 +17,7 @@ import {
     GamepadButtons,
     GamepadEvent,
 } from "./application/base/gamepad_handler";
+import { Hud } from "./ui/hud";
 
 export const Gameped = new GamepadEvent();
 export const RemoteBuff = new Map<String, Networkable>();
@@ -30,7 +31,7 @@ export const network = new Network("127.0.0.1:6969");
 export let delta_time: number = 1;
 export let current_role: Roles;
 let start = 1;
-
+export let huuud: Hud;
 export let map: Map_;
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -74,6 +75,7 @@ function setup(role: number) {
 }
 
 function main_loop() {
+    huuud.run();
     delta_time = (performance.now() - start) / 10;
     start = performance.now();
     renderer.run(camera);
@@ -101,6 +103,6 @@ function main_loop() {
 
 export function main(role: number) {
     setup(role);
-
+    huuud = new Hud();
     main_loop();
 }

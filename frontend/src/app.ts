@@ -27,7 +27,6 @@ export let current_role: Roles;
 let start = 1;
 
 export let map: Map_;
-export let player: Player;
 
 document.addEventListener("DOMContentLoaded", () => {
     document.querySelector("#join_bt")?.addEventListener("click", (e) => {
@@ -63,8 +62,7 @@ function setup(role: number) {
     create_textures();
     current_role = role;
 
-    player = new Player([96, 96], [100, -500], false, undefined);
-    camera.focus_on(player);
+    camera.focus_on(new Player([96, 96], [100, -500], false, undefined));
 
     start = performance.now();
     map = new Map_();

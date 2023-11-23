@@ -208,7 +208,7 @@ export class Player extends DynamicGameObj implements Networkable {
         }
     }
 
-    damage_taken(damage: number, hit_dir: number) {
+    damage_taken(damage: number, hit_dir: number, from: DynamicGameObj) {
         if (this.damagable) {
             this.damagable = false;
             this.health -= damage;
@@ -226,7 +226,7 @@ export class Player extends DynamicGameObj implements Networkable {
                 this.remove();
             }
         }
-        super.damage_taken(damage, hit_dir);
+        super.damage_taken(damage, hit_dir, from);
     }
 
     set_attack() {

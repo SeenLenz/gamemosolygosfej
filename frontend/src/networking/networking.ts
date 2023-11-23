@@ -9,7 +9,12 @@ import {
 } from "../../../types";
 import { main, camera, RemoteBuff } from "../app";
 import { Effect, PlayerEffects } from "../application/base/effects";
-import { DynamicGameObj, GameObject } from "../application/base/gameobject";
+import {
+    DynamicGameObj,
+    GameObject,
+    ObjectTag,
+} from "../application/base/gameobject";
+import { BelaIsland, Map_ } from "../application/gamelogic/map/map";
 import { Player } from "../application/gamelogic/player";
 import { Vec2 } from "../lin_alg";
 import { WorkerMsg } from "./WorkerMsg";
@@ -19,7 +24,7 @@ export class Network {
     public ws_cfg?: Lobby;
     private ws?: WebSocket;
     private Pisti?: Worker;
-    private outBuff: NetworkBuffer;
+    readonly outBuff: NetworkBuffer;
 
     constructor(domain: String) {
         this.Pisti = new Worker(
@@ -47,6 +52,19 @@ export class Network {
 
     private parse_msg(msg: any) {
         switch (msg.type) {
+            // case Type.map:
+            //     switch (msg.data?.type) {
+            //         case ObjectTag.BelaIsland:
+            //             Map_.objects.push(
+            //                 new BelaIsland(
+            //                     msg.data?.pos,
+            //                     true,
+            //                     msg.data?.remote_id
+            //                 )
+            //             );
+            //             break;
+            //     }
+            //     break;
             case Type.crt:
                 if (msg.data?.effect != undefined) {
                     let pos: Vec2 = msg.data?.pos;
@@ -90,7 +108,11 @@ export class Network {
                                 msg.data.remote_id
                             );
                         }) as DynamicGameObj
-                    ).damage_taken(msg.data.damage, msg.data.hit_dir);
+                    ).damage_taken(
+                        msg.data.damage,
+                        msg.data.hit_dir,
+                        RemoteBuff.get(msg.data.from) as any as DynamicGameObj
+                    );
                     break;
                 }
 

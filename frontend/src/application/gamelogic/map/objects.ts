@@ -1,11 +1,7 @@
+import { Networkable } from "../../../../../types";
 import { Vec2 } from "../../../lin_alg";
 import { Effect } from "../../base/effects";
-import {
-    DynamicFlag,
-    DynamicGameObj,
-    GameObject,
-    StaticGameObj,
-} from "../../base/gameobject";
+import { DynamicFlag, DynamicGameObj, GameObject } from "../../base/gameobject";
 import { SpriteSheets } from "../../base/textures";
 import { Bela } from "../roles/player/enemies/slime";
 
@@ -63,7 +59,9 @@ export class BelaTank extends MapObject {
             this.add_flags([DynamicFlag.NotDamagable]);
             this.sprite_index = 5;
             this.bela = undefined;
-            new Bela(this.pos);
+            if (!this.remote) {
+                new Bela(this.pos, false, undefined);
+            }
         }
     }
 

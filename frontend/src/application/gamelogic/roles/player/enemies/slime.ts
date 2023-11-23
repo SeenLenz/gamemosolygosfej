@@ -1,23 +1,23 @@
+import { Networkable } from "../../../../../../../types";
 import { Vec2 } from "../../../../../lin_alg";
 import {
     DynamicGameObj,
     ObjectTag,
     StaticCollisionObj,
-    StaticGameObj,
 } from "../../../../base/gameobject";
 import { Point, float_eq } from "../../../../base/rays";
 import { SpriteSheets } from "../../../../base/textures";
 import { BelaIsland } from "../../../map/map";
 import { Enemy } from "../enemy";
 
-export class Bela extends Enemy {
+export class Bela extends Enemy implements Networkable {
     player_rec = false;
     grounded_timer = performance.now();
     attack_timer = performance.now();
     back = false;
     damage = 10;
     closest_player: DynamicGameObj | undefined;
-    constructor(pos: Point) {
+    constructor(pos: Point, remote: boolean, remote_id: String | undefined) {
         super(pos);
         this.texture_index = SpriteSheets.SlimeEnemy;
         this.sprite_index = 0;
@@ -42,9 +42,19 @@ export class Bela extends Enemy {
 
     damage_player() {
         if (this.damagable && this.closest_player) {
-            this.closest_player.damage_taken(this.damage, this.x_direction);
+            this.closest_player.damage_taken(
+                this.damage,
+                this.x_direction,
+                this
+            );
         }
     }
+
+    in(data: any): void {}
+
+    out(): void {}
+
+    del(): void {}
 
     on_death(): void {
         this.remove();
@@ -190,7 +200,7 @@ export class Bela extends Enemy {
 
 export class Bleacska extends Bela {
     constructor(pos: Point) {
-        super(pos);
+        super(pos, false, undefined);
         this.damage = 5;
         this.hp = 20;
         this.texture_index = SpriteSheets.SmallSlimeEnemy;

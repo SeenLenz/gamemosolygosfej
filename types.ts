@@ -21,7 +21,6 @@ export enum Type {
     //Networkable:
     //created a networkable object and transmits this to others
     crt,
-
     //setup requests with the server and other cliendsa
     setup,
     //the initial request to the worker

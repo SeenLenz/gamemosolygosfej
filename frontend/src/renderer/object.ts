@@ -44,10 +44,10 @@ export class Obj {
 
     render(renderer: Renderer, obj: Renderable, offset = Vec2.zeros()) {
         if (
-            obj.pos.x + obj.size.x - camera.pos.x < 0 ||
+            obj.pos.x + obj.size.x * 2 - camera.pos.x < 0 ||
             obj.pos.y + obj.size.y - camera.pos.y < 0 ||
-            obj.pos.x - camera.pos.x > camera.width * camera.scale ||
-            obj.pos.y - camera.pos.y > camera.height * camera.scale ||
+            obj.pos.x - camera.pos.x > camera.width ||
+            obj.pos.y - camera.pos.y > camera.height ||
             !this.index_buffer
         ) {
             return;

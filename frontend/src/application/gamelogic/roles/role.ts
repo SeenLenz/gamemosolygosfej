@@ -15,14 +15,11 @@ import { Renderable } from "../../../renderer/object";
 import { CameraObj } from "./observer/camera";
 import { Pisti } from "./player/enemies/pisti";
 import { Bela } from "./player/enemies/slime";
-import { Huba } from "./player/enemies/ranged";
 
 export interface Role {
     run(delta_time: number): void;
     type?: Roles;
 }
-
-export let player: Player;
 
 export class PlayerRole implements Role {
     type: Roles;

@@ -189,7 +189,7 @@ export class Renderer {
     }
 
     run(camera: Camera) {
-        this.gl.clearColor(0.02, 0.01, 0.1, 1);
+        this.gl.clearColor(23 / 255, 32 / 255, 36 / 255, 1);
         this.gl.clear(this.gl.COLOR_BUFFER_BIT);
         this.gl.useProgram(this.program);
         this.gl.uniform2f(

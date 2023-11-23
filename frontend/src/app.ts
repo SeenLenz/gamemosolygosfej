@@ -33,6 +33,7 @@ export let current_role: Roles;
 let start = 1;
 export let huuud: Hud;
 export let map: Map_;
+export let player: Player;
 
 document.addEventListener("DOMContentLoaded", () => {
     document.querySelector("#join_bt")?.addEventListener("click", (e) => {
@@ -68,7 +69,8 @@ function setup(role: number) {
     create_textures();
     current_role = role;
 
-    camera.focus_on(new Player([96, 96], [100, -500], false, undefined));
+    player = new Player([96, 96], [100, -500], false, undefined);
+    camera.focus_on(player);
 
     start = performance.now();
     map = new Map_();
@@ -90,7 +92,7 @@ function main_loop() {
     Effect.effects.forEach((e) => {
         e.animate();
     });
-    map.foreground.forEach((obj) => {
+    Map_.foreground.forEach((obj) => {
         obj.loop(delta_time);
         obj.render();
     });

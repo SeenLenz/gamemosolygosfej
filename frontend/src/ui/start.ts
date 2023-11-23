@@ -110,14 +110,14 @@ export class StartScreen {
           lobby_start.setAttribute('style', 'width: 20vw; height: 5vh; position: absolute; left: 40vw; top: 70vh; text-align: center;');    
         }
 
-        // optJoin.id = 'optJoin_btn';        
-        // optJoin.setAttribute('style', 'width: 20vw; height: 25vh; position: absolute; left: 25vw; top: 20vh;');
+        optJoin.id = 'optJoin_btn';        
+        optJoin.setAttribute('style', 'width: 20vw; height: 25vh; position: absolute; left: 25vw; top: 20vh;');
 
-        // optCreate.id = 'optCreate_btn';
-        // optCreate.setAttribute('style', 'width: 20vw; height: 25vh; position: absolute; left: 55vw; top: 20vh;');
+        optCreate.id = 'optCreate_btn';
+        optCreate.setAttribute('style', 'width: 20vw; height: 25vh; position: absolute; left: 55vw; top: 20vh;');
       
-        // div.appendChild(optJoin);
-        // div.appendChild(optCreate);
+        div.appendChild(optJoin);
+        div.appendChild(optCreate);
         div.appendChild(lobby_input);  
         div.appendChild(lobby_join);  
         div.appendChild(lobby_create);  

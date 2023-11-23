@@ -1,11 +1,13 @@
-import { event } from "../app";
-import { Buttons } from "../application/base/event_handler";
-import { interpolate } from "../lin_alg";
 import { Hud, clearHud } from "./hud";
+import { Network } from "../networking/networking";
+import { WorkerMsg } from "../networking/WorkerMsg";
+import { Type } from "../../../types";
 
 let opacity = 0.0;
 let fadeDirection = 1;
 let startKeyPressed = false;
+
+export const network = new Network("127.0.0.1:6969");
 
 export class Start {
 
@@ -24,9 +26,8 @@ export class Start {
         this.canvas.setAttribute('tabindex', '0');
         this.canvas.focus();       
         
-        const kbEvent = (event:KeyboardEvent) => {
+        const kbEvent = () => {
           startKeyPressed = true;
-          console.log(event.key);
           this.menuView();
           window.removeEventListener('keydown', kbEvent);
 
@@ -42,6 +43,7 @@ export class Start {
         
         this.ctx.fillStyle = 'blue';
         this.ctx.fillRect(0,0,this.canvas.width, this.canvas.height);
+
         if (!startKeyPressed) {
           this.animate();
         }
@@ -70,52 +72,70 @@ export class Start {
 
     menuView() {
       const div = document.querySelector('body div')
-      // const lobbyOPts = document.querySelectorAll(`body div > *`);
       if (div) {
         const lobby_input = document.createElement('input') as HTMLInputElement;
         const lobby_join = document.createElement('button') as HTMLButtonElement;
         const lobby_create = document.createElement('button') as HTMLButtonElement;
         const lobby_start = document.createElement('button') as HTMLButtonElement;
+        const lobby_id = document.createElement('label') as HTMLLabelElement;
 
         const optJoin = document.createElement('button') as HTMLButtonElement;
         const optCreate = document.createElement('button') as HTMLButtonElement;
 
-        lobby_input.type = 'text';
-        lobby_input.name = 'lobby';
-        lobby_input.id = 'join_label';
-        lobby_input.setAttribute('style', 'width: 20vw; height: 5vh; position: absolute; left: 25vw; top: 50vh; border: none; padding: 0; text-align: center');
-        lobby_input.setAttribute('placeHolder', 'Input server id');
+        lobby_join?.addEventListener("click", (e) => {
+        const joinLabelValue = (
+            lobby_join as HTMLInputElement | null
+          )?.value;
+          if (joinLabelValue) {
+            network.join_lobby(joinLabelValue);
+          }
+        });
+        lobby_start?.addEventListener("click", (e) => {
+          network.send(new WorkerMsg(Type.start));
+          lobby_start?.remove();
+        });
+        lobby_create?.addEventListener("click", (e) => {
+          network.create_lobby();
+        });
 
-        lobby_join.id = 'join_bt';
-        lobby_join.textContent = 'Ready Up!';
-        lobby_join.setAttribute('style', 'width: 20vw; height: 5vh; position: absolute; left: 25vw; top: 60vh; text-alaign: center;');
-
-        lobby_create.id = 'create_bt';
-        lobby_create.textContent = 'Get Lobby Id';
-        lobby_create.setAttribute('style', 'width: 20vw; height: 5vh; position: absolute; left: 55vw; top: 50vh; text-alaign: center');
-
-        lobby_start.id = 'start_bt';
-        lobby_start.textContent = 'Start Game';
-        const lobby_start_Clicked = () => {
-          div.innerHTML = '';
+        if (lobby_input) {
+          lobby_input.id = 'join_label';
+          lobby_input.setAttribute('style', 'width: 20vw; height: 5vh; position: absolute; left: 25vw; top: 50vh; border: none; text-align: center;');
+          lobby_input?.setAttribute('placeHolder', 'Input server id;'); 
+        }        
+        if (lobby_join) {
+          lobby_join.id = 'join_bt';
+          lobby_join.textContent = 'Ready Up!';
+          lobby_join.setAttribute('style', 'width: 20vw; height: 5vh; position: absolute; left: 25vw; top: 60vh; text-align: center;');          
         }
-        lobby_start.addEventListener('click', lobby_start_Clicked);
-        lobby_start.setAttribute('style', 'width: 20vw; height: 5vh; position: absolute; left: 40vw; top: 75vh; text-alaign: center');
+        if (lobby_create) {
+          lobby_create.id = 'create_bt';
+          lobby_create.textContent = 'Get Lobby Id';
+          lobby_create.setAttribute('style', 'width: 20vw; height: 5vh; position: absolute; left: 55vw; top: 50vh; text-align: center;');          
+        }
+        if (lobby_id) {
+          lobby_id.id = 'lobby_lb';
+          lobby_id.setAttribute('style', 'width: 20vw; height: 5vh; position: absolute; left: 55vw; top: 60vh; text-align: center;');
+        }
+        if (lobby_start) {
+          lobby_start.id = 'start_bt';
+          lobby_start.textContent = 'Start Game';
+          lobby_start.setAttribute('style', 'width: 20vw; height: 5vh; position: absolute; left: 40vw; top: 70vh; text-align: center;');    
+        }
 
         optJoin.id = 'optJoin_btn';        
-        optJoin.setAttribute('style', 'width: 20vw; height: 25vh; position: absolute; left: 25vw; top: 20vh; background-img: url("./textures/hud/join.png"); background-repeat: no-repeat; background-size: cover');
+        optJoin.setAttribute('style', 'width: 20vw; height: 25vh; position: absolute; left: 25vw; top: 20vh;');
 
         optCreate.id = 'optCreate_btn';
-        optCreate.setAttribute('style', 'width: 20vw; height: 25vh; position: absolute; left: 55vw; top: 20vh; background-img: url("./textures/hud/create.png"); background-repeat: no-repeat; background-size: cover');
+        optCreate.setAttribute('style', 'width: 20vw; height: 25vh; position: absolute; left: 55vw; top: 20vh;');
       
-        if (div) {
-          div.appendChild(lobby_input);
-          div.appendChild(lobby_join);
-          div.appendChild(lobby_create);
-          div.appendChild(lobby_start);
-          div.appendChild(optJoin);
-          div.appendChild(optCreate);        
-        }
+        div.appendChild(optJoin);
+        div.appendChild(optCreate);
+        div.appendChild(lobby_input);  
+        div.appendChild(lobby_join);  
+        div.appendChild(lobby_create);  
+        div.appendChild(lobby_id);  
+        div.appendChild(lobby_start);
       }
     }
 

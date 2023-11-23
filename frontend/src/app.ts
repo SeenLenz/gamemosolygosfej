@@ -28,31 +28,11 @@ export let current_role: Roles;
 let start = 1;
 
 export let map: Map_;
-let canvas_start: Start;
+let canvas_start: Start;   
+canvas_start = new Start();
 
 document.addEventListener("DOMContentLoaded", () => {
-    document.querySelector("#join_bt")?.addEventListener("click", (e) => {
-        const joinLabelValue = (
-            document.querySelector("#join_label") as HTMLInputElement | null
-        )?.value;
-        if (joinLabelValue) {
-            network.join_lobby(joinLabelValue);
-        }
-    });
-    document.querySelector("#start_bt")?.addEventListener("click", (e) => {
-        network.send(new WorkerMsg(Type.start));
-        document.querySelector("#start_bt")?.remove();
-    });
-    document.querySelector("#create_bt")?.addEventListener("click", (e) => {
-        network.create_lobby();
-    });
-    document.querySelector("#msg_bt")?.addEventListener("click", (e) => {
-        network.send(
-            new WorkerMsg(Type.test, {
-                msg: "This is a message from the test button",
-            })
-        );
-    });
+    canvas_start.run();    
 });
 
 function setup(role: number) {
@@ -68,7 +48,6 @@ function setup(role: number) {
 
     start = performance.now();
     map = new Map_();
-    canvas_start = new Start();
     
 }
 
@@ -94,7 +73,6 @@ function main_loop() {
     
     network.flush();
     
-    canvas_start.run();
     event.refresh();
     requestAnimationFrame(main_loop);
 }

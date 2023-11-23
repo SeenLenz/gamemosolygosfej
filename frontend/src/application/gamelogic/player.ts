@@ -57,8 +57,8 @@ export class Player extends DynamicGameObj implements Networkable {
             this.size.x / 4
         );
 
-        this.ranged_weapon = new Ranged(this, 60, 600);
-        this.melee_weapon = new Melee(this, 30);
+        this.ranged_weapon = new Ranged(this, 3, 600);
+        this.melee_weapon = new Melee(this, 2);
         this.teleport = new Teleport(this, 0);
 
         if (!remote) {
@@ -238,7 +238,7 @@ export class Player extends DynamicGameObj implements Networkable {
             this.damaged_timer = performance.now();
             this.velocity.x += (damage / 5) * hit_dir;
             this.velocity.y -= 2;
-            huuud.setHealth(damage);
+            huuud.setHealtBar(damage, -1);
 
             if (this.health <= 0) {
                 console.log(this.remote);

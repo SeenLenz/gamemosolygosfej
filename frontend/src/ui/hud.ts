@@ -33,18 +33,6 @@ export class Hud {
         body?.insertBefore(this.canvas, mainCanvas);
     }
 
-    setHealth(target: number) {
-        this.healthRect.width =
-            this.healthRect.width - (this.healthRect.width / 900) * target;
-        //     if (this.healthRect.width > 19) {
-        //         this.healthRect.width -= interpolate(
-        //             this.healthRect.width,
-        //             target,
-        //             0.1
-        //         );
-        //     }
-    }
-
     run() {
         clearHud(this.ctx, this.canvas);
 

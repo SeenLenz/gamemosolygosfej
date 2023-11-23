@@ -233,7 +233,7 @@ export class Player extends DynamicGameObj implements Networkable {
             this.teleport.pressed = true;
         }
         if (event.key_state(Keys.F, EventType.Pressed)) {
-            if (huuud.currentHealth != 8 && huuud.potionParentDiv.children.length != 0) {
+            if (huuud.current_health != 8 && huuud.potion_parent_div.children.length != 0) {
                 this.used_potion = true;
             }
         }
@@ -245,7 +245,7 @@ export class Player extends DynamicGameObj implements Networkable {
             this.damaged_timer = performance.now();
             this.velocity.x += (damage / 5) * hit_dir;
             this.velocity.y -= 2;
-            huuud.setHealthBar(damage, -1);
+            huuud.set_health_bar(damage, -1);
 
             if (this.health <= 0) {
                 console.log(this.remote);
@@ -266,11 +266,11 @@ export class Player extends DynamicGameObj implements Networkable {
     health_potion_used() {    
         if (this.health + 2 > 8) {
             this.health += 1;
-            huuud.setHealthBar(1, 1);                
+            huuud.set_health_bar(1, 1);                
         }
         else {
             this.health += 2;
-            huuud.setHealthBar(2, 1);
+            huuud.set_health_bar(2, 1);
         }        
     }
     set_attack() {
@@ -315,9 +315,9 @@ export class Player extends DynamicGameObj implements Networkable {
 
         if (this.used_potion) {
             this.health_potion_used();
-            const potion = huuud.potionParentDiv.lastChild;
+            const potion = huuud.potion_parent_div.lastChild;
             if (potion) {
-                huuud.potionParentDiv.removeChild(potion);
+                huuud.potion_parent_div.removeChild(potion);
             }
         }
     }

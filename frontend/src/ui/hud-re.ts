@@ -1,4 +1,4 @@
-enum HealthBarStates {
+enum health_bar_states {
     Full,
     Dmg1,
     Dmg2,
@@ -12,36 +12,36 @@ enum HealthBarStates {
 
 export class gamePlayHud {
     
-    healthBar: HTMLImageElement;
-    potionParentDiv: HTMLDivElement;
-    currentHealth: number;
+    health_bar: HTMLImageElement;
+    potion_parent_div: HTMLDivElement;
+    current_health: number;
 
     constructor() {        
         const parentDiv = document.querySelector('div');
-        this.healthBar = document.createElement('img') as HTMLImageElement;
-        this.potionParentDiv = document.createElement('div') as HTMLDivElement;
-        this.currentHealth = 8;
+        this.health_bar = document.createElement('img') as HTMLImageElement;
+        this.potion_parent_div = document.createElement('div') as HTMLDivElement;
+        this.current_health = 8;
 
-        this.healthBar.setAttribute('style', 'position: absolute; height: 10vh; width: 15vw; image-rendering: pixelated;');
-        this.setHealthBar(0, 1);
+        this.health_bar.setAttribute('style', 'position: absolute; height: 10vh; width: 15vw; image-rendering: pixelated;');
+        this.set_health_bar(0, 1);
 
-        this.potionParentDiv.setAttribute('style', 'position: relative; top: 9vh; left: 6vw; height: 5vh; width: 10vw;');
+        this.potion_parent_div.setAttribute('style', 'position: relative; top: 9vh; left: 6vw; height: 5vh; width: 10vw;');
         
-        parentDiv?.appendChild(this.healthBar);
-        parentDiv?.appendChild(this.potionParentDiv);
+        parentDiv?.appendChild(this.health_bar);
+        parentDiv?.appendChild(this.potion_parent_div);
         
         for (let i = 0; i < 3; i++) {
             const potion = new Image();
             potion.src = './textures/hud/potion9by9.png';
             potion.setAttribute('style', `position: absolute; left: ${3*i}vw; height: 4vh; width: 3vw; image-rendering: pixelated;`);
-            this.potionParentDiv.appendChild(potion);
+            this.potion_parent_div.appendChild(potion);
         }
     }
 
-    setHealthBar(change:number, multiplyer:number) {
-        this.currentHealth += change * multiplyer;
-        console.log(this.currentHealth);
-        this.healthBar.src = `./textures/hud/health_bar/HealthBar-${HealthBarStates[8-this.currentHealth]}.png`;
+    set_health_bar(change:number, multiplyer:number) {
+        this.current_health += change * multiplyer;
+        console.log(this.current_health);
+        this.health_bar.src = `./textures/hud/health_bar/HealthBar-${health_bar_states[8-this.current_health]}.png`;
     }
 
 }

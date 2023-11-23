@@ -37,7 +37,8 @@ export class Player extends DynamicGameObj implements Networkable {
     teleport: Teleport;
     damagable = true;
     damaged_timer = performance.now();
-    health = 900;
+    health = 8;
+    used_potion = false;
 
     constructor(
         size: number[],
@@ -155,6 +156,7 @@ export class Player extends DynamicGameObj implements Networkable {
         if (!this.remote) {
             this.halt_points = [];
         }
+        this.used_potion = false;
     }
 
     keyboard_events(delta_time: number) {
@@ -230,6 +232,11 @@ export class Player extends DynamicGameObj implements Networkable {
             this.network_sync = true;
             this.teleport.pressed = true;
         }
+        if (event.key_state(Keys.F, EventType.Pressed)) {
+            if (huuud.currentHealth != 8 && huuud.potionParentDiv.children.length != 0) {
+                this.used_potion = true;
+            }
+        }
     }
     damage_taken(damage: number, hit_dir: number) {
         if (this.damagable) {
@@ -238,7 +245,7 @@ export class Player extends DynamicGameObj implements Networkable {
             this.damaged_timer = performance.now();
             this.velocity.x += (damage / 5) * hit_dir;
             this.velocity.y -= 2;
-            huuud.setHealtBar(damage, -1);
+            huuud.setHealthBar(damage, -1);
 
             if (this.health <= 0) {
                 console.log(this.remote);
@@ -255,6 +262,16 @@ export class Player extends DynamicGameObj implements Networkable {
             }
         }
         super.damage_taken(damage, hit_dir);
+    }
+    health_potion_used() {    
+        if (this.health + 2 > 8) {
+            this.health += 1;
+            huuud.setHealthBar(1, 1);                
+        }
+        else {
+            this.health += 2;
+            huuud.setHealthBar(2, 1);
+        }        
     }
     set_attack() {
         this.ranged_weapon.run();
@@ -294,6 +311,14 @@ export class Player extends DynamicGameObj implements Networkable {
         if (this.wall_slide) {
             this.velocity.y += (0 - this.velocity.y) * 0.08 * delta_time;
             this.force.y = 0;
+        }
+
+        if (this.used_potion) {
+            this.health_potion_used();
+            const potion = huuud.potionParentDiv.lastChild;
+            if (potion) {
+                huuud.potionParentDiv.removeChild(potion);
+            }
         }
     }
 

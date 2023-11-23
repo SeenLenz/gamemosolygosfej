@@ -14,6 +14,7 @@ import { Network } from "./networking/networking";
 import { GameObject } from "./application/base/gameobject";
 import { Effect } from "./application/base/effects";
 import { Start } from "./ui/start";
+import { Hud } from "./ui/hud";
 
 export const RemoteBuff = new Map<String, Networkable>();
 export const renderer = new Renderer();
@@ -29,9 +30,10 @@ let start = 1;
 
 export let map: Map_;
 let canvas_start: Start;   
-canvas_start = new Start();
+let hud: Hud;
 
 document.addEventListener("DOMContentLoaded", () => {
+    canvas_start = new Start();
     canvas_start.run();    
 });
 
@@ -72,7 +74,7 @@ function main_loop() {
     });
     
     network.flush();
-    
+    hud.run();
     event.refresh();
     requestAnimationFrame(main_loop);
 }

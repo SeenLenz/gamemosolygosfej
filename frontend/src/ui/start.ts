@@ -2,6 +2,7 @@ import { Hud, clearHud } from "./hud";
 import { Network } from "../networking/networking";
 import { WorkerMsg } from "../networking/WorkerMsg";
 import { Type } from "../../../types";
+import { main } from "../app";
 
 let opacity = 0.0;
 let fadeDirection = 1;
@@ -55,19 +56,21 @@ export class Start {
       const img = new Image();
       img.src = './textures/hud/background.png';
 
-      opacity += 0.01 * fadeDirection;
-
-      if (opacity > 1) {
-        opacity = 1;
-        fadeDirection = -1;
+      img.onload = () => {
+        opacity += 0.01 * fadeDirection;
+  
+        if (opacity > 1) {
+          opacity = 1;
+          fadeDirection = -1;
+        }
+        else if (opacity < 0.2) {
+          fadeDirection = 1;
+        }
+  
+        this.ctx.globalAlpha = opacity;
+        this.ctx.drawImage(img, this.canvas.width*0.5-img.width*0.5, this.canvas.height*0.5-img.height*0.5, img.width, img.height);
       }
-      else if (opacity < 0.2) {
-        // opacity = 0;
-        fadeDirection = 1;
-      }
 
-      this.ctx.globalAlpha = opacity;
-      this.ctx.drawImage(img, this.canvas.width*0.5-img.width*0.5, this.canvas.height*0.5-img.height*0.5, img.width, img.height);
     }
 
     menuView() {
@@ -93,6 +96,7 @@ export class Start {
         lobby_start?.addEventListener("click", (e) => {
           network.send(new WorkerMsg(Type.start));
           lobby_start?.remove();
+          this.close();
         });
         lobby_create?.addEventListener("click", (e) => {
           network.create_lobby();
@@ -140,6 +144,6 @@ export class Start {
     }
 
     close() {
-
+      this.canvas.remove();
     }
 }

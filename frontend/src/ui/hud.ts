@@ -20,6 +20,8 @@ export class Hud {
         this.potionUnit = 1;
         this.canvas.className = 'ui_canvas';
         this.canvas.id = 'hud_canvas';
+        this.canvas.setAttribute('tabindex', '0');
+        this.canvas.focus();
 
         body?.insertBefore(this.canvas, mainCanvas);
     };
@@ -30,7 +32,7 @@ export class Hud {
         healthBarMask.src = './textures/hud/HealthBar-maskVer2.png';        
         
         healthBarMask.onload = () => {
-            clearHud(this.ctx, this.canvas);
+            clearCanvas(this.ctx, this.canvas);
 
             this.ctx.drawImage(healthBarMask, 0, 5, healthBarMask.width, healthBarMask.height);
             this.ctx.globalCompositeOperation = 'source-in';
@@ -46,14 +48,6 @@ export class Hud {
             healthBar.onload = () => {
                 this.ctx.imageSmoothingEnabled = false;    
                 this.ctx.drawImage(healthBar, 0, this.healthRect.y, healthBar.width, healthBar.height);
-
-                const potionMask = new Image();
-                potionMask.src = './textures/hud/potion9by9-mask.png';
-
-                this.ctx.drawImage(potionMask, this.potionRect.x, this.potionRect.y, potionMask.width, potionMask.height);
-                
-                
-                
             }
         }
 
@@ -77,6 +71,6 @@ export class Hud {
     }
 }
 
-export function clearHud(ctx:CanvasRenderingContext2D, canvas:HTMLCanvasElement) {
+export function clearCanvas(ctx:CanvasRenderingContext2D, canvas:HTMLCanvasElement) {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 }

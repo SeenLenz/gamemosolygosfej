@@ -1,7 +1,7 @@
-import { Hud, clearHud } from "./hud";
+import { clearCanvas } from "./hud";
 import { Network } from "../networking/networking";
 import { WorkerMsg } from "../networking/WorkerMsg";
-import { Start, Type } from "../../../types";
+import { Type } from "../../../types";
 import { main } from "../app";
 
 let opacity = 0.0;
@@ -11,21 +11,21 @@ let startKeyPressed = false;
 export const network = new Network("127.0.0.1:6969");
 
 export class StartScreen {
-
-    canvas: HTMLCanvasElement;
-    ctx: CanvasRenderingContext2D;
-
-    constructor() {
-        const body = document.body;
-        const bodyFirstChild = document.querySelector('body > :first-child');
-        
-        this.canvas = document.createElement('canvas') as HTMLCanvasElement;        
-        this.ctx = this.canvas.getContext('2d') as CanvasRenderingContext2D;
-        
-        this.canvas.className = 'ui_canvas';
-        this.canvas.id = 'start_canvas';
-        this.canvas.setAttribute('tabindex', '0');
-        this.canvas.focus();       
+  
+  canvas: HTMLCanvasElement;
+  ctx: CanvasRenderingContext2D;
+  
+  constructor() {
+    const body = document.body;
+    const bodyFirstChild = document.querySelector('body > :first-child');
+    
+    this.canvas = document.createElement('canvas') as HTMLCanvasElement;        
+    this.ctx = this.canvas.getContext('2d') as CanvasRenderingContext2D;    
+    
+    this.canvas.className = 'ui_canvas';
+    this.canvas.id = 'start_canvas';
+    this.canvas.setAttribute('tabindex', '0');
+    this.canvas.focus();       
         
         const kbEvent = () => {
           startKeyPressed = true;
@@ -40,38 +40,15 @@ export class StartScreen {
     }
 
     run() {
-        clearHud(this.ctx, this.canvas);
-        
-        this.ctx.fillStyle = 'blue';
-        this.ctx.fillRect(0,0,this.canvas.width, this.canvas.height);
+        clearCanvas(this.ctx, this.canvas);
 
-        if (!startKeyPressed) {
-          this.animate();
-        }
+        callback();
         
-        this.ctx.globalAlpha = 1.0;
+        console.log(startKeyPressed);
+        
     }
 
-    animate() {
-      const img = new Image();
-      img.src = './textures/hud/background.png';
-
-      img.onload = () => {
-        opacity += 0.01 * fadeDirection;
-  
-        if (opacity > 1) {
-          opacity = 1;
-          fadeDirection = -1;
-        }
-        else if (opacity < 0.2) {
-          fadeDirection = 1;
-        }
-  
-        this.ctx.globalAlpha = opacity;
-        this.ctx.drawImage(img, this.canvas.width*0.5-img.width*0.5, this.canvas.height*0.5-img.height*0.5, img.width, img.height);
-      }
-
-    }
+    
 
     menuView() {
       const div = document.querySelector('body div')
@@ -111,10 +88,10 @@ export class StartScreen {
         }
 
         optJoin.id = 'optJoin_btn';        
-        optJoin.setAttribute('style', 'width: 20vw; height: 25vh; position: absolute; left: 25vw; top: 20vh;');
+        optJoin.setAttribute('style','width: 20vw; height: 25vh; position: absolute; left: 25vw; top: 20vh; background-image:url("./textures/hud/background.png"); background-repeat: no-repeat; background-size: contain');
 
         optCreate.id = 'optCreate_btn';
-        optCreate.setAttribute('style', 'width: 20vw; height: 25vh; position: absolute; left: 55vw; top: 20vh;');
+        optCreate.setAttribute('style', 'width: 20vw; height: 25vh; position: absolute; left: 55vw; top: 20vh; background-image:url("./textures/hud/background.png");background-repeat: no-repeat; background-size: contain;');
       
         div.appendChild(optJoin);
         div.appendChild(optCreate);
@@ -149,4 +126,44 @@ export class StartScreen {
     close() {
       this.canvas.remove();
     }
+}
+
+function callback() {
+  const startImg = new Image();
+  startImg.src = './textures/hud/background.png';
+
+  const canvas = document.getElementById('start_canvas') as HTMLCanvasElement;
+  const ctx = canvas.getContext('2d') as CanvasRenderingContext2D;
+
+  clearCanvas(ctx, canvas);
+
+  ctx.fillStyle = 'blue';
+  ctx.fillRect(0,0,canvas.width, canvas.height);
+
+  animate(startImg, canvas, ctx);
+
+  if (!startKeyPressed) {
+    requestAnimationFrame(callback);
+  }
+}
+
+function animate(img:HTMLImageElement, canvas:HTMLCanvasElement, ctx:CanvasRenderingContext2D) {
+
+  img.onload = () => {
+    opacity += 0.01 * fadeDirection;
+
+    if (opacity > 1) {
+      opacity = 1;
+      fadeDirection = -1;
+    }
+    else if (opacity < 0.2) {
+      fadeDirection = 1;
+    }
+
+    ctx.globalAlpha = opacity;
+    ctx.drawImage(img, canvas.width*0.5-img.width*0.5, canvas.height*0.5-img.height*0.5, img.width, img.height);
+
+    ctx.globalAlpha = 1.0;
+    
+  }
 }

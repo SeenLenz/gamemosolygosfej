@@ -32,7 +32,7 @@ let canvas_start: StartScreen;
 
 export let map: Map_;
 
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded", () => {    
     canvas_start = new StartScreen();
     canvas_start.run();    
 });

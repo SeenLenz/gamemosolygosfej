@@ -1,8 +1,7 @@
 import { Obj } from "../../renderer/object";
-import { camera, delta_time, gravity, network, renderer } from "../../app";
+import { delta_time, renderer } from "../../app";
 import { Vec2 } from "../../lin_alg";
 import {
-    Line,
     Point,
     DebugPoint as DebugPoint,
     create_line,
@@ -10,10 +9,8 @@ import {
     float_eq,
     ray_side_intersection,
 } from "./rays";
-import { SpriteSheets } from "./textures";
-import { Tag, Type } from "../../../../types";
+import { Tag } from "../../../../types";
 import { HaltPoint } from "./effects";
-import { WorkerMsg } from "../../networking/WorkerMsg";
 
 export enum ObjectTag {
     Empty,
@@ -23,6 +20,7 @@ export enum ObjectTag {
     Bench,
     House,
     Enemy,
+    BelaIsland,
 }
 
 export enum Axis {
@@ -50,6 +48,7 @@ export enum HitboxFlags {
     Platform,
     SlideableWall,
     NonPlayerReactive,
+    RunThrough,
     Enemy,
 }
 
@@ -333,6 +332,10 @@ export class StaticGameObj extends GameObject {
     }
 }
 
+export enum DynamicFlag {
+    NotDamagable,
+}
+
 export class DynamicGameObj extends GameObject {
     velocity: Vec2;
     force: Vec2;
@@ -347,6 +350,7 @@ export class DynamicGameObj extends GameObject {
     points: DebugPoint[] = [new DebugPoint(), new DebugPoint()];
     remote_id: String;
     remote: boolean = false;
+    flags: DynamicFlag[] = [];
     constructor(scale: Vec2, position: Vec2) {
         super(scale, position);
 
@@ -378,6 +382,18 @@ export class DynamicGameObj extends GameObject {
     }
 
     run(delta_time: number) {}
+
+    has_flag(flag: DynamicFlag) {
+        return this.flags.includes(flag);
+    }
+
+    add_flags(flags: DynamicFlag[]) {
+        flags.forEach((flag) => {
+            if (!this.has_flag(flag)) {
+                this.flags.push(flag);
+            }
+        });
+    }
 
     get acceleration() {
         return new Vec2(this.force.x / this.mass, this.force.y / this.mass);
@@ -562,6 +578,9 @@ export class DynamicGameObj extends GameObject {
         let closest: DynamicGameObj | undefined = undefined;
         for (let dyno of GameObject.dynamic_hitboxes) {
             if (dyno == this) {
+                continue;
+            }
+            if ((dyno as DynamicGameObj).has_flag(DynamicFlag.NotDamagable)) {
                 continue;
             }
             if (

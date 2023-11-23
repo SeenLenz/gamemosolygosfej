@@ -1,100 +1,89 @@
 import { Vec2 } from "../../../lin_alg";
-import { Obj } from "../../../renderer/object";
 import { Effect } from "../../base/effects";
 import {
-    CollisionDir,
-    Hitbox,
-    HitboxFlags,
-    ObjectTag,
+    DynamicFlag,
+    DynamicGameObj,
+    GameObject,
     StaticGameObj,
 } from "../../base/gameobject";
-import { DebugPoint } from "../../base/rays";
 import { SpriteSheets } from "../../base/textures";
+import { Bela } from "../roles/player/enemies/slime";
 
-export class StreetLamp extends StaticGameObj {
-    switchable = false;
-    light_effect: Effect | null = null;
-    hitbox_point = new DebugPoint();
-    constructor(size: Vec2, pos: Vec2) {
-        super(size, pos, false, true);
-        this.texture_index = SpriteSheets.SteetLamp;
-        this.object_tag = ObjectTag.StreetLamp;
-        this.hitboxes[0].flags.push(HitboxFlags.SlideableWall);
-        this.hitbox_point.pos = this.hitboxes[0].pos;
-        this.hitbox_point.size = this.hitboxes[0].size;
-        this.set_texture_coords(new Vec2(1, 1), new Vec2(0, 0));
+export class MapObject extends DynamicGameObj {
+    parent_obj: GameObject;
+    realtive_pos: Vec2;
+    constructor(scale: Vec2, position: Vec2, parent: GameObject) {
+        super(scale, parent.pos.add(position));
+        this.parent_obj = parent;
+        this.realtive_pos = position;
     }
 
-    loop(delta_time: number) {
-        if (this.hitboxes[0].collision_dir(CollisionDir.Top)) {
-            if (this.switchable) {
-                if (!this.light_effect) {
-                    this.light_effect = new Effect(
-                        this.size.mul(new Vec2(2.5, 1)),
-                        this.pos.sub(new Vec2(8 * 6, 0)),
-                        1,
-                        SpriteSheets.LampLightEffect,
-                        0,
-                        0,
-                        -1
-                    );
-                } else {
-                    this.light_effect.remove();
-                    this.light_effect = null;
-                }
-            }
-            this.switchable = false;
+    loop(delta_time: number): void {
+        this.pos = this.parent_obj.hitboxes[0].pos
+            .add(this.realtive_pos)
+            .sub(Vec2.Y(this.size.y));
+
+        super.loop(delta_time);
+    }
+}
+
+export class BelaTank extends MapObject {
+    bela: Effect | undefined;
+    constructor(parent: GameObject) {
+        super(new Vec2(18 * 6, 36 * 6), Vec2.X(11 * 6), parent);
+        this.texture_index = SpriteSheets.BelaTank;
+        this.sprite_index = 0;
+        this.animation_repeat = false;
+        this.bela = new Effect(
+            this.size,
+            this.parent_obj.hitboxes[0].pos
+                .add(this.realtive_pos)
+                .sub(Vec2.Y(this.size.y)),
+            this.x_direction,
+            SpriteSheets.SwimmingBela,
+            0,
+            30,
+            1,
+            Vec2.zeros(),
+            false,
+            false,
+            undefined,
+            false,
+            false
+        );
+        this.bela.current_frame = this.bela.sprite[1] - 1;
+    }
+
+    damage_taken(damage: number, hit_dir: number): void {
+        if (this.sprite_index < 4 && this.bela) {
+            this.sprite_index += 1;
+            this.bela.current_cycle = 0;
+            this.bela.x_direction = hit_dir;
         } else {
-            this.switchable = true;
+            this.add_flags([DynamicFlag.NotDamagable]);
+            this.sprite_index = 5;
+            this.bela = undefined;
+            new Bela(this.pos);
         }
-        super.loop(delta_time);
-    }
-}
-
-export class Wire extends StaticGameObj {
-    constructor(size: Vec2, pos: Vec2) {
-        super(size, pos, false, false);
-        this.texture_index = SpriteSheets.Wire;
-        this.object_tag = ObjectTag.Empty;
     }
 
-    loop(delta_time: number) {
-        super.loop(delta_time);
-        this.animate(400);
-    }
-}
-
-export class Bench extends StaticGameObj {
-    constructor(size: Vec2, pos: Vec2) {
-        super(size, pos, false, true);
-        this.texture_index = SpriteSheets.Bench;
-        this.object_tag = ObjectTag.Bench;
-        this.hitboxes[0].size.y = 3 * 6;
-        this.hitboxes[0].pos.y += 5 * 6;
-        this.sprite_index = 0;
-        this.set_texture_coords(new Vec2(1, 1), new Vec2(0, 0));
+    set_animation() {
+        if (this.bela && this.bela.current_frame < 4) {
+            this.bela.frame_time = 25;
+        } else if (this.bela) {
+            this.bela.frame_time = 100;
+        }
     }
 
-    loop(delta_time: number) {
-        super.loop(delta_time);
-    }
-}
-
-export class House extends StaticGameObj {
-    constructor(size: Vec2, pos: Vec2) {
-        super(size, pos, false, true);
-        this.texture_index = SpriteSheets.HouseFg;
-        this.object_tag = ObjectTag.House;
-        this.hitboxes[0].size.y = 4 * 6;
-        this.hitboxes[0].pos.y += 40 * 6;
-        this.hitboxes[0].size.x = 52 * 6;
-        this.hitboxes[0].pos.x += 6 * 6;
-        this.hitboxes[0].flags.push(HitboxFlags.Platform);
-        this.sprite_index = 0;
-        this.set_texture_coords(new Vec2(1, 1), new Vec2(0, 0));
-    }
-
-    loop(delta_time: number) {
+    loop(delta_time: number): void {
+        this.animate(20);
+        this.set_animation();
+        if (this.bela && this.bela.current_cycle >= this.bela.repeat) {
+            this.bela.current_frame = 0;
+        }
+        if (this.bela) {
+            this.bela.animate();
+        }
         super.loop(delta_time);
     }
 }

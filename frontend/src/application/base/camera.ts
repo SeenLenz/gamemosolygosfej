@@ -9,7 +9,7 @@ export class Camera {
     focus_multip: number = 0.06;
     focus_obj?: GameObject;
     rotation: number;
-    target_zoom = 275;
+    target_zoom = 170;
     cam_shake = false;
     shake_timer = 0;
     shake_strength = 0.1;

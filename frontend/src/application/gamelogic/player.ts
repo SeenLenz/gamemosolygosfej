@@ -343,7 +343,10 @@ export class Player extends DynamicGameObj implements Networkable {
     }
 
     on_collision_x(obj: StaticCollisionObj): void {
-        if (!obj.obj_hitbox.reactive) {
+        if (
+            !obj.obj_hitbox.reactive ||
+            obj.obj_hitbox.has_flag(HitboxFlags.RunThrough)
+        ) {
             return;
         }
         if (!this.grounded) {
@@ -360,11 +363,14 @@ export class Player extends DynamicGameObj implements Networkable {
 
     on_collision_y(obj: StaticCollisionObj): void {
         if (
-            obj.obj_hitbox.flags.includes(HitboxFlags.Platform) &&
-            this.platform_fall
+            (obj.obj_hitbox.flags.includes(HitboxFlags.Platform) &&
+                this.platform_fall) ||
+            (obj.dir == CollisionDir.Top &&
+                obj.obj_hitbox.has_flag(HitboxFlags.RunThrough))
         ) {
             return;
         }
+
         this.platform_fall = false;
 
         super.on_collision_y(obj);

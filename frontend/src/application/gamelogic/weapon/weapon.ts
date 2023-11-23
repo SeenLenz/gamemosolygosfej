@@ -1,12 +1,11 @@
 import { Type } from "../../../../../types";
-import { RemoteBuff, delta_time, network } from "../../../app";
+import { RemoteBuff, delta_time, network, player } from "../../../app";
 import { Vec2 } from "../../../lin_alg";
 import { WorkerMsg } from "../../../networking/WorkerMsg";
 import { Effect, PlayerEffects } from "../../base/effects";
-import { DynamicGameObj, ObjectTag } from "../../base/gameobject";
+import { DynamicFlag, DynamicGameObj, ObjectTag } from "../../base/gameobject";
 import { SpriteSheets } from "../../base/textures";
 import { Player } from "../player";
-import { player } from "../roles/role";
 
 export enum WeaponOwner {
     Player,
@@ -141,7 +140,7 @@ export class Weapon {
         all: DynamicGameObj[];
         closest: DynamicGameObj | undefined;
     }) {
-        objs.all.forEach((obj) => {
+        for (let obj of objs.all) {
             network.outBuff_add(
                 new WorkerMsg(Type.sync, {
                     hit: true,
@@ -150,14 +149,19 @@ export class Weapon {
                     hit_dir: this.parent_obj.x_direction,
                 })
             );
-        });
+
+            obj.damage_taken(
+                this.power + this.crit,
+                this.parent_obj.x_direction
+            );
+        }
     }
 }
 
 export class Ranged extends Weapon {
     projectile: Effect | undefined;
     direction = Vec2.zeros();
-    speed = 30;
+    speed = 22;
     distance = 0;
     constructor(obj: DynamicGameObj, power: number, range: number) {
         super(obj, power, range, Math.PI / 3);
@@ -212,7 +216,7 @@ export class Ranged extends Weapon {
                 this.projectile.pos.x -
                     this.target_objects.closest.hitboxes[0].middle.x
             ) <=
-            this.speed * 5 * delta_time
+            this.speed * 30 * delta_time
         ) {
             if (this.target_objects.closest.object_tag == ObjectTag.Player) {
                 let player = this.target_objects.closest as Player;

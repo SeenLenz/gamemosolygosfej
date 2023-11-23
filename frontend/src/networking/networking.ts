@@ -136,7 +136,7 @@ export class Network {
 
     async create_lobby() {
         const response = await fetch(
-            "http://" + this.domain + "/setup/lobbycrt"
+            "https://" + this.domain + "/setup/lobbycrt"
         );
         this.ws_cfg = await response.json();
 

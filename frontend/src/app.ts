@@ -18,6 +18,7 @@ import {
     GamepadEvent,
 } from "./application/base/gamepad_handler";
 import { gamePlayHud } from "./ui/hud-re";
+import { Hud } from "./ui/hud";
 
 export const Gameped = new GamepadEvent();
 export const RemoteBuff = new Map<String, Networkable>();
@@ -77,6 +78,7 @@ function setup(role: number) {
 function main_loop() {
     delta_time = (performance.now() - start) / 10;
     start = performance.now();
+    huuud.timer.textContent = huuud.format_timer(performance.now());        
     renderer.run(camera);
     camera.move(delta_time);
     camera.shake_camera(delta_time);

@@ -38,7 +38,8 @@ export class Player extends DynamicGameObj implements Networkable {
     damagable = true;
     damaged_timer = performance.now();
     health = 8;
-    used_potion = false;
+    used_potion_health = false;
+    used_potion_buff = false;
 
     constructor(
         size: number[],
@@ -156,7 +157,8 @@ export class Player extends DynamicGameObj implements Networkable {
         if (!this.remote) {
             this.halt_points = [];
         }
-        this.used_potion = false;
+        this.used_potion_health = false;
+        this.used_potion_buff = false;
     }
 
     keyboard_events(delta_time: number) {
@@ -233,8 +235,14 @@ export class Player extends DynamicGameObj implements Networkable {
             this.teleport.pressed = true;
         }
         if (event.key_state(Keys.F, EventType.Pressed)) {
-            if (huuud.current_health != 8 && huuud.potion_parent_div.children.length != 0) {
-                this.used_potion = true;
+            if (huuud.current_health != 8 && huuud.health_potion_parent.children.length != 0) {
+                this.used_potion_health = true;
+                this.used_potion_health = true;
+            }
+        }
+        if (event.key_state(Keys.L, EventType.Pressed)) {
+            if (huuud.buff_potion_parent.children.length != 0) {                
+                this.used_potion_buff = true;
             }
         }
     }
@@ -272,6 +280,9 @@ export class Player extends DynamicGameObj implements Networkable {
             this.health += 2;
             huuud.set_health_bar(2, 1);
         }        
+    }
+    buff_potion_used() {
+        
     }
     set_attack() {
         this.ranged_weapon.run();
@@ -313,11 +324,19 @@ export class Player extends DynamicGameObj implements Networkable {
             this.force.y = 0;
         }
 
-        if (this.used_potion) {
+        if (this.used_potion_health) {
             this.health_potion_used();
-            const potion = huuud.potion_parent_div.lastChild;
-            if (potion) {
-                huuud.potion_parent_div.removeChild(potion);
+            const health_potion = huuud.health_potion_parent.lastChild;
+            if (health_potion) {
+                huuud.health_potion_parent.removeChild(health_potion);
+            }
+        }
+        
+        if (this.used_potion_buff) {
+            this.buff_potion_used();
+            const buff_potion = huuud.buff_potion_parent.lastChild;
+            if (buff_potion) {
+                huuud.buff_potion_parent.removeChild(buff_potion);
             }
         }
     }

@@ -267,10 +267,7 @@ export class Player extends DynamicGameObj implements Networkable {
             huuud.set_health_bar(damage, -1);
 
             if (this.health <= 0) {
-                console.log(this.remote);
-                if (this.remote == false) {
-                    camera.focus_on(new Empty(this.pos));
-                }
+                this.health = 0;
                 network.outBuff_add(
                     new WorkerMsg(Type.sync, {
                         death: true,
@@ -279,6 +276,7 @@ export class Player extends DynamicGameObj implements Networkable {
                 );
                 this.del();
                 camera.focus_on(new CameraObj());
+                (document.querySelector(".hud") as HTMLElement).innerHTML = "";
             }
         }
 
@@ -353,6 +351,18 @@ export class Player extends DynamicGameObj implements Networkable {
             if (buff_potion) {
                 huuud.buff_potion_parent.removeChild(buff_potion);
             }
+        }
+
+        if (this.pos.y > 4000) {
+            network.outBuff_add(
+                new WorkerMsg(Type.sync, {
+                    death: true,
+                    remote_id: this.remote_id,
+                })
+            );
+            this.del();
+            camera.focus_on(new CameraObj());
+            (document.querySelector(".hud") as HTMLElement).innerHTML = "";
         }
     }
 

@@ -17,6 +17,7 @@ import {
     GamepadButtons,
     GamepadEvent,
 } from "./application/base/gamepad_handler";
+import { gamePlayHud } from "./ui/hud-re";
 import { Hud } from "./ui/hud";
 
 export const Gameped = new GamepadEvent();
@@ -31,7 +32,7 @@ export const network = new Network("gamemosolygosfej.onrender.com");
 export let delta_time: number = 1;
 export let current_role: Roles;
 let start = 1;
-export let huuud: Hud;
+export let huuud: gamePlayHud;
 export let map: Map_;
 export let player: Player;
 
@@ -61,10 +62,10 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 function setup(role: number) {
-    document.querySelector("#start_bt")?.remove();
-    document.querySelector("#msg_bt")?.remove();
-    document.querySelector("#create_bt")?.remove();
-    document.querySelector("#join_bt")?.remove();
+    const div = document.querySelector('body div');
+    if (div) {
+        div.innerHTML = '';
+    }
     renderer.setup();
     create_textures();
     current_role = role;
@@ -77,9 +78,9 @@ function setup(role: number) {
 }
 
 function main_loop() {
-    huuud.run();
     delta_time = (performance.now() - start) / 10;
     start = performance.now();
+    huuud.timer.textContent = huuud.format_timer(performance.now());        
     renderer.run(camera);
     camera.move(delta_time);
     camera.shake_camera(delta_time);
@@ -105,6 +106,6 @@ function main_loop() {
 
 export function main(role: number) {
     setup(role);
-    huuud = new Hud();
+    huuud = new gamePlayHud();
     main_loop();
 }

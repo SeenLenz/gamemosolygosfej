@@ -31,7 +31,7 @@ export class Effect {
     x_direction: number = 1;
     current_frame = 0;
     animation_timer = 0;
-    speed: number;
+    frame_time: number;
     repeat: number;
     current_cycle = 0;
     rotation = 0;
@@ -41,6 +41,7 @@ export class Effect {
     remote = false;
     parent_obj: String | undefined = undefined;
     velocity: Vec2 | undefined;
+    auto_render = true;
     constructor(
         size: Vec2,
         pos: Vec2,
@@ -53,7 +54,8 @@ export class Effect {
         reverse = false,
         remote = false,
         parent_obj: String | undefined = undefined,
-        sync = true
+        sync = true,
+        auto_render = true
     ) {
         this.x_direction = x_dir;
         this.texture_index = texure_index;
@@ -64,13 +66,14 @@ export class Effect {
             this.texture_coords,
             "texture_coord"
         );
-        this.speed = speed;
+        this.frame_time = speed;
         this.repeat = repeat;
         this.size = size;
         this.pos = pos;
         this.offset = offset;
         this.remote = remote;
         this.parent_obj = parent_obj;
+        this.auto_render = auto_render;
 
         if (!this.remote && sync) {
             let msg = new WorkerMsg(Type.crt, {
@@ -79,7 +82,7 @@ export class Effect {
                 pos: this.pos,
                 x_dir: this.x_direction,
                 texure_index: this.texture_index,
-                speed: this.speed,
+                speed: this.frame_time,
                 repeat: this.repeat,
                 offset: this.offset,
                 reverse: this.reverse,
@@ -89,7 +92,9 @@ export class Effect {
             network.outBuff_add(msg);
         }
 
-        Effect.effects.push(this);
+        if (auto_render) {
+            Effect.effects.push(this);
+        }
     }
 
     get texture() {
@@ -109,7 +114,9 @@ export class Effect {
     }
 
     remove() {
-        Effect.effects.splice(this.index, 1);
+        if (this.auto_render) {
+            Effect.effects.splice(this.index, 1);
+        }
     }
 
     static effects: Effect[] = [];
@@ -122,7 +129,7 @@ export class Effect {
                 ).pos;
             }
         }
-        if (performance.now() - this.animation_timer > this.speed) {
+        if (performance.now() - this.animation_timer > this.frame_time) {
             this.set_texture_coords(
                 Vec2.from(this.sprite_size),
                 new Vec2(
@@ -135,6 +142,7 @@ export class Effect {
             this.current_frame += 1;
             if (this.current_frame > this.sprite[1] - 1) {
                 this.current_frame = 0;
+                this.current_cycle += 1;
             }
         }
         this.object?.render(renderer, this, this.offset);

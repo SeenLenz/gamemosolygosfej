@@ -1,84 +1,192 @@
-import { camera } from "../../../app";
+import { gravity } from "../../../app";
 import { Vec2 } from "../../../lin_alg";
-import { GameObject, StaticGameObj } from "../../base/gameobject";
+import { Effect } from "../../base/effects";
+import {
+    GameObject,
+    Hitbox,
+    HitboxFlags,
+    ObjectTag,
+    StaticGameObj,
+} from "../../base/gameobject";
 import { SpriteSheets } from "../../base/textures";
-import { Bela } from "../roles/player/enemies/slime";
-import { Ground, GroundPos, UnderGround } from "./ground";
-import { Bench, House, StreetLamp, Wire } from "./objects";
+import { BelaTank } from "./objects";
 
 export class Map_ {
-    background: GameObject[] = [];
-    objects: GameObject[] = [];
-    foreground: GameObject[] = [];
+    static background: GameObject[] = [];
+    static objects: GameObject[] = [];
+    static foreground: GameObject[] = [];
     constructor() {
-        this.create_house(new Vec2(3, 0), new Vec2(21, 30), 1);
-        this.create_house(new Vec2(3 + 26, -1), new Vec2(13, 30 + 1), 0.9);
-        this.create_house(new Vec2(3 - 13, -3), new Vec2(13, 30 + 2), 0.7);
-    }
-
-    create_house(pos: Vec2, size: Vec2, z: number) {
-        this.objects = this.objects.concat(
-            new Ground(
-                new Vec2(size.x, 1),
-                new Vec2(0 + pos.x, 0 + pos.y),
-                GroundPos.Center,
-                z
-            ),
-            new Ground(
-                new Vec2(1, 1),
-                new Vec2(-1 + pos.x, 0 + pos.y),
-                GroundPos.LeftCorner,
-                z
-            ),
-            new Ground(
-                new Vec2(1, 1),
-                new Vec2(size.x + pos.x, 0 + pos.y),
-                GroundPos.RightCorner,
-                z
-            ),
-            new UnderGround(
-                new Vec2(size.x, size.y),
-                new Vec2(0 + pos.x, 1 + pos.y),
-                GroundPos.Center,
-                z
-            ),
-            new UnderGround(
-                new Vec2(1, size.y),
-                new Vec2(-1 + pos.x, 1 + pos.y),
-                GroundPos.LeftCorner,
-                z
-            ),
-            new UnderGround(
-                new Vec2(1, size.y),
-                new Vec2(size.x + pos.x, 1 + pos.y),
-                GroundPos.RightCorner,
-                z
-            )
-        );
+        Map_.objects.push(new BaseIsland());
+        Map_.objects.push(new BelaIsland(new Vec2(-100 * 6, 100 * 6)));
+        Map_.objects.push(new BelaIsland(new Vec2(320 * 6, 100 * 6)));
     }
 
     render(delta_time: number) {
-        this.background.forEach((obj) => {
+        Map_.background.forEach((obj) => {
             obj.loop(delta_time);
             obj.render();
         });
-        this.objects.forEach((obj) => {
+        Map_.objects.forEach((obj) => {
             obj.loop(delta_time);
             obj.render();
         });
     }
 }
 
-class Background extends StaticGameObj {
-    constructor(size: Vec2, pos: Vec2, z: number) {
-        super(size, pos, false, false);
-        this.texture_index = SpriteSheets.Background;
-        this.sprite_index = Math.floor(Math.random() * 3);
-        this.z_coord = z;
-        this.set_texture_coords(
-            new Vec2(this.sprite_size.x, 1),
-            new Vec2(0, 0)
+export class BelaIsland extends StaticGameObj {
+    bela_tank: BelaTank;
+    bela_free = false;
+    fall_timer = 0;
+    fall_speed = 0;
+    fake_fall = false;
+    slime_on = false;
+    constructor(pos: Vec2) {
+        super(new Vec2(103 * 6, 80 * 6), pos, false, true);
+        this.texture_index = SpriteSheets.SideIsland;
+        this.hitboxes[0].size.y = 3 * 6;
+        this.hitboxes[0].size.x = this.size.x - 2 * 6;
+        this.hitboxes[0].pos_diff.x = 6;
+        this.hitboxes[0].pos_diff.y = 41 * 6;
+        this.hitboxes[0].pos = this.pos.add(this.hitboxes[0].pos_diff);
+        this.object_tag = ObjectTag.BelaIsland;
+
+        this.bela_tank = new BelaTank(this);
+
+        this.set_texture_coords(new Vec2(1, 1), new Vec2(0, 0));
+    }
+
+    get obj_index() {
+        return Map_.objects.findIndex((obj) => obj == this);
+    }
+
+    loop(delta_time: number) {
+        if (this.slime_on) {
+            this.fall_timer = performance.now();
+        }
+        if (!this.bela_free && this.bela_tank.sprite_index == 5) {
+            this.fall_timer = performance.now();
+            this.bela_free = true;
+        }
+
+        if (this.bela_free && performance.now() - this.fall_timer > 2000) {
+            this.pos.y += this.fall_speed * delta_time;
+            this.fall_speed += gravity * delta_time;
+
+            if (!this.fake_fall && this.fall_speed > 20 * delta_time) {
+                this.fall_speed = 0;
+                this.fall_timer = performance.now() - 1000;
+                this.fake_fall = true;
+            }
+        }
+
+        console.log(this.slime_on);
+
+        if (this.pos.y > 5000) {
+            GameObject.static_hitboxes.splice(this.hitbox_index, 1);
+            Map_.objects.splice(this.obj_index, 1);
+        }
+
+        this.hitboxes[0].pos = this.pos.add(this.hitboxes[0].pos_diff);
+
+        super.loop(delta_time);
+        this.slime_on = false;
+    }
+}
+
+class BaseIsland extends StaticGameObj {
+    constructor() {
+        super(new Vec2(309 * 6, 240 * 6), Vec2.zeros(), false, true);
+        this.texture_index = SpriteSheets.MainIsland;
+        this.hitboxes[0].size.y = 3 * 6;
+        this.hitboxes[0].size.x = 273 * 6 - 7 * 6;
+        this.hitboxes[0].pos_diff.x = 7 * 6;
+        this.hitboxes[0].pos_diff.y = 170 * 6;
+        this.hitboxes[0].pos = this.pos.add(this.hitboxes[0].pos_diff);
+
+        this.hitboxes.push(
+            new Hitbox(
+                new Vec2((280 - 233) * 6, 2 * 6),
+                new Vec2(233 * 6, 123 * 6),
+                true
+            )
         );
+        this.hitboxes[1].flags.push(HitboxFlags.Platform);
+
+        this.hitboxes.push(
+            new Hitbox(
+                new Vec2((233 - 216) * 6, 3 * 6),
+                new Vec2(216 * 6, 142 * 6),
+                true
+            )
+        );
+        this.hitboxes[2].flags.push(HitboxFlags.Platform);
+
+        this.hitboxes.push(
+            new Hitbox(new Vec2(6 * 6, 6 * 6), new Vec2(232 * 6, 125 * 6), true)
+        );
+
+        this.hitboxes.push(
+            new Hitbox(
+                new Vec2((182 - 89) * 6, (169 - 167) * 6),
+                new Vec2(87 * 6, 167 * 6),
+                true
+            )
+        );
+
+        let tavern_balcony = new Hitbox(
+            new Vec2((182 - 89) * 6, 2 * 6),
+            new Vec2(87 * 6, 126 * 6),
+            true
+        );
+        tavern_balcony.flags.push(HitboxFlags.Platform);
+        this.hitboxes.push(tavern_balcony);
+
+        let left_barrel_row_bottom = new Hitbox(
+            new Vec2((69 - 37) * 6, 9 * 6),
+            new Vec2(37 * 6, 158 * 6),
+            true
+        );
+
+        left_barrel_row_bottom.flags.push(HitboxFlags.RunThrough);
+        left_barrel_row_bottom.flags.push(HitboxFlags.Platform);
+        this.hitboxes.push(left_barrel_row_bottom);
+
+        let left_barrel_row_top = new Hitbox(
+            new Vec2((203 - 183) * 6, 9 * 6),
+            new Vec2((37 + 203 - 183) * 6, 149 * 6),
+            true
+        );
+
+        left_barrel_row_top.flags.push(HitboxFlags.RunThrough);
+        left_barrel_row_top.flags.push(HitboxFlags.Platform);
+        this.hitboxes.push(left_barrel_row_top);
+
+        let right_barrel_row = new Hitbox(
+            new Vec2((203 - 183) * 6, 9 * 6),
+            new Vec2(183 * 6, 157 * 6),
+            true
+        );
+
+        right_barrel_row.flags.push(HitboxFlags.RunThrough);
+        right_barrel_row.flags.push(HitboxFlags.Platform);
+        this.hitboxes.push(right_barrel_row);
+
+        new Effect(
+            this.size,
+            this.pos,
+            1,
+            SpriteSheets.MainIslandForeground,
+            0,
+            0,
+            -1,
+            Vec2.zeros(),
+            false,
+            false,
+            undefined,
+            false
+        );
+
+        this.set_texture_coords(new Vec2(1, 1), new Vec2(0, 0));
     }
 
     loop(delta_time: number) {

@@ -1,16 +1,18 @@
-import { event, gravity } from "../../../../app";
+import { event, gravity, player } from "../../../../app";
 import { Vec2, interpolate } from "../../../../lin_alg";
+import { Obj } from "../../../../renderer/object";
 import { EventType, Keys } from "../../../base/event_handler";
 import {
     CollisionDir,
+    DynamicFlag,
     DynamicGameObj,
+    GameObject,
     HitboxFlags,
     ObjectTag,
     StaticCollisionObj,
 } from "../../../base/gameobject";
 import { Point } from "../../../base/rays";
 import { SpriteSheets } from "../../../base/textures";
-import { player } from "../role";
 
 export class Enemy extends DynamicGameObj {
     dam_anim_timer = performance.now();
@@ -41,30 +43,77 @@ export class Enemy extends DynamicGameObj {
 
     on_death() {}
 
+    get_closest_player() {
+        let closest: DynamicGameObj | undefined = undefined;
+        for (let dyno of GameObject.dynamic_hitboxes) {
+            if (dyno == this || dyno.object_tag != ObjectTag.Player) {
+                continue;
+            }
+            if ((dyno as DynamicGameObj).has_flag(DynamicFlag.NotDamagable)) {
+                continue;
+            }
+            if (!closest) {
+                closest = dyno as DynamicGameObj;
+            } else if (
+                this.hitboxes[0].middle.dist_squared(
+                    closest.hitboxes[0].middle
+                ) >
+                this.hitboxes[0].middle.dist_squared(dyno.hitboxes[0].middle)
+            ) {
+                closest = dyno as DynamicGameObj;
+            }
+        }
+
+        return closest;
+    }
+
     get_player_in_section(
         radius: number,
         dir: Vec2,
         angle: number,
         range_offset = 0
     ) {
-        let dyno = player;
-        if (
-            this.hitboxes[0].middle.dist_squared(dyno.hitboxes[0].middle) <
-                radius * radius &&
-            this.hitboxes[0].middle.dist_squared(dyno.hitboxes[0].middle) >
-                range_offset * range_offset
-        ) {
-            const ndir = dir.normalize();
-            const min_dot = Math.cos(angle / 2);
-            const target_dot = dyno.hitboxes[0].middle
-                .sub(this.hitboxes[0].middle)
-                .normalize()
-                .dot(ndir);
+        let closest: DynamicGameObj | undefined = undefined;
+        for (let dyno of GameObject.dynamic_hitboxes) {
+            if (dyno == this || dyno.object_tag != ObjectTag.Player) {
+                continue;
+            }
+            if ((dyno as DynamicGameObj).has_flag(DynamicFlag.NotDamagable)) {
+                continue;
+            }
+            if (
+                this.hitboxes[0].middle.dist_squared(dyno.hitboxes[0].middle) <
+                    radius * radius &&
+                this.hitboxes[0].middle.dist_squared(dyno.hitboxes[0].middle) >
+                    range_offset * range_offset
+            ) {
+                const ndir = dir.normalize();
+                const min_dot = Math.cos(angle / 2);
+                const target_dot = dyno.hitboxes[0].middle
+                    .sub(this.hitboxes[0].middle)
+                    .normalize()
+                    .dot(ndir);
 
-            if (min_dot < target_dot) {
-                return true;
+                if (min_dot < target_dot) {
+                    if (!closest) {
+                        closest = dyno as DynamicGameObj;
+                    } else {
+                        if (
+                            this.hitboxes[0].middle.dist_squared(
+                                closest.hitboxes[0].middle
+                            ) >
+                            this.hitboxes[0].middle.dist_squared(
+                                dyno.hitboxes[0].middle
+                            )
+                        ) {
+                            closest = dyno as DynamicGameObj;
+                        }
+                    }
+                }
             }
         }
+
+        return closest;
     }
 
     loop(delta_time: number): void {

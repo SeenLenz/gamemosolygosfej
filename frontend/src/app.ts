@@ -27,36 +27,37 @@ export const event = new EventHandler(renderer);
 export let camera = new Camera();
 export let gravity = 0.5;
 //export const network = new Network("10.0.23.4:3000");
-export const network = new Network("127.0.0.1:6969");
-// export const network = new Network("gamemosolygosfej.onrender.com");
+//export const network = new Network("127.0.0.1:6969");
+export const network = new Network("gamemosolygosfej.onrender.com");
 export let delta_time: number = 1;
 export let current_role: Roles;
 let start = 1;
 export let huuud: gamePlayHud;
 export let map: Map_;
+export let player: Player;
 
 document.addEventListener("DOMContentLoaded", () => {
     document.querySelector("#join_bt")?.addEventListener("click", (e) => {
         const joinLabelValue = (
-            document.querySelector("#join_label") as HTMLInputElement | null
+            document.querySelector("#input_field") as HTMLInputElement | null
         )?.value;
         if (joinLabelValue) {
             network.join_lobby(joinLabelValue);
         }
     });
     document.querySelector("#start_bt")?.addEventListener("click", (e) => {
-        network.send(new WorkerMsg(Type.start));
+        document
+            .querySelector(".startup")
+            ?.setAttribute("style", "display: none;");
+        document
+            .querySelector(".ui")
+            ?.setAttribute("style", "pointer-events: none;");
         document.querySelector("#start_bt")?.remove();
+
+        network.send(new WorkerMsg(Type.start));
     });
     document.querySelector("#create_bt")?.addEventListener("click", (e) => {
         network.create_lobby();
-    });
-    document.querySelector("#msg_bt")?.addEventListener("click", (e) => {
-        network.send(
-            new WorkerMsg(Type.test, {
-                msg: "This is a message from the test button",
-            })
-        );
     });
 });
 
@@ -69,7 +70,8 @@ function setup(role: number) {
     create_textures();
     current_role = role;
 
-    camera.focus_on(new Player([96, 96], [100, -500], false, undefined));
+    player = new Player([96, 96], [100, -500], false, undefined);
+    camera.focus_on(player);
 
     start = performance.now();
     map = new Map_();
@@ -91,7 +93,7 @@ function main_loop() {
     Effect.effects.forEach((e) => {
         e.animate();
     });
-    map.foreground.forEach((obj) => {
+    Map_.foreground.forEach((obj) => {
         obj.loop(delta_time);
         obj.render();
     });

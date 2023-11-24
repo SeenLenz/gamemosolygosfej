@@ -325,10 +325,6 @@ export class Melee extends Weapon {
             this.crit = 0;
             this.parent_obj.velocity.x += 9 * this.parent_obj.x_direction;
             this.combo_count = (this.combo_count + 1) % 2;
-            if (this.combo_count % 2 == 0) {
-                this.crit += 20;
-            }
-            this.crit += this.parent_obj.velocity.magnitude;
         }
 
         if (performance.now() - this.base_timer > 11 * 40) {

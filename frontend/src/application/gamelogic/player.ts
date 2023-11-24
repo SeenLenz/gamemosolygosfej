@@ -1,6 +1,6 @@
 import { Networkable, ObjType, Type } from "../../../../types";
 
-import { NetworkBuff, camera, event,huuud, gravity, network } from "../../app";
+import { NetworkBuff, camera, event, huuud, gravity, network } from "../../app";
 import { Vec2 } from "../../lin_alg";
 import { Effect, PlayerEffects } from "../base/effects";
 import { EventType, Keys } from "../base/event_handler";
@@ -62,8 +62,8 @@ export class Player extends DynamicGameObj implements Networkable {
             this.size.x / 4
         );
 
-        this.ranged_weapon = new Ranged(this, 3, 600);
-        this.melee_weapon = new Melee(this, 2);        
+        this.ranged_weapon = new Ranged(this, 2, 600);
+        this.melee_weapon = new Melee(this, 1);
         this.teleport = new Teleport(this, 0);
 
         if (!remote) {
@@ -162,6 +162,7 @@ export class Player extends DynamicGameObj implements Networkable {
             this.halt_points = [];
         }
         this.used_potion_health = false;
+        this.used_potion_buff = false;
     }
 
     keyboard_events(delta_time: number) {
@@ -238,44 +239,47 @@ export class Player extends DynamicGameObj implements Networkable {
             this.teleport.pressed = true;
         }
         if (event.key_state(Keys.F, EventType.Pressed)) {
-            if (huuud.current_health != 8 && huuud.health_potion_parent.children.length != 0) {
-                this.used_potion_health = true;
+            if (
+                huuud.current_health != 8 &&
+                huuud.health_potion_parent.children.length != 0
+            ) {
                 this.used_potion_health = true;
             }
         }
         if (event.key_state(Keys.L, EventType.Pressed)) {
-            if (huuud.buff_potion_parent.children.length != 0) {                
+            if (huuud.buff_potion_parent.children.length != 0) {
                 this.used_potion_buff = true;
                 this.buff_taken_at = performance.now();
             }
         }
     }
-//     damage_taken(damage: number, hit_dir: number) {
-//         if (this.used_potion_buff && this.buff_taken_at + 10000 > performance.now()) {
-//             damage -= 1;
-//             if (this.damagable) {
-//                 this.damagable = false;
-//                 this.health -= damage;
-//                 this.damaged_timer = performance.now();
-//                 this.velocity.x += (damage / 5) * hit_dir;
-//                 this.velocity.y -= 2;
-//                 huuud.set_health_bar(damage, -1);
-    
-//                 if (this.health <= 0) {
-//                     console.log(this.remote);
-//                     if (this.remote == false) {
-//                         camera.focus_on(new Empty(this.pos));
-//                     }
-//                     network.outBuff_add(
-//                         new WorkerMsg(Type.sync, {
-//                             death: true,
-//                             this: this.remote_id,
-//                         })
-//                     );
-//                     this.remove();
-//                 }
-//             }
-//         }
+
+    //     damage_taken(damage: number, hit_dir: number) {
+    //         if (this.used_potion_buff && this.buff_taken_at + 10000 > performance.now()) {
+    //             damage -= 1;
+    //             if (this.damagable) {
+    //                 this.damagable = false;
+    //                 this.health -= damage;
+    //                 this.damaged_timer = performance.now();
+    //                 this.velocity.x += (damage / 5) * hit_dir;
+    //                 this.velocity.y -= 2;
+    //                 huuud.set_health_bar(damage, -1);
+
+    //                 if (this.health <= 0) {
+    //                     console.log(this.remote);
+    //                     if (this.remote == false) {
+    //                         camera.focus_on(new Empty(this.pos));
+    //                     }
+    //                     network.outBuff_add(
+    //                         new WorkerMsg(Type.sync, {
+    //                             death: true,
+    //                             this: this.remote_id,
+    //                         })
+    //                     );
+    //                     this.remove();
+    //                 }
+    //             }
+    //         }
 
     damage_taken(damage: number, hit_dir: number, from: DynamicGameObj) {
         if (this.damagable) {
@@ -284,7 +288,7 @@ export class Player extends DynamicGameObj implements Networkable {
             this.used_potion_buff = false;
             this.health -= damage;
             this.damaged_timer = performance.now();
-            this.velocity.x += (damage / 5) * hit_dir;
+            this.velocity.x += damage * 5 * hit_dir;
             this.velocity.y -= 2;
             huuud.set_health_bar(damage, -1);
 
@@ -306,18 +310,16 @@ export class Player extends DynamicGameObj implements Networkable {
 
         super.damage_taken(damage, hit_dir, from);
     }
-    health_potion_used() {    
+    health_potion_used() {
         if (this.health + 2 > 8) {
             this.health += 1;
-            huuud.set_health_bar(1, 1);                
-        }
-        else {
+            huuud.set_health_bar(1, 1);
+        } else {
             this.health += 2;
             huuud.set_health_bar(2, 1);
-        }        
+        }
     }
-    buff_potion_used() {
-    }
+    buff_potion_used() {}
     set_attack() {
         this.ranged_weapon.run();
         this.melee_weapon.run();
@@ -358,15 +360,21 @@ export class Player extends DynamicGameObj implements Networkable {
             this.force.y = 0;
         }
 
-        if (this.used_potion_health && huuud.health_potion_parent.childElementCount != 0) {
+        if (
+            this.used_potion_health &&
+            huuud.health_potion_parent.childElementCount != 0
+        ) {
             this.health_potion_used();
             const health_potion = huuud.health_potion_parent.lastChild;
             if (health_potion) {
                 huuud.health_potion_parent.removeChild(health_potion);
             }
         }
-        
-        if (this.used_potion_buff && huuud.buff_potion_parent.childElementCount != 0) {
+
+        if (
+            this.used_potion_buff &&
+            huuud.buff_potion_parent.childElementCount != 0
+        ) {
             const buff_potion = huuud.buff_potion_parent.lastChild;
             if (buff_potion) {
                 huuud.buff_potion_parent.removeChild(buff_potion);

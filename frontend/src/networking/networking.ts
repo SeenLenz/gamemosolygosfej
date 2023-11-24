@@ -16,10 +16,7 @@ import {
 } from "../application/base/gameobject";
 import { BelaIsland, Map_ } from "../application/gamelogic/map/map";
 import { Player } from "../application/gamelogic/player";
-import {
-    Bela,
-    Belacska,
-} from "../application/gamelogic/roles/player/enemies/slime";
+import { Bela } from "../application/gamelogic/roles/player/enemies/slime";
 import { Vec2 } from "../lin_alg";
 import { WorkerMsg } from "./WorkerMsg";
 
@@ -122,7 +119,6 @@ export class Network {
                 }
                 break;
             case Type.sync:
-
                 if (msg.data.death) {
                     NetworkBuff.get(msg.data.remote_id)?.del();
 
@@ -182,7 +178,7 @@ export class Network {
 
     async create_lobby() {
         const response = await fetch(
-            "http://" + this.domain + "/setup/lobbycrt"
+            "https://" + this.domain + "/setup/lobbycrt"
         );
         this.ws_cfg = await response.json();
 

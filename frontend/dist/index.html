@@ -1,66 +1,54 @@
 <!DOCTYPE html>
 <html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Document</title>
+        <link rel="stylesheet" href="style.css" />
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    </head>
 
-<head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Document</title>
-    <link rel="stylesheet" href="style.css" />
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-</head>
-
-<body>
-    <div style="position: absolute; height: 100vh; width: 100vw;">
-
-    <div class="ui">
-
-        <div class="startup">
-            <div class="title">
-                <img src="textures/UI/logo.png" alt="">
-            </div>
-            <!-- <input type="text" name="lobby" id="join_label" /> -->
-            <div class="buttons">
-                <div class="Lobby_id_wrapper">
-                    <div class="id"></div>
-                    <input type="text" name="" id="input_field">
+    <body>
+        <div
+            id="slubmububububu"
+            style="position: absolute; height: 100vh; width: 100vw">
+            <div class="ui">
+                <div class="startup">
+                    <div class="title">
+                        <img src="textures/UI/logo.png" alt="" />
+                    </div>
+                    <div class="buttons">
+                        <div class="Lobby_id_wrapper">
+                            <div class="id"></div>
+                            <input type="text" name="" id="input_field" />
+                        </div>
+                        <div class="button_wrapper">
+                            <button class="init_bt" id="join_bt"></button>
+                            <button class="init_bt" id="start_bt"> </button>
+                            <button class="init_bt" id="create_bt"></button>
+                        </div>
+                    </div>
                 </div>
-                <div class="button_wrapper">
-                    <button class="init_bt" id="join_bt"></button>
-                    <button class="init_bt" id="start_bt"> </button>
-                    <button class="init_bt" id="create_bt"></button>
-                </div>
-            </div>
 
-            <!-- <button id="start_bt">start game</button>
-            <label id="lobby_lb">asfasd</label> -->
+                <div class="hud" style="display: none">
+                    <div class="healthbar"></div>
+                    <div class="heal"></div>
+                    <div class="abilities"></div>
+                    <div class="interact_prompt"></div>
+                    <div class="timer"></div>
+                    <div class=""></div>
+                </div>
+
+                <div class="endscreen"></div>
+            </div>
         </div>
 
-        <div class="hud" style="display: none;">
-            <div class="healthbar"></div>
-            <div class="heal"></div>
-            <div class="abilities"></div>
-            <div class="interact_prompt"></div>
-            <div class="timer"></div>
-            <div class=""></div>
-        </div>
-
-        <div class="endscreen"></div>
-
-    </div>
-    <!-- <div style="position: absolute">
-        <input type="text" name="lobby" id="join_label" />
-        <button id="join_bt">join Lobby</button>
-        <button id="create_bt">create Lobby</button>
-        <button id="msg_bt">send Msg</button>
-        <button id="start_bt">start game</button>
-        <label id="lobby_lb"></label>
-    </div> -->
-    <canvas id="main_canvas"> </canvas>
-</body>
-<script src="index.js" type="module"></script>
-<!-- prettier-ignore -->
-<script type="x-shader/x-vertex" id="vertex_shader">#version 300 es
+        <canvas id="main_canvas"> </canvas>
+    </body>
+    <script src="index.js" type="module"></script>
+    <!-- prettier-ignore -->
+    <script type="x-shader/x-vertex" id="vertex_shader">#version 300 es
                 in vec2 a_pos;
                 in vec2 texture_coord;
                 uniform vec2 u_res;
@@ -105,8 +93,8 @@
                     v_texture_coords = text_coord;
                 }
     </script>
-<!-- prettier-ignore -->
-<script type="x-shader/x-fragment" id="fragment_shader">#version 300 es
+    <!-- prettier-ignore -->
+    <script type="x-shader/x-fragment" id="fragment_shader">#version 300 es
                 precision mediump float;
 
                 in vec2 v_texture_coords;
@@ -121,5 +109,4 @@
                     fragColor.xyz *= shade_multip * f_z_coord * f_z_coord;
                 }
     </script>
-
 </html>

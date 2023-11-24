@@ -62,10 +62,8 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 function setup(role: number) {
-    const div = document.querySelector('body div');
-    if (div) {
-        div.innerHTML = '';
-    }
+    // (document.querySelector("#slubmububububu") as HTMLElement).innerHTML = "";
+
     renderer.setup();
     create_textures();
     current_role = role;
@@ -80,7 +78,7 @@ function setup(role: number) {
 function main_loop() {
     delta_time = (performance.now() - start) / 10;
     start = performance.now();
-    huuud.timer.textContent = huuud.format_timer(performance.now());        
+    huuud.timer.textContent = huuud.format_timer(performance.now());
     renderer.run(camera);
     camera.move(delta_time);
     camera.shake_camera(delta_time);

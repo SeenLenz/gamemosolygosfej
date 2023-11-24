@@ -7,7 +7,7 @@ import {
     NetworkBuffer,
     ObjType,
 } from "../../../types";
-import { main, camera, RemoteBuff } from "../app";
+import { main, camera, NetworkBuff } from "../app";
 import { Effect, PlayerEffects } from "../application/base/effects";
 import {
     DynamicGameObj,
@@ -16,6 +16,10 @@ import {
 } from "../application/base/gameobject";
 import { BelaIsland, Map_ } from "../application/gamelogic/map/map";
 import { Player } from "../application/gamelogic/player";
+import {
+    Bela,
+    Belacska,
+} from "../application/gamelogic/roles/player/enemies/slime";
 import { Vec2 } from "../lin_alg";
 import { WorkerMsg } from "./WorkerMsg";
 
@@ -52,19 +56,21 @@ export class Network {
 
     private parse_msg(msg: any) {
         switch (msg.type) {
-            // case Type.map:
-            //     switch (msg.data?.type) {
-            //         case ObjectTag.BelaIsland:
-            //             Map_.objects.push(
-            //                 new BelaIsland(
-            //                     msg.data?.pos,
-            //                     true,
-            //                     msg.data?.remote_id
-            //                 )
-            //             );
-            //             break;
-            //     }
-            //     break;
+            case Type.map:
+                switch (msg.data?.type) {
+                    case ObjectTag.BelaIsland:
+                        console.log(msg.data);
+                        let island = new BelaIsland(
+                            Vec2.from(msg.data?.pos),
+                            true,
+                            msg.data?.remote_id
+                        );
+
+                        Map_.objects.push(island);
+                        NetworkBuff.set(island.remote_id, island);
+                        break;
+                }
+                break;
             case Type.crt:
                 if (msg.data?.effect != undefined) {
                     let pos: Vec2 = msg.data?.pos;
@@ -84,8 +90,8 @@ export class Network {
                     break;
                 }
                 switch (msg.data?.type) {
-                    case ObjType.player:
-                        RemoteBuff.set(
+                    case ObjectTag.Player:
+                        NetworkBuff.set(
                             msg.data?.remote_id,
                             new Player(
                                 msg.data?.size,
@@ -95,37 +101,47 @@ export class Network {
                             )
                         );
                         break;
+                    case ObjectTag.Bela:
+                        NetworkBuff.set(
+                            msg.data?.remote_id,
+                            new Bela(msg.data?.pos, true, msg.data?.remote_id)
+                        );
+                        break;
+                    // case ObjectTag.Belacska:
+                    //     NetworkBuff.set(
+                    //         msg.data?.remote_id,
+                    //         new Belacska(
+                    //             msg.data?.pos,
+                    //             true,
+                    //             msg.data?.remote_id
+                    //         )
+                    //     );
+                    //     break;
                     default:
                         break;
                 }
                 break;
             case Type.sync:
-                if (msg.data.hit) {
-                    (
-                        GameObject.objects.find((v) => {
-                            return (
-                                (v as DynamicGameObj).remote_id ==
-                                msg.data.remote_id
-                            );
-                        }) as DynamicGameObj
-                    ).damage_taken(
-                        msg.data.damage,
-                        msg.data.hit_dir,
-                        RemoteBuff.get(msg.data.from) as any as DynamicGameObj
-                    );
+                if (msg.data.death) {
+                    NetworkBuff.get(msg.data.remote_id)?.del();
                     break;
                 }
 
-                if (msg.data.death) {
-                    (
-                        GameObject.objects.find((v) => {
-                            return (
-                                (v as DynamicGameObj).remote_id == msg.data.this
-                            );
-                        }) as DynamicGameObj
-                    ).remove();
+                if (msg.data.hit) {
+                    let r = NetworkBuff.get(msg.data.remote_id);
+                    if (r) {
+                        (r as any as DynamicGameObj).damage_taken(
+                            msg.data.damage,
+                            msg.data.hit_dir,
+                            NetworkBuff.get(
+                                msg.data.from
+                            ) as any as DynamicGameObj
+                        );
+                    }
+                    break;
                 }
-                RemoteBuff.get(msg.data.remote_id)?.in(msg.data);
+
+                NetworkBuff.get(msg.data.remote_id)?.in(msg.data);
                 break;
             case Type.start:
                 main((msg.data as Start).role);
@@ -158,7 +174,7 @@ export class Network {
 
     async create_lobby() {
         const response = await fetch(
-            "https://" + this.domain + "/setup/lobbycrt"
+            "http://" + this.domain + "/setup/lobbycrt"
         );
         this.ws_cfg = await response.json();
 

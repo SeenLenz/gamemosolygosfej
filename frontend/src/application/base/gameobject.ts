@@ -21,6 +21,8 @@ export enum ObjectTag {
     House,
     Enemy,
     BelaIsland,
+    Bela,
+    Belacska,
 }
 
 export enum Axis {

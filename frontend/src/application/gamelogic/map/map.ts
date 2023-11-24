@@ -1,5 +1,5 @@
-import { Type } from "../../../../../types";
-import { gravity, network } from "../../../app";
+import { Networkable, Type } from "../../../../../types";
+import { NetworkBuff, gravity, network } from "../../../app";
 import { Vec2 } from "../../../lin_alg";
 import { WorkerMsg } from "../../../networking/WorkerMsg";
 import { Effect } from "../../base/effects";
@@ -42,7 +42,7 @@ export class Map_ {
     }
 }
 
-export class BelaIsland extends StaticGameObj {
+export class BelaIsland extends StaticGameObj implements Networkable {
     bela_tank: BelaTank;
     bela_free = false;
     fall_timer = 0;
@@ -68,15 +68,38 @@ export class BelaIsland extends StaticGameObj {
         } else {
             this.remote = false;
             this.remote_id = uuid();
-            // network.send(
-            //     new WorkerMsg(Type.map, {
-            //         type: ObjectTag.BelaIsland,
-            //         pos: this.pos,
-            //         remote_id: this.remote_id,
-            //     })
-            // );
+            network.send(
+                new WorkerMsg(Type.map, {
+                    type: ObjectTag.BelaIsland,
+                    pos: this.pos,
+                    remote_id: this.remote_id,
+                })
+            );
+
+            NetworkBuff.set(this.remote_id, this);
         }
     }
+
+    out(): void {
+        if (this.network_sync) {
+            network.outBuff_add(
+                new WorkerMsg(Type.sync, {
+                    tank_sprite_index: this.bela_tank.sprite_index,
+                    remote_id: this.remote_id,
+                    current_cycle: this.bela_tank.bela?.current_cycle,
+                })
+            );
+        }
+    }
+
+    in(data: any): void {
+        this.bela_tank.sprite_index = data.tank_sprite_index;
+        if (this.bela_tank.bela) {
+            this.bela_tank.bela.current_cycle = data.current_cycle;
+        }
+    }
+
+    del(): void {}
 
     get obj_index() {
         return Map_.objects.findIndex((obj) => obj == this);
@@ -109,8 +132,11 @@ export class BelaIsland extends StaticGameObj {
 
         this.hitboxes[0].pos = this.pos.add(this.hitboxes[0].pos_diff);
 
+        this.out();
+
         super.loop(delta_time);
         this.slime_on = false;
+        this.network_sync = false;
     }
 }
 

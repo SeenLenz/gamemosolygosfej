@@ -1,5 +1,7 @@
-import { Networkable } from "../../../../../../../types";
+import { Networkable, Type } from "../../../../../../../types";
+import { NetworkBuff, network } from "../../../../../app";
 import { Vec2 } from "../../../../../lin_alg";
+import { WorkerMsg } from "../../../../../networking/WorkerMsg";
 import {
     DynamicGameObj,
     ObjectTag,
@@ -9,6 +11,7 @@ import { Point, float_eq } from "../../../../base/rays";
 import { SpriteSheets } from "../../../../base/textures";
 import { BelaIsland } from "../../../map/map";
 import { Enemy } from "../enemy";
+import { v4 as uuid } from "uuid";
 
 export class Bela extends Enemy implements Networkable {
     player_rec = false;
@@ -27,6 +30,21 @@ export class Bela extends Enemy implements Networkable {
         this.animation_repeat = false;
         this.hp = 200;
         this.closest_player = this.get_closest_player();
+        this.remote = remote;
+        if (!this.remote) {
+            this.remote_id = uuid();
+            network.outBuff_add(
+                new WorkerMsg(Type.crt, {
+                    type: ObjectTag.Bela,
+                    pos: this.pos,
+                    remote_id: this.remote_id,
+                })
+            );
+            NetworkBuff.set(this.remote_id, this);
+        } else {
+            this.remote_id = remote_id as String;
+            this.out = () => {};
+        }
     }
 
     run(delta_time: number): void {
@@ -37,6 +55,8 @@ export class Bela extends Enemy implements Networkable {
         }
 
         this.movement();
+        this.out();
+        this.network_sync = false;
         super.run(delta_time);
     }
 
@@ -50,20 +70,61 @@ export class Bela extends Enemy implements Networkable {
         }
     }
 
-    in(data: any): void {}
+    in(data: any): void {
+        this.pos = Vec2.from(data.pos);
+        this.velocity = Vec2.from(data.velocity);
+        this.remote_id = data.remote_id;
+        this.back = data.back;
+        this.sprite_index = data.sprite_index;
+        this.closest_player = NetworkBuff.get(data.closest_player) as any as
+            | DynamicGameObj
+            | undefined;
+    }
 
-    out(): void {}
+    out(): void {
+        if (this.network_sync) {
+            network.outBuff_add(
+                new WorkerMsg(Type.sync, {
+                    pos: this.pos,
+                    velocity: this.velocity,
+                    remote_id: this.remote_id,
+                    back: this.back,
+                    closest_player: this.closest_player?.remote_id,
+                    sprite_index: this.sprite_index,
+                })
+            );
+        }
+    }
 
-    del(): void {}
+    del(): void {
+        NetworkBuff.delete(this.remote_id);
+        this.remove();
+    }
 
     on_death(): void {
-        this.remove();
-        let belacska1 = new Bleacska(this.pos.sub(Vec2.X(-30)));
-        belacska1.velocity.y = -3;
-        belacska1.velocity.x = -10;
-        let belacska2 = new Bleacska(this.pos.sub(Vec2.X(30)));
-        belacska2.velocity.y = -3;
-        belacska2.velocity.x = 10;
+        this.del();
+        network.outBuff_add(
+            new WorkerMsg(Type.sync, {
+                death: true,
+                remote_id: this.remote_id,
+            })
+        );
+        // if (!this.remote) {
+        //     let belacska1 = new Belacska(
+        //         this.pos.sub(Vec2.X(-30)),
+        //         false,
+        //         undefined
+        //     );
+        //     belacska1.velocity.y = -3;
+        //     belacska1.velocity.x = -10;
+        //     let belacska2 = new Belacska(
+        //         this.pos.sub(Vec2.X(30)),
+        //         false,
+        //         undefined
+        //     );
+        //     belacska2.velocity.y = -3;
+        //     belacska2.velocity.x = 10;
+        // }
     }
 
     attack(dist: number) {
@@ -79,6 +140,7 @@ export class Bela extends Enemy implements Networkable {
             this.can_attack = false;
             this.attack_timer = performance.now();
             this.damage_player();
+            this.network_sync = true;
             return;
         }
 
@@ -112,6 +174,10 @@ export class Bela extends Enemy implements Networkable {
                 this.follow_player();
             }
         }
+    }
+
+    on_velocity_changed(): void {
+        this.network_sync = true;
     }
 
     set_animation(): void {
@@ -198,15 +264,37 @@ export class Bela extends Enemy implements Networkable {
     }
 }
 
-export class Bleacska extends Bela {
-    constructor(pos: Point) {
+export class Belacska extends Bela implements Networkable {
+    constructor(pos: Point, remote: boolean, remote_id: String | undefined) {
         super(pos, false, undefined);
         this.damage = 5;
         this.hp = 20;
         this.texture_index = SpriteSheets.SmallSlimeEnemy;
+        this.remote = remote;
+        if (!this.remote) {
+            this.remote_id = uuid();
+            network.outBuff_add(
+                new WorkerMsg(Type.crt, {
+                    type: ObjectTag.Belacska,
+                    pos: this.pos,
+                    remote_id: this.remote_id,
+                })
+            );
+
+            NetworkBuff.set(this.remote_id, this);
+        } else {
+            this.remote_id = remote_id as String;
+            this.out = () => {};
+        }
     }
 
     on_death(): void {
-        this.remove();
+        this.del();
+        network.outBuff_add(
+            new WorkerMsg(Type.sync, {
+                death: true,
+                remote_id: this.remote_id,
+            })
+        );
     }
 }

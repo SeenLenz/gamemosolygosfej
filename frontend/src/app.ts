@@ -14,14 +14,14 @@ import { Network } from "./networking/networking";
 import { GameObject } from "./application/base/gameobject";
 import { Effect } from "./application/base/effects";
 
-export const RemoteBuff = new Map<String, Networkable>();
+export const NetworkBuff = new Map<String, Networkable>();
 export const renderer = new Renderer();
 export const event = new EventHandler(renderer);
 export let camera = new Camera();
 export let gravity = 0.5;
 //export const network = new Network("10.0.23.4:3000");
-//export const network = new Network("127.0.0.1:6969");
-export const network = new Network("gamemosolygosfej.onrender.com");
+export const network = new Network("127.0.0.1:6969");
+// export const network = new Network("gamemosolygosfej.onrender.com");
 export let delta_time: number = 1;
 export let current_role: Roles;
 let start = 1;

@@ -36,6 +36,7 @@ export enum Type {
     //no types and shit just a string for testing purposes
     test,
     render,
+    map,
 }
 export enum Roles {
     player,

@@ -1,5 +1,5 @@
 import { Type } from "../../../../../types";
-import { RemoteBuff, delta_time, network } from "../../../app";
+import { NetworkBuff, delta_time, network } from "../../../app";
 import { Vec2 } from "../../../lin_alg";
 import { WorkerMsg } from "../../../networking/WorkerMsg";
 import { Effect, PlayerEffects } from "../../base/effects";
@@ -123,7 +123,7 @@ export class Weapon {
         closest: DynamicGameObj | undefined;
     }) {
         for (let obj of objs.all) {
-            if (!obj.remote) {
+            if (obj.remote_id) {
                 network.outBuff_add(
                     new WorkerMsg(Type.sync, {
                         hit: true,

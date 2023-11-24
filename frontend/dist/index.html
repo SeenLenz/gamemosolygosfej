@@ -12,17 +12,19 @@
     <div class="ui">
 
         <div class="startup">
-
-            <div class="title"></div>
+            <div class="title">
+                <img src="textures/UI/logo.png" alt="">
+            </div>
             <!-- <input type="text" name="lobby" id="join_label" /> -->
             <div class="buttons">
-                <div class="Lobby_id_wrapper"><label for="">LOBBY ID</label><input type="text" name="" id=""><label
-                        style="display: none;" for=""></label></div>
-                <div class="Name_wrapper"><label for="">name</label><input type="text" name="" id=""></div>
+                <div class="Lobby_id_wrapper">
+                    <div class="id"></div>
+                    <input type="text" name="" id="input_field">
+                </div>
                 <div class="button_wrapper">
-                    <button class="init_bt" id="join_bt">JOIN LOBBY</button>
-                    <button class="init_bt" id="start_bt">Start </button>
-                    <button class="init_bt" id=" create_bt">Create Lobby</button>
+                    <button class="init_bt" id="join_bt"></button>
+                    <button class="init_bt" id="start_bt"> </button>
+                    <button class="init_bt" id="create_bt"></button>
                 </div>
             </div>
 
@@ -80,8 +82,8 @@
                     //calculate the transformations
                     vec2 screen_pos = new_pos * u_scale + u_screen_position;
                     shade_multip = 1.;
-                    if (screen_pos.y > 165. * 6.) {
-                        shade_multip = 1. / screen_pos.y;
+                    if (screen_pos.y > 10.) {
+                        shade_multip = 1. / screen_pos.y * 20.;
                     }
                     screen_pos -= camera.xy + vec2(1, 1) / 2. * u_res;
                     screen_pos = vec2(screen_pos.x * camera_rot.y + screen_pos.y * camera_rot.x, screen_pos.y * camera_rot.y - screen_pos.x * camera_rot.x);
@@ -112,6 +114,7 @@
 
                 void main() {
                     fragColor = texture(u_sampler, v_texture_coords);
+                    fragColor.xyz *= shade_multip * f_z_coord * f_z_coord;
                 }
     </script>
 

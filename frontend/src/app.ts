@@ -38,25 +38,25 @@ export let player: Player;
 document.addEventListener("DOMContentLoaded", () => {
     document.querySelector("#join_bt")?.addEventListener("click", (e) => {
         const joinLabelValue = (
-            document.querySelector("#join_label") as HTMLInputElement | null
+            document.querySelector("#input_field") as HTMLInputElement | null
         )?.value;
         if (joinLabelValue) {
             network.join_lobby(joinLabelValue);
         }
     });
     document.querySelector("#start_bt")?.addEventListener("click", (e) => {
-        network.send(new WorkerMsg(Type.start));
+        document
+            .querySelector(".startup")
+            ?.setAttribute("style", "display: none;");
+        document
+            .querySelector(".ui")
+            ?.setAttribute("style", "pointer-events: none;");
         document.querySelector("#start_bt")?.remove();
+
+        network.send(new WorkerMsg(Type.start));
     });
     document.querySelector("#create_bt")?.addEventListener("click", (e) => {
         network.create_lobby();
-    });
-    document.querySelector("#msg_bt")?.addEventListener("click", (e) => {
-        network.send(
-            new WorkerMsg(Type.test, {
-                msg: "This is a message from the test button",
-            })
-        );
     });
 });
 

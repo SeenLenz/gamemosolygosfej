@@ -4,12 +4,15 @@
     height: 100vh;
 }
 
+@font-face {
+    font-family: EightBit;
+    src: url(PixeloidSansBold-PKnYd.ttf);
+}
+
 .ui {
-    position: relative;
+    position: absolute;
     width: 100vw;
     height: 100vh;
-    /* pointer-events: none; */
-    background-color: brown;
 }
 
 .ui > .hud {
@@ -57,7 +60,6 @@
     height: 100px;
     bottom: calc(50% - 50px);
     left: calc(50% - 150px);
-    background-color: red;
 }
 
 .ui > .hud > .heal {
@@ -68,69 +70,115 @@
     background-color: orange;
 }
 
+@keyframes backgroundscroll {
+    from {
+        background-position: 0 0;
+    }
+    to {
+        background-position: 100% 100%;
+    }
+}
 .ui > .startup {
     width: 100%;
     height: 100%;
     display: flex;
-    background-color: lime;
+    background-image: url(textures/UI/background_tile.png);
+    background-size: 200px;
+    background-position: 10px 2px;
     align-items: center;
     flex-direction: column;
     justify-content: space-around;
+    animation: backgroundscroll 40s linear infinite;
 }
 .ui > .startup > .title {
     width: 80%;
     height: 30%;
-    background-color: yellow;
-}
-.Lobby_id_wrapper {
-    font-family: "DotGothic16", monospace;
-    background-color: white;
     display: flex;
-    height: 50px;
-    margin-bottom: 10px;
-}
-
-.Lobby_id_wrapper > label {
-    width: 150px;
-    display: flex;
-    font-size: 30px;
     align-items: center;
     justify-content: center;
-    font-family: "DotGothic16", monospace;
+}
+.ui > .startup > .title > img {
 }
 
+.buttons {
+    min-width: 820px;
+}
+
+.button_wrapper {
+}
+.Lobby_id_wrapper {
+    font-family: EightBit, monospace;
+    display: flex;
+    height: 100px;
+    margin-bottom: 10px;
+}
+.Lobby_id_wrapper > .id {
+    margin-right: 20px;
+    width: 125px;
+    background-repeat: no-repeat;
+    background-size: contain;
+    background-image: url(textures/UI/Id.png);
+}
 .Lobby_id_wrapper > input {
     flex-grow: 1;
-    font-family: "DotGothic16", monospace;
+    background-color: transparent;
+    border: transparent;
+    font-size: 40px;
+    padding: 20px;
+    background-repeat: no-repeat;
+    font-family: EightBit, monospace;
+    background-image: url(textures/UI/id_input.png);
+    background-size: cover;
+    color: #242322;
 }
+
+.Lobby_id_wrapper > input:focus {
+    outline: none;
+}
+
 .Name_wrapper {
     display: flex;
     height: 50px;
     font-family: "DotGothic16", monospace;
-    background-color: white;
 }
 
-.Name_wrapper > label {
-    display: flex;
-    font-size: 30px;
-    align-items: center;
-    justify-content: center;
-    text-align: center;
-    width: 150px;
-}
-.Name_wrapper > input {
-    font-family: "DotGothic16", monospace;
-    flex-grow: 1;
-}
 .init_bt {
-    height: 50px;
+    background-color: transparent;
+    border: transparent;
+    height: 100px;
+    background-repeat: no-repeat;
+    width: 320px;
     font-size: 30px;
     flex-grow: 1;
     margin: 10px 5px 10px 5px;
-    color: white;
-    border: solid 3px rgb(242, 169, 0);
-    background-color: rgb(96, 46, 0);
     font-family: "DotGothic16", monospace;
+    cursor: pointer;
+    background-size: contain;
+}
+#create_bt {
+    width: 300px;
+    background-image: url(textures/UI/craete.png);
+}
+#create_bt:hover {
+    background-image: url(textures/UI/create_hover.png);
+}
+
+#join_bt {
+    width: 200px;
+    background-image: url(textures/UI/join.png);
+}
+
+#join_bt:hover {
+    background-image: url(textures/UI/join_hover.png);
+}
+
+#start_bt {
+    width: 260px;
+    background-image: url(textures/UI/start.png);
+}
+
+#start_bt:hover {
+    background-image: url(textures/UI/start_hover.png);
 }
 
 .button_wrapper {

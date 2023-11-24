@@ -40,6 +40,7 @@ export class Player extends DynamicGameObj implements Networkable {
     health = 8;
     used_potion_health = false;
     used_potion_buff = false;
+    buff_taken_at = 0;
 
     constructor(
         size: number[],
@@ -60,7 +61,7 @@ export class Player extends DynamicGameObj implements Networkable {
         );
 
         this.ranged_weapon = new Ranged(this, 3, 600);
-        this.melee_weapon = new Melee(this, 2);
+        this.melee_weapon = new Melee(this, 2);        
         this.teleport = new Teleport(this, 0);
 
         if (!remote) {
@@ -158,7 +159,6 @@ export class Player extends DynamicGameObj implements Networkable {
             this.halt_points = [];
         }
         this.used_potion_health = false;
-        this.used_potion_buff = false;
     }
 
     keyboard_events(delta_time: number) {
@@ -243,12 +243,40 @@ export class Player extends DynamicGameObj implements Networkable {
         if (event.key_state(Keys.L, EventType.Pressed)) {
             if (huuud.buff_potion_parent.children.length != 0) {                
                 this.used_potion_buff = true;
+                this.buff_taken_at = performance.now();
             }
         }
     }
     damage_taken(damage: number, hit_dir: number) {
+        if (this.used_potion_buff && this.buff_taken_at + 10000 > performance.now()) {
+            damage -= 1;
+            if (this.damagable) {
+                this.damagable = false;
+                this.health -= damage;
+                this.damaged_timer = performance.now();
+                this.velocity.x += (damage / 5) * hit_dir;
+                this.velocity.y -= 2;
+                huuud.set_health_bar(damage, -1);
+    
+                if (this.health <= 0) {
+                    console.log(this.remote);
+                    if (this.remote == false) {
+                        camera.focus_on(new Empty(this.pos));
+                    }
+                    network.outBuff_add(
+                        new WorkerMsg(Type.sync, {
+                            death: true,
+                            this: this.remote_id,
+                        })
+                    );
+                    this.remove();
+                }
+            }
+        }
         if (this.damagable) {
             this.damagable = false;
+            this.buff_taken_at = 0;
+            this.used_potion_buff = false;
             this.health -= damage;
             this.damaged_timer = performance.now();
             this.velocity.x += (damage / 5) * hit_dir;
@@ -269,6 +297,8 @@ export class Player extends DynamicGameObj implements Networkable {
                 this.remove();
             }
         }
+
+        
         super.damage_taken(damage, hit_dir);
     }
     health_potion_used() {    
@@ -282,7 +312,6 @@ export class Player extends DynamicGameObj implements Networkable {
         }        
     }
     buff_potion_used() {
-        
     }
     set_attack() {
         this.ranged_weapon.run();
@@ -324,7 +353,7 @@ export class Player extends DynamicGameObj implements Networkable {
             this.force.y = 0;
         }
 
-        if (this.used_potion_health) {
+        if (this.used_potion_health && huuud.health_potion_parent.childElementCount != 0) {
             this.health_potion_used();
             const health_potion = huuud.health_potion_parent.lastChild;
             if (health_potion) {
@@ -332,8 +361,7 @@ export class Player extends DynamicGameObj implements Networkable {
             }
         }
         
-        if (this.used_potion_buff) {
-            this.buff_potion_used();
+        if (this.used_potion_buff && huuud.buff_potion_parent.childElementCount != 0) {
             const buff_potion = huuud.buff_potion_parent.lastChild;
             if (buff_potion) {
                 huuud.buff_potion_parent.removeChild(buff_potion);

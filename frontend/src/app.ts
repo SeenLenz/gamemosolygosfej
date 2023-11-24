@@ -13,6 +13,14 @@ import { WorkerMsg } from "./networking/WorkerMsg";
 import { Network } from "./networking/networking";
 import { GameObject } from "./application/base/gameobject";
 import { Effect } from "./application/base/effects";
+import {
+    GamepadButtons,
+    GamepadEvent,
+} from "./application/base/gamepad_handler";
+import { gamePlayHud } from "./ui/hud-re";
+import { Hud } from "./ui/hud";
+
+export const Gameped = new GamepadEvent();
 
 export const NetworkBuff = new Map<String, Networkable>();
 export const renderer = new Renderer();
@@ -25,39 +33,37 @@ export const network = new Network("127.0.0.1:6969");
 export let delta_time: number = 1;
 export let current_role: Roles;
 let start = 1;
-
+export let huuud: gamePlayHud;
 export let map: Map_;
 
 document.addEventListener("DOMContentLoaded", () => {
     document.querySelector("#join_bt")?.addEventListener("click", (e) => {
         const joinLabelValue = (
-            document.querySelector("#join_label") as HTMLInputElement | null
+            document.querySelector("#input_field") as HTMLInputElement | null
         )?.value;
         if (joinLabelValue) {
             network.join_lobby(joinLabelValue);
         }
     });
     document.querySelector("#start_bt")?.addEventListener("click", (e) => {
-        network.send(new WorkerMsg(Type.start));
+        document
+            .querySelector(".startup")
+            ?.setAttribute("style", "display: none;");
+        document
+            .querySelector(".ui")
+            ?.setAttribute("style", "pointer-events: none;");
         document.querySelector("#start_bt")?.remove();
+
+        network.send(new WorkerMsg(Type.start));
     });
     document.querySelector("#create_bt")?.addEventListener("click", (e) => {
         network.create_lobby();
     });
-    document.querySelector("#msg_bt")?.addEventListener("click", (e) => {
-        network.send(
-            new WorkerMsg(Type.test, {
-                msg: "This is a message from the test button",
-            })
-        );
-    });
 });
 
 function setup(role: number) {
-    document.querySelector("#start_bt")?.remove();
-    document.querySelector("#msg_bt")?.remove();
-    document.querySelector("#create_bt")?.remove();
-    document.querySelector("#join_bt")?.remove();
+    // (document.querySelector("#slubmububububu") as HTMLElement).innerHTML = "";
+
     renderer.setup();
     create_textures();
     current_role = role;
@@ -71,6 +77,7 @@ function setup(role: number) {
 function main_loop() {
     delta_time = (performance.now() - start) / 10;
     start = performance.now();
+    huuud.timer.textContent = huuud.format_timer(performance.now());
     renderer.run(camera);
     camera.move(delta_time);
     camera.shake_camera(delta_time);
@@ -96,6 +103,6 @@ function main_loop() {
 
 export function main(role: number) {
     setup(role);
-
+    huuud = new gamePlayHud();
     main_loop();
 }

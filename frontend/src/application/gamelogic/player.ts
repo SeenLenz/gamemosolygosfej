@@ -1,5 +1,6 @@
 import { Networkable, ObjType, Type } from "../../../../types";
-import { NetworkBuff, camera, event, gravity, network } from "../../app";
+
+import { NetworkBuff, camera, event,huuud, gravity, network } from "../../app";
 import { Vec2 } from "../../lin_alg";
 import { Effect, PlayerEffects } from "../base/effects";
 import { EventType, Keys } from "../base/event_handler";
@@ -10,12 +11,15 @@ import {
     Hitbox,
     HitboxFlags,
     ObjectTag,
+    Empty,
 } from "../base/gameobject";
 import { float_eq } from "../base/rays";
 import { SpriteSheets } from "../base/textures";
 import { WorkerMsg } from "../../networking/WorkerMsg";
 import { v4 as uuid } from "uuid";
 import { Melee, Ranged, Teleport } from "./weapon/weapon";
+import { Gameped } from "../../app";
+import { GamepadButtons } from "../base/gamepad_handler";
 import { CameraObj } from "./roles/observer/camera";
 
 export class Player extends DynamicGameObj implements Networkable {
@@ -35,7 +39,10 @@ export class Player extends DynamicGameObj implements Networkable {
     teleport: Teleport;
     damagable = true;
     damaged_timer = performance.now();
-    health = 400;
+    health = 8;
+    used_potion_health = false;
+    used_potion_buff = false;
+    buff_taken_at = 0;
 
     constructor(
         size: number[],
@@ -55,8 +62,8 @@ export class Player extends DynamicGameObj implements Networkable {
             this.size.x / 4
         );
 
-        this.ranged_weapon = new Ranged(this, 60, 600);
-        this.melee_weapon = new Melee(this, 30);
+        this.ranged_weapon = new Ranged(this, 3, 600);
+        this.melee_weapon = new Melee(this, 2);        
         this.teleport = new Teleport(this, 0);
 
         if (!remote) {
@@ -154,14 +161,21 @@ export class Player extends DynamicGameObj implements Networkable {
         if (!this.remote) {
             this.halt_points = [];
         }
+        this.used_potion_health = false;
     }
 
     keyboard_events(delta_time: number) {
-        if (event.key_state(Keys.A, EventType.Down)) {
+        if (
+            event.key_state(Keys.A, EventType.Down) ||
+            Gameped.isPressed(GamepadButtons.Left)
+        ) {
             this.running = true;
             this.x_direction = -1;
             this.network_sync = true;
-        } else if (event.key_state(Keys.D, EventType.Down)) {
+        } else if (
+            event.key_state(Keys.D, EventType.Down) ||
+            Gameped.isPressed(GamepadButtons.Right)
+        ) {
             this.running = true;
             this.x_direction = 1;
             this.network_sync = true;
@@ -172,21 +186,32 @@ export class Player extends DynamicGameObj implements Networkable {
             this.running = false;
         }
 
-        if (event.key_state(Keys.Shift, EventType.Pressed)) {
+        if (
+            event.key_state(Keys.Shift, EventType.Pressed) ||
+            Gameped.isPressed(GamepadButtons.X)
+        ) {
             this.dash = true;
             this.network_sync = true;
         }
-        if (event.key_state(Keys.S, EventType.Pressed)) {
+        if (
+            event.key_state(Keys.S, EventType.Pressed) ||
+            Gameped.isPressed(GamepadButtons.Down)
+        ) {
             this.platform_fall = true;
             this.network_sync = true;
         }
-        if (event.key_state(Keys.Space, EventType.Pressed)) {
+        if (
+            event.key_state(Keys.Space, EventType.Pressed) ||
+            Gameped.isPressed(GamepadButtons.A)
+        ) {
             this.network_sync = true;
             this.jump = true;
         }
         if (
-            !this.melee_weapon.attacking &&
-            event.key_state(Keys.J, EventType.Pressed)
+            (!this.melee_weapon.attacking &&
+                event.key_state(Keys.J, EventType.Pressed)) ||
+            (!this.melee_weapon.attacking &&
+                Gameped.isPressed(GamepadButtons.RT))
         ) {
             this.melee_weapon.pressed = true;
             this.network_sync = true;
@@ -194,31 +219,80 @@ export class Player extends DynamicGameObj implements Networkable {
             this.ranged_weapon.attacking = false;
         }
         if (
-            !this.ranged_weapon.attacking &&
-            event.key_state(Keys.K, EventType.Pressed)
+            (!this.ranged_weapon.attacking &&
+                event.key_state(Keys.K, EventType.Pressed)) ||
+            (!this.melee_weapon.attacking &&
+                Gameped.isPressed(GamepadButtons.LT))
         ) {
             this.network_sync = true;
             this.ranged_weapon.pressed = true;
         }
 
         if (
-            !this.teleport.attacking &&
-            event.key_state(Keys.I, EventType.Pressed)
+            (!this.teleport.attacking &&
+                event.key_state(Keys.I, EventType.Pressed)) ||
+            (!this.melee_weapon.attacking &&
+                Gameped.isPressed(GamepadButtons.B))
         ) {
             this.network_sync = true;
             this.teleport.pressed = true;
         }
+        if (event.key_state(Keys.F, EventType.Pressed)) {
+            if (huuud.current_health != 8 && huuud.health_potion_parent.children.length != 0) {
+                this.used_potion_health = true;
+                this.used_potion_health = true;
+            }
+        }
+        if (event.key_state(Keys.L, EventType.Pressed)) {
+            if (huuud.buff_potion_parent.children.length != 0) {                
+                this.used_potion_buff = true;
+                this.buff_taken_at = performance.now();
+            }
+        }
     }
+//     damage_taken(damage: number, hit_dir: number) {
+//         if (this.used_potion_buff && this.buff_taken_at + 10000 > performance.now()) {
+//             damage -= 1;
+//             if (this.damagable) {
+//                 this.damagable = false;
+//                 this.health -= damage;
+//                 this.damaged_timer = performance.now();
+//                 this.velocity.x += (damage / 5) * hit_dir;
+//                 this.velocity.y -= 2;
+//                 huuud.set_health_bar(damage, -1);
+    
+//                 if (this.health <= 0) {
+//                     console.log(this.remote);
+//                     if (this.remote == false) {
+//                         camera.focus_on(new Empty(this.pos));
+//                     }
+//                     network.outBuff_add(
+//                         new WorkerMsg(Type.sync, {
+//                             death: true,
+//                             this: this.remote_id,
+//                         })
+//                     );
+//                     this.remove();
+//                 }
+//             }
+//         }
 
     damage_taken(damage: number, hit_dir: number, from: DynamicGameObj) {
         if (this.damagable) {
             this.damagable = false;
+            this.buff_taken_at = 0;
+            this.used_potion_buff = false;
             this.health -= damage;
             this.damaged_timer = performance.now();
             this.velocity.x += (damage / 5) * hit_dir;
             this.velocity.y -= 2;
+            huuud.set_health_bar(damage, -1);
 
             if (this.health <= 0) {
+                console.log(this.remote);
+                if (this.remote == false) {
+                    camera.focus_on(new Empty(this.pos));
+                }
                 network.outBuff_add(
                     new WorkerMsg(Type.sync, {
                         death: true,
@@ -229,9 +303,21 @@ export class Player extends DynamicGameObj implements Networkable {
                 camera.focus_on(new CameraObj());
             }
         }
+
         super.damage_taken(damage, hit_dir, from);
     }
-
+    health_potion_used() {    
+        if (this.health + 2 > 8) {
+            this.health += 1;
+            huuud.set_health_bar(1, 1);                
+        }
+        else {
+            this.health += 2;
+            huuud.set_health_bar(2, 1);
+        }        
+    }
+    buff_potion_used() {
+    }
     set_attack() {
         this.ranged_weapon.run();
         this.melee_weapon.run();
@@ -270,6 +356,21 @@ export class Player extends DynamicGameObj implements Networkable {
         if (this.wall_slide) {
             this.velocity.y += (0 - this.velocity.y) * 0.08 * delta_time;
             this.force.y = 0;
+        }
+
+        if (this.used_potion_health && huuud.health_potion_parent.childElementCount != 0) {
+            this.health_potion_used();
+            const health_potion = huuud.health_potion_parent.lastChild;
+            if (health_potion) {
+                huuud.health_potion_parent.removeChild(health_potion);
+            }
+        }
+        
+        if (this.used_potion_buff && huuud.buff_potion_parent.childElementCount != 0) {
+            const buff_potion = huuud.buff_potion_parent.lastChild;
+            if (buff_potion) {
+                huuud.buff_potion_parent.removeChild(buff_potion);
+            }
         }
     }
 

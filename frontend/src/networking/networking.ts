@@ -122,8 +122,10 @@ export class Network {
                 }
                 break;
             case Type.sync:
+
                 if (msg.data.death) {
                     NetworkBuff.get(msg.data.remote_id)?.del();
+
                     break;
                 }
 
@@ -144,6 +146,12 @@ export class Network {
                 NetworkBuff.get(msg.data.remote_id)?.in(msg.data);
                 break;
             case Type.start:
+                document
+                    .querySelector(".startup")
+                    ?.setAttribute("style", "display: none;");
+                document
+                    .querySelector(".ui")
+                    ?.setAttribute("style", "pointer-events: none;");
                 main((msg.data as Start).role);
                 break;
             default:
@@ -186,6 +194,17 @@ export class Network {
         this.outBuff.id = this.ws_cfg?.id;
         this.outBuff.cid = this.ws_cfg?.cid;
 
+        const myInput =
+            document.querySelector<HTMLInputElement>("#input_field");
+
+        // Check if the element is found
+        if (myInput) {
+            // Set the value of the input element
+            myInput.value = this.ws_cfg?.id + "";
+        } else {
+            console.error("Input element not found");
+        }
+
         if (this.Pisti) {
             this.Pisti?.postMessage({
                 type: Type.init,
@@ -202,7 +221,7 @@ export class Network {
 
     async join_lobby(lobby_key: String) {
         const response = await fetch(
-            "http://" + this.domain + "/setup/joinlobby/" + lobby_key
+            "https://" + this.domain + "/setup/joinlobby/" + lobby_key
         );
         this.ws_cfg = await response.json();
 

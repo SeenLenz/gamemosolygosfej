@@ -1,12 +1,206 @@
+@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+
+@import url("https://fonts.googleapis.com/css2?family=DotGothic16&family=VT323&display=swap");
 #main_canvas {
     width: 100vw;
     height: 100vh;
 }
 
+
+@font-face {
+    font-family: EightBit;
+    src: url(PixeloidSansBold-PKnYd.ttf);
+}
+
+.ui {
+    position: absolute;
+    width: 100vw;
+    height: 100vh;
+}
+
+.ui > .hud {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    background-color: blue;
+}
+
+.ui > .hud > .healthbar {
+    position: absolute;
+    width: 300px;
+    height: 100px;
+    background-color: green;
+}
+
+.ui > .hud > .abilities {
+    position: absolute;
+    width: 300px;
+    height: 100px;
+    bottom: 0px;
+    background-color: blueviolet;
+}
+
+.ui > .hud > .interact_prompt {
+    position: absolute;
+    width: 300px;
+    height: 100px;
+    background-color: yellow;
+    left: calc(50% - 150px);
+    bottom: 0px;
+}
+
+.ui > .hud > .timer {
+    position: absolute;
+    width: 300px;
+    height: 100px;
+    left: calc(50% - 150px);
+    background-color: burlywood;
+}
+
+.ui > .hud > .round_counter {
+    position: absolute;
+    width: 300px;
+    height: 100px;
+    bottom: calc(50% - 50px);
+    left: calc(50% - 150px);
+}
+
+.ui > .hud > .heal {
+    position: absolute;
+    width: 300px;
+    height: 100px;
+    top: 100px;
+    background-color: orange;
+}
+
+@keyframes backgroundscroll {
+    from {
+        background-position: 0 0;
+    }
+    to {
+        background-position: 100% 100%;
+    }
+}
+.ui > .startup {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    background-image: url(textures/UI/background_tile.png);
+    background-size: 200px;
+    background-position: 10px 2px;
+    align-items: center;
+    flex-direction: column;
+    justify-content: space-around;
+    animation: backgroundscroll 40s linear infinite;
+}
+.ui > .startup > .title {
+    width: 80%;
+    height: 30%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.ui > .startup > .title > img {
+}
+
+.buttons {
+    min-width: 820px;
+}
+
+.button_wrapper {
+}
+.Lobby_id_wrapper {
+    font-family: EightBit, monospace;
+    display: flex;
+    height: 100px;
+    margin-bottom: 10px;
+}
+.Lobby_id_wrapper > .id {
+    margin-right: 20px;
+    width: 125px;
+    background-repeat: no-repeat;
+    background-size: contain;
+    background-image: url(textures/UI/Id.png);
+}
+.Lobby_id_wrapper > input {
+    flex-grow: 1;
+    background-color: transparent;
+    border: transparent;
+    font-size: 40px;
+    padding: 20px;
+    background-repeat: no-repeat;
+    font-family: EightBit, monospace;
+    background-image: url(textures/UI/id_input.png);
+    background-size: cover;
+    color: #242322;
+}
+
+.Lobby_id_wrapper > input:focus {
+    outline: none;
+}
+
+.Name_wrapper {
+    display: flex;
+    height: 50px;
+    font-family: "DotGothic16", monospace;
+}
+
+.init_bt {
+    background-color: transparent;
+    border: transparent;
+    height: 100px;
+    background-repeat: no-repeat;
+    width: 320px;
+    font-size: 30px;
+    flex-grow: 1;
+    margin: 10px 5px 10px 5px;
+    font-family: "DotGothic16", monospace;
+    cursor: pointer;
+    background-size: contain;
+}
+#create_bt {
+    width: 300px;
+    background-image: url(textures/UI/craete.png);
+}
+#create_bt:hover {
+    background-image: url(textures/UI/create_hover.png);
+}
+
+#join_bt {
+    width: 200px;
+    background-image: url(textures/UI/join.png);
+}
+
+#join_bt:hover {
+    background-image: url(textures/UI/join_hover.png);
+}
+
+#start_bt {
+    width: 260px;
+    background-image: url(textures/UI/start.png);
+}
+
+#start_bt:hover {
+    background-image: url(textures/UI/start_hover.png);
+}
+
+.button_wrapper {
+    display: flex;
+}
+
+.ui_canvas {
+    position: absolute;
+    margin: 0;
+    padding: 0;
+    width: 100vw;
+    height: 100vh;
+    image-rendering: pixelated;
+}
+
 body {
     overflow-y: hidden;
     padding: 0px;
-    margin: 0px;
+    margin: 0px;    
 }
 
 .slider {

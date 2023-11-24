@@ -5,17 +5,45 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title>Document</title>
         <link rel="stylesheet" href="style.css" />
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     </head>
 
     <body>
-        <div style="position: absolute">
-            <input type="text" name="lobby" id="join_label" />
-            <button id="join_bt">join Lobby</button>
-            <button id="create_bt">create Lobby</button>
-            <button id="msg_bt">send Msg</button>
-            <button id="start_bt">start game</button>
-            <label id="lobby_lb"></label>
+        <div
+            id="slubmububububu"
+            style="position: absolute; height: 100vh; width: 100vw">
+            <div class="ui">
+                <div class="startup">
+                    <div class="title">
+                        <img src="textures/UI/logo.png" alt="" />
+                    </div>
+                    <div class="buttons">
+                        <div class="Lobby_id_wrapper">
+                            <div class="id"></div>
+                            <input type="text" name="" id="input_field" />
+                        </div>
+                        <div class="button_wrapper">
+                            <button class="init_bt" id="join_bt"></button>
+                            <button class="init_bt" id="start_bt"> </button>
+                            <button class="init_bt" id="create_bt"></button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="hud" style="display: none">
+                    <div class="healthbar"></div>
+                    <div class="heal"></div>
+                    <div class="abilities"></div>
+                    <div class="interact_prompt"></div>
+                    <div class="timer"></div>
+                    <div class=""></div>
+                </div>
+
+                <div class="endscreen"></div>
+            </div>
         </div>
+
         <canvas id="main_canvas"> </canvas>
     </body>
     <script src="index.js" type="module"></script>
@@ -46,8 +74,8 @@
                     //calculate the transformations
                     vec2 screen_pos = new_pos * u_scale + u_screen_position;
                     shade_multip = 1.;
-                    if (screen_pos.y > 165. * 6.) {
-                        shade_multip = 1. / screen_pos.y;
+                    if (screen_pos.y > 10.) {
+                        shade_multip = 1. / screen_pos.y * 20.;
                     }
                     screen_pos -= camera.xy + vec2(1, 1) / 2. * u_res;
                     screen_pos = vec2(screen_pos.x * camera_rot.y + screen_pos.y * camera_rot.x, screen_pos.y * camera_rot.y - screen_pos.x * camera_rot.x);
@@ -78,6 +106,7 @@
 
                 void main() {
                     fragColor = texture(u_sampler, v_texture_coords);
+                    fragColor.xyz *= shade_multip * f_z_coord * f_z_coord;
                 }
     </script>
 </html>

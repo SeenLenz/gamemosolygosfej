@@ -66,6 +66,12 @@ export class Player extends DynamicGameObj implements Networkable {
         this.melee_weapon = new Melee(this, 1);
         this.teleport = new Teleport(this, 0);
 
+        if (network.outBuff.cid == 0) {
+            this.texture_index = SpriteSheets.Huba;
+        } else if (network.outBuff.cid == 1) {
+            this.texture_index = SpriteSheets.HAHA;
+        }
+
         if (!remote) {
             this.remote_id = uuid();
             NetworkBuff.set(this.remote_id, this);
@@ -78,7 +84,6 @@ export class Player extends DynamicGameObj implements Networkable {
                 })
             );
         } else {
-            this.texture_index = SpriteSheets.Huba;
             this.remote_id = remote_id as String;
             this.run = (delta_time: number) => {
                 this.add_force(new Vec2(0, gravity * this.mass));

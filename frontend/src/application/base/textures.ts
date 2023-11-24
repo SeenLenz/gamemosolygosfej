@@ -16,6 +16,7 @@ export enum SpriteSheets {
     SideIsland,
     BelaTank,
     SwimmingBela,
+    HAHA,
 }
 
 export function create_textures() {
@@ -145,5 +146,19 @@ export function create_textures() {
         "./textures/map/SwimmingBela.png",
         [[Vec2.zeros(), 7]],
         new Vec2(8, 1)
+    );
+
+    renderer.create_texture(
+        "./textures/enemies/sdjflka.png",
+        [
+            [Vec2.zeros(), 14],
+            [new Vec2(0, 1), 1],
+            [new Vec2(1, 1), 4],
+            [new Vec2(5, 1), 1],
+            [new Vec2(6, 1), 1],
+            [new Vec2(7, 1), 7],
+            [new Vec2(0, 2), 10],
+        ],
+        new Vec2(14, 3)
     );
 }

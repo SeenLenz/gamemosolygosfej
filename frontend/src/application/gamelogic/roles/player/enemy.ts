@@ -1,4 +1,4 @@
-import { event, gravity, player } from "../../../../app";
+import { event, gravity } from "../../../../app";
 import { Vec2, interpolate } from "../../../../lin_alg";
 import { Obj } from "../../../../renderer/object";
 import { EventType, Keys } from "../../../base/event_handler";

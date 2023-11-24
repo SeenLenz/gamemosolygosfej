@@ -1,13 +1,10 @@
+import { Networkable } from "../../../../../types";
 import { Vec2 } from "../../../lin_alg";
 import { Effect } from "../../base/effects";
-import {
-    DynamicFlag,
-    DynamicGameObj,
-    GameObject,
-    StaticGameObj,
-} from "../../base/gameobject";
+import { DynamicFlag, DynamicGameObj, GameObject } from "../../base/gameobject";
 import { SpriteSheets } from "../../base/textures";
 import { Bela } from "../roles/player/enemies/slime";
+import { BelaIsland } from "./map";
 
 export class MapObject extends DynamicGameObj {
     parent_obj: GameObject;
@@ -29,6 +26,7 @@ export class MapObject extends DynamicGameObj {
 
 export class BelaTank extends MapObject {
     bela: Effect | undefined;
+    bela_placed = false;
     constructor(parent: GameObject) {
         super(new Vec2(18 * 6, 36 * 6), Vec2.X(11 * 6), parent);
         this.texture_index = SpriteSheets.BelaTank;
@@ -60,11 +58,9 @@ export class BelaTank extends MapObject {
             this.bela.current_cycle = 0;
             this.bela.x_direction = hit_dir;
         } else {
-            this.add_flags([DynamicFlag.NotDamagable]);
             this.sprite_index = 5;
-            this.bela = undefined;
-            new Bela(this.pos);
         }
+        this.parent_obj.network_sync = true;
     }
 
     set_animation() {
@@ -80,6 +76,15 @@ export class BelaTank extends MapObject {
         this.set_animation();
         if (this.bela && this.bela.current_cycle >= this.bela.repeat) {
             this.bela.current_frame = 0;
+        }
+
+        if (!this.bela_placed && this.sprite_index == 5) {
+            if (!(this.parent_obj as BelaIsland).remote) {
+                new Bela(this.pos, false, undefined);
+            }
+            this.add_flags([DynamicFlag.NotDamagable]);
+            this.bela = undefined;
+            this.bela_placed = true;
         }
         if (this.bela) {
             this.bela.animate();

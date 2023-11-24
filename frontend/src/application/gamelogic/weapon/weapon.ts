@@ -1,5 +1,5 @@
 import { Type } from "../../../../../types";
-import { RemoteBuff, delta_time, network, player } from "../../../app";
+import { NetworkBuff, delta_time, network } from "../../../app";
 import { Vec2 } from "../../../lin_alg";
 import { WorkerMsg } from "../../../networking/WorkerMsg";
 import { Effect, PlayerEffects } from "../../base/effects";
@@ -70,24 +70,6 @@ export class Weapon {
                 this.angle,
                 this.range_offset
             );
-        } else {
-            const dist = this.parent_obj.hitboxes[0].middle.dist_squared(
-                player.hitbox.middle
-            );
-            if (
-                dist < this.range * this.range &&
-                dist > this.range_offset * this.range_offset
-            ) {
-                this.target_objects = {
-                    all: [player],
-                    closest: player,
-                };
-            } else {
-                this.target_objects = {
-                    all: [],
-                    closest: undefined,
-                };
-            }
         }
     }
 
@@ -141,19 +123,25 @@ export class Weapon {
         closest: DynamicGameObj | undefined;
     }) {
         for (let obj of objs.all) {
-            network.outBuff_add(
-                new WorkerMsg(Type.sync, {
-                    hit: true,
-                    remote_id: obj.remote_id,
-                    damage: this.power + this.crit,
-                    hit_dir: this.parent_obj.x_direction,
-                })
-            );
+            if (obj.remote_id) {
+                network.outBuff_add(
+                    new WorkerMsg(Type.sync, {
+                        hit: true,
+                        remote_id: obj.remote_id,
+                        damage: this.power + this.crit,
+                        from: this.parent_obj.remote_id,
+                        hit_dir: this.parent_obj.x_direction,
+                    })
+                );
+            }
 
-            obj.damage_taken(
-                this.power + this.crit,
-                this.parent_obj.x_direction
-            );
+            if (!obj.remote) {
+                obj.damage_taken(
+                    this.power + this.crit,
+                    this.parent_obj.x_direction,
+                    this.parent_obj
+                );
+            }
         }
     }
 }

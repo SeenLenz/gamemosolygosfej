@@ -1,5 +1,5 @@
 import { Networkable, Type } from "../../../../types";
-import { RemoteBuff, network, renderer } from "../../app";
+import { NetworkBuff, network, renderer } from "../../app";
 import { Vec2 } from "../../lin_alg";
 import { WorkerMsg } from "../../networking/WorkerMsg";
 import { GameObject } from "./gameobject";
@@ -125,7 +125,7 @@ export class Effect {
         if (this.remote) {
             if (this.parent_obj) {
                 this.pos = (
-                    RemoteBuff.get(this.parent_obj) as any as GameObject
+                    NetworkBuff.get(this.parent_obj) as any as GameObject
                 ).pos;
             }
         }

@@ -21,7 +21,6 @@ export enum Type {
     //Networkable:
     //created a networkable object and transmits this to others
     crt,
-
     //setup requests with the server and other cliendsa
     setup,
     //the initial request to the worker
@@ -37,6 +36,7 @@ export enum Type {
     //no types and shit just a string for testing purposes
     test,
     render,
+    map,
 }
 export enum Roles {
     player,

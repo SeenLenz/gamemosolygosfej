@@ -1,5 +1,6 @@
 import { Networkable, ObjType, Type } from "../../../../types";
-import { camera, event, gravity, huuud, network } from "../../app";
+
+import { NetworkBuff, camera, event,huuud, gravity, network } from "../../app";
 import { Vec2 } from "../../lin_alg";
 import { Effect, PlayerEffects } from "../base/effects";
 import { EventType, Keys } from "../base/event_handler";
@@ -19,6 +20,7 @@ import { v4 as uuid } from "uuid";
 import { Melee, Ranged, Teleport } from "./weapon/weapon";
 import { Gameped } from "../../app";
 import { GamepadButtons } from "../base/gamepad_handler";
+import { CameraObj } from "./roles/observer/camera";
 
 export class Player extends DynamicGameObj implements Networkable {
     public focused: boolean = false;
@@ -66,10 +68,10 @@ export class Player extends DynamicGameObj implements Networkable {
 
         if (!remote) {
             this.remote_id = uuid();
-
+            NetworkBuff.set(this.remote_id, this);
             network.send(
                 new WorkerMsg(Type.crt, {
-                    type: ObjType.player,
+                    type: ObjectTag.Player,
                     pos,
                     size,
                     remote_id: this.remote_id,
@@ -107,7 +109,7 @@ export class Player extends DynamicGameObj implements Networkable {
             network.outBuff_add(
                 new WorkerMsg(Type.sync, {
                     x_dir: this.x_direction,
-                    type: ObjType.player,
+                    type: ObjectTag.Player,
                     vel: this.velocity,
                     pos: this.pos,
                     frame_time: this.frame_time,
@@ -121,7 +123,8 @@ export class Player extends DynamicGameObj implements Networkable {
     }
 
     del() {
-        return false;
+        NetworkBuff.delete(this.remote_id);
+        this.remove();
     }
 
     get grounded() {
@@ -247,32 +250,34 @@ export class Player extends DynamicGameObj implements Networkable {
             }
         }
     }
-    damage_taken(damage: number, hit_dir: number) {
-        if (this.used_potion_buff && this.buff_taken_at + 10000 > performance.now()) {
-            damage -= 1;
-            if (this.damagable) {
-                this.damagable = false;
-                this.health -= damage;
-                this.damaged_timer = performance.now();
-                this.velocity.x += (damage / 5) * hit_dir;
-                this.velocity.y -= 2;
-                huuud.set_health_bar(damage, -1);
+//     damage_taken(damage: number, hit_dir: number) {
+//         if (this.used_potion_buff && this.buff_taken_at + 10000 > performance.now()) {
+//             damage -= 1;
+//             if (this.damagable) {
+//                 this.damagable = false;
+//                 this.health -= damage;
+//                 this.damaged_timer = performance.now();
+//                 this.velocity.x += (damage / 5) * hit_dir;
+//                 this.velocity.y -= 2;
+//                 huuud.set_health_bar(damage, -1);
     
-                if (this.health <= 0) {
-                    console.log(this.remote);
-                    if (this.remote == false) {
-                        camera.focus_on(new Empty(this.pos));
-                    }
-                    network.outBuff_add(
-                        new WorkerMsg(Type.sync, {
-                            death: true,
-                            this: this.remote_id,
-                        })
-                    );
-                    this.remove();
-                }
-            }
-        }
+//                 if (this.health <= 0) {
+//                     console.log(this.remote);
+//                     if (this.remote == false) {
+//                         camera.focus_on(new Empty(this.pos));
+//                     }
+//                     network.outBuff_add(
+//                         new WorkerMsg(Type.sync, {
+//                             death: true,
+//                             this: this.remote_id,
+//                         })
+//                     );
+//                     this.remove();
+//                 }
+//             }
+//         }
+
+    damage_taken(damage: number, hit_dir: number, from: DynamicGameObj) {
         if (this.damagable) {
             this.damagable = false;
             this.buff_taken_at = 0;
@@ -291,15 +296,15 @@ export class Player extends DynamicGameObj implements Networkable {
                 network.outBuff_add(
                     new WorkerMsg(Type.sync, {
                         death: true,
-                        this: this.remote_id,
+                        remote_id: this.remote_id,
                     })
                 );
-                this.remove();
+                this.del();
+                camera.focus_on(new CameraObj());
             }
         }
 
-        
-        super.damage_taken(damage, hit_dir);
+        super.damage_taken(damage, hit_dir, from);
     }
     health_potion_used() {    
         if (this.health + 2 > 8) {

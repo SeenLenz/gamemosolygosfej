@@ -21,20 +21,20 @@ import { gamePlayHud } from "./ui/hud-re";
 import { Hud } from "./ui/hud";
 
 export const Gameped = new GamepadEvent();
-export const RemoteBuff = new Map<String, Networkable>();
+
+export const NetworkBuff = new Map<String, Networkable>();
 export const renderer = new Renderer();
 export const event = new EventHandler(renderer);
 export let camera = new Camera();
 export let gravity = 0.5;
 //export const network = new Network("10.0.23.4:3000");
-//export const network = new Network("127.0.0.1:6969");
-export const network = new Network("gamemosolygosfej.onrender.com");
+export const network = new Network("127.0.0.1:6969");
+// export const network = new Network("gamemosolygosfej.onrender.com");
 export let delta_time: number = 1;
 export let current_role: Roles;
 let start = 1;
 export let huuud: gamePlayHud;
 export let map: Map_;
-export let player: Player;
 
 document.addEventListener("DOMContentLoaded", () => {
     document.querySelector("#join_bt")?.addEventListener("click", (e) => {
@@ -68,8 +68,7 @@ function setup(role: number) {
     create_textures();
     current_role = role;
 
-    player = new Player([96, 96], [100, -500], false, undefined);
-    camera.focus_on(player);
+    camera.focus_on(new Player([96, 96], [100, -500], false, undefined));
 
     start = performance.now();
     map = new Map_();

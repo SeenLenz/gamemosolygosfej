@@ -1,5 +1,7 @@
-import { gravity } from "../../../app";
+import { Networkable, Type } from "../../../../../types";
+import { NetworkBuff, gravity, network } from "../../../app";
 import { Vec2 } from "../../../lin_alg";
+import { WorkerMsg } from "../../../networking/WorkerMsg";
 import { Effect } from "../../base/effects";
 import {
     GameObject,
@@ -10,6 +12,7 @@ import {
 } from "../../base/gameobject";
 import { SpriteSheets } from "../../base/textures";
 import { BelaTank } from "./objects";
+import { v4 as uuid } from "uuid";
 
 export class Map_ {
     static background: GameObject[] = [];
@@ -17,8 +20,14 @@ export class Map_ {
     static foreground: GameObject[] = [];
     constructor() {
         Map_.objects.push(new BaseIsland());
-        Map_.objects.push(new BelaIsland(new Vec2(-100 * 6, 100 * 6)));
-        Map_.objects.push(new BelaIsland(new Vec2(320 * 6, 100 * 6)));
+        if (network.outBuff.cid == 0) {
+            Map_.objects.push(
+                new BelaIsland(new Vec2(-100 * 6, 100 * 6), false, undefined)
+            );
+            Map_.objects.push(
+                new BelaIsland(new Vec2(320 * 6, 100 * 6), false, undefined)
+            );
+        }
     }
 
     render(delta_time: number) {
@@ -33,14 +42,16 @@ export class Map_ {
     }
 }
 
-export class BelaIsland extends StaticGameObj {
+export class BelaIsland extends StaticGameObj implements Networkable {
     bela_tank: BelaTank;
     bela_free = false;
     fall_timer = 0;
     fall_speed = 0;
     fake_fall = false;
     slime_on = false;
-    constructor(pos: Vec2) {
+    remote = false;
+    remote_id: String;
+    constructor(pos: Vec2, remote: boolean, remote_id: String | undefined) {
         super(new Vec2(103 * 6, 80 * 6), pos, false, true);
         this.texture_index = SpriteSheets.SideIsland;
         this.hitboxes[0].size.y = 3 * 6;
@@ -49,11 +60,46 @@ export class BelaIsland extends StaticGameObj {
         this.hitboxes[0].pos_diff.y = 41 * 6;
         this.hitboxes[0].pos = this.pos.add(this.hitboxes[0].pos_diff);
         this.object_tag = ObjectTag.BelaIsland;
-
-        this.bela_tank = new BelaTank(this);
-
         this.set_texture_coords(new Vec2(1, 1), new Vec2(0, 0));
+        this.bela_tank = new BelaTank(this);
+        if (remote) {
+            this.remote = true;
+            this.remote_id = remote_id as String;
+        } else {
+            this.remote = false;
+            this.remote_id = uuid();
+            network.send(
+                new WorkerMsg(Type.map, {
+                    type: ObjectTag.BelaIsland,
+                    pos: this.pos,
+                    remote_id: this.remote_id,
+                })
+            );
+
+            NetworkBuff.set(this.remote_id, this);
+        }
     }
+
+    out(): void {
+        if (this.network_sync) {
+            network.outBuff_add(
+                new WorkerMsg(Type.sync, {
+                    tank_sprite_index: this.bela_tank.sprite_index,
+                    remote_id: this.remote_id,
+                    current_cycle: this.bela_tank.bela?.current_cycle,
+                })
+            );
+        }
+    }
+
+    in(data: any): void {
+        this.bela_tank.sprite_index = data.tank_sprite_index;
+        if (this.bela_tank.bela) {
+            this.bela_tank.bela.current_cycle = data.current_cycle;
+        }
+    }
+
+    del(): void {}
 
     get obj_index() {
         return Map_.objects.findIndex((obj) => obj == this);
@@ -79,8 +125,6 @@ export class BelaIsland extends StaticGameObj {
             }
         }
 
-        console.log(this.slime_on);
-
         if (this.pos.y > 5000) {
             GameObject.static_hitboxes.splice(this.hitbox_index, 1);
             Map_.objects.splice(this.obj_index, 1);
@@ -88,8 +132,11 @@ export class BelaIsland extends StaticGameObj {
 
         this.hitboxes[0].pos = this.pos.add(this.hitboxes[0].pos_diff);
 
+        this.out();
+
         super.loop(delta_time);
         this.slime_on = false;
+        this.network_sync = false;
     }
 }
 

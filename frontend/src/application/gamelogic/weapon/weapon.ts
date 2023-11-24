@@ -203,8 +203,7 @@ export class Ranged extends Weapon {
             Math.abs(
                 this.projectile.pos.x -
                     this.target_objects.closest.hitboxes[0].middle.x
-            ) <=
-            this.speed * 30 * delta_time
+            ) <= 200
         ) {
             if (this.target_objects.closest.object_tag == ObjectTag.Player) {
                 let player = this.target_objects.closest as Player;

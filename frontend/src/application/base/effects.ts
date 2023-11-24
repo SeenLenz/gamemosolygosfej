@@ -124,9 +124,10 @@ export class Effect {
     animate() {
         if (this.remote) {
             if (this.parent_obj) {
-                this.pos = (
-                    NetworkBuff.get(this.parent_obj) as any as GameObject
-                ).pos;
+                let r = NetworkBuff.get(this.parent_obj);
+                if (r) {
+                    this.pos = (r as any as GameObject).pos;
+                }
             }
         }
         if (performance.now() - this.animation_timer > this.frame_time) {

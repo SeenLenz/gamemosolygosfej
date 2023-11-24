@@ -18,7 +18,6 @@ import {
     GamepadEvent,
 } from "./application/base/gamepad_handler";
 import { gamePlayHud } from "./ui/hud-re";
-import { Hud } from "./ui/hud";
 
 export const Gameped = new GamepadEvent();
 

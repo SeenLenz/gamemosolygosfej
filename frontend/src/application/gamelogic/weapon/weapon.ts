@@ -149,23 +149,23 @@ export class Weapon {
 export class Ranged extends Weapon {
     projectile: Effect | undefined;
     direction = Vec2.zeros();
-    speed = 22;
+    speed = 18;
     distance = 0;
     constructor(obj: DynamicGameObj, power: number, range: number) {
         super(obj, power, range, Math.PI / 3);
-        this.attack_delay = 900;
-        this.cast_time = 1100;
+        this.attack_delay = 35 * 8 + 300;
+        this.cast_time = 35 * 9 + 500;
         this.weapon_type = WeaponType.ranged;
     }
 
     set_animation(): void {
         if (this.attacking) {
-            this.parent_obj.frame_time = 40;
+            this.parent_obj.frame_time = 35;
             this.parent_obj.sprite_index = 6;
             this.parent_obj.halt_points = [
-                { frame: 4, time: 200 },
-                { frame: 8, time: 300 },
-                { frame: 9, time: 300 },
+                { frame: 4, time: 100 },
+                { frame: 8, time: 200 },
+                { frame: 9, time: 200 },
             ];
         }
 

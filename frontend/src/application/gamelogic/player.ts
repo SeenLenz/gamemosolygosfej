@@ -62,7 +62,7 @@ export class Player extends DynamicGameObj implements Networkable {
             this.size.x / 4
         );
 
-        this.ranged_weapon = new Ranged(this, 2, 600);
+        this.ranged_weapon = new Ranged(this, 2, 400);
         this.melee_weapon = new Melee(this, 1);
         this.teleport = new Teleport(this, 0);
 
@@ -101,10 +101,6 @@ export class Player extends DynamicGameObj implements Networkable {
     }
 
     out() {
-        //velocity
-        //position
-        //sprite index
-        //framte time
         if (this.network_sync) {
             network.outBuff_add(
                 new WorkerMsg(Type.sync, {
@@ -253,33 +249,6 @@ export class Player extends DynamicGameObj implements Networkable {
             }
         }
     }
-
-    //     damage_taken(damage: number, hit_dir: number) {
-    //         if (this.used_potion_buff && this.buff_taken_at + 10000 > performance.now()) {
-    //             damage -= 1;
-    //             if (this.damagable) {
-    //                 this.damagable = false;
-    //                 this.health -= damage;
-    //                 this.damaged_timer = performance.now();
-    //                 this.velocity.x += (damage / 5) * hit_dir;
-    //                 this.velocity.y -= 2;
-    //                 huuud.set_health_bar(damage, -1);
-
-    //                 if (this.health <= 0) {
-    //                     console.log(this.remote);
-    //                     if (this.remote == false) {
-    //                         camera.focus_on(new Empty(this.pos));
-    //                     }
-    //                     network.outBuff_add(
-    //                         new WorkerMsg(Type.sync, {
-    //                             death: true,
-    //                             this: this.remote_id,
-    //                         })
-    //                     );
-    //                     this.remove();
-    //                 }
-    //             }
-    //         }
 
     damage_taken(damage: number, hit_dir: number, from: DynamicGameObj) {
         if (this.damagable) {
